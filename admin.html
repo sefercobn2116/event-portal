@@ -113,10 +113,70 @@
     .btn-action { background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
     .btn-del { border-color: rgba(244,63,94,0.4); color: #f43f5e; }
     .btn-del:hover { background: #f43f5e; color: #fff; }
+    
+    /* KULLANICI-ETKİNLİK ATAMA */
+    .user-event-assignment {
+      background: rgba(0,0,0,0.3);
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 12px;
+    }
+    .user-event-assignment h4 {
+      color: #00f2fe;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+    .event-checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+    .event-checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .event-checkbox-item:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .event-checkbox-item input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: #00f2fe;
+    }
+    .event-checkbox-item label {
+      cursor: pointer;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      flex: 1;
+    }
+    .btn-save-assignment {
+      background: rgba(0, 242, 254, 0.2);
+      border: 1px solid #00f2fe;
+      color: #00f2fe;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+    .btn-save-assignment:hover {
+      background: #00f2fe;
+      color: #070913;
+    }
   </style>
 </head>
 <body>
-
+  
   <div class="container">
     <div class="nav-header">
       <a href="index.html">← Back to Main Hub</a>
@@ -219,6 +279,13 @@
           <tbody id="events-table-body"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- 4. KULLANICI-ETKİNLİK ATAMA -->
+    <div class="glass-box" style="margin-top: 24px;">
+      <h3 style="color: #ff007f; margin-bottom: 6px;">🔐 Assign Events to Users</h3>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Select which events each user can access.</p>
+      <div id="user-event-assignments-container"></div>
     </div>
   </div>
 
@@ -479,6 +546,7 @@
           if (confirm("Delete this event?")) {
             await supabase.from('events').delete().eq('id', evt.id);
             loadEvents();
+            loadUserEventAssignments();
           }
         });
 
@@ -496,6 +564,7 @@
       document.getElementById('ev-desc').value = '';
       document.getElementById('ev-drive').value = '';
       loadEvents();
+      loadUserEventAssignments();
     });
 
     async function loadUsers() {
@@ -514,10 +583,98 @@
       });
     }
 
+    // KULLANICI-ETKİNLİK ATAMA
+    async function loadUserEventAssignments() {
+      const container = document.getElementById('user-event-assignments-container');
+      container.innerHTML = '';
+
+      // Tüm kullanıcıları ve etkinlikleri getir
+      const { data: users } = await supabase.from('users').select('*').order('username');
+      const { data: events } = await supabase.from('events').select('*').order('title');
+      const { data: accesses } = await supabase.from('event_access').select('*');
+
+      if (!users || users.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; text-align:center;">No users available.</p>';
+        return;
+      }
+
+      if (!events || events.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; text-align:center;">No events available. Create an event first.</p>';
+        return;
+      }
+
+      const accessMap = {};
+      (accesses || []).forEach(a => {
+        if (!accessMap[a.user_id]) accessMap[a.user_id] = new Set();
+        accessMap[a.user_id].add(a.event_id);
+      });
+
+      users.forEach(u => {
+        if (u.is_admin) return; // Admin hariç
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'user-event-assignment';
+        
+        const userTitle = document.createElement('h4');
+        userTitle.textContent = `${u.username} (${u.email})`;
+        wrapper.appendChild(userTitle);
+
+        const checkboxGrid = document.createElement('div');
+        checkboxGrid.className = 'event-checkbox-grid';
+
+        const userEventIds = accessMap[u.id] || new Set();
+
+        events.forEach(evt => {
+          const item = document.createElement('div');
+          item.className = 'event-checkbox-item';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = userEventIds.has(evt.id);
+          checkbox.dataset.userId = u.id;
+          checkbox.dataset.eventId = evt.id;
+
+          const label = document.createElement('label');
+          label.textContent = evt.title;
+
+          item.appendChild(checkbox);
+          item.appendChild(label);
+          checkboxGrid.appendChild(item);
+        });
+
+        wrapper.appendChild(checkboxGrid);
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-save-assignment';
+        saveBtn.textContent = '💾 Save Access';
+        saveBtn.addEventListener('click', async () => {
+          const selectedEventIds = Array.from(checkboxGrid.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.dataset.eventId));
+
+          // Önceki erişimleri sil
+          await supabase.from('event_access').delete().eq('user_id', u.id);
+
+          // Yeni erişimleri ekle
+          if (selectedEventIds.length > 0) {
+            const accessRecords = selectedEventIds.map(eventId => ({
+              user_id: u.id,
+              event_id: eventId
+            }));
+            await supabase.from('event_access').insert(accessRecords);
+          }
+
+          alert(`✅ Access updated for ${u.username}`);
+        });
+
+        wrapper.appendChild(saveBtn);
+        container.appendChild(wrapper);
+      });
+    }
+
     initAdminCalendar();
     loadAppointments();
     loadEvents();
     loadUsers();
+    loadUserEventAssignments();
   </script>
 </body>
 </html>

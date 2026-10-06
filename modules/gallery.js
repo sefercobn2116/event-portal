@@ -102,14 +102,12 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   if (match) folderId = match[0];
   activeFolderId = folderId;
 
-  // Dışarıya link veren hiçbir buton yok. Sadece toplu dosya seçtirici buton var:
   container.innerHTML = `
     <div style="margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-        <label class="btn btn-pink" style="cursor: pointer; padding: 8px 20px; font-size: 0.85rem; margin: 0; display: inline-flex; align-items: center; gap: 6px;">
-          📤 Select & Upload Photos/Videos
-          <input type="file" id="drive-photo-input" accept="image/*,video/*" multiple style="display: none;">
-        </label>
+        <button id="btn-trigger-picker" class="btn btn-pink" style="padding: 8px 22px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+          📤 Select & Upload Media (Multiple)
+        </button>
         <span id="upload-status" style="font-size: 0.85rem; font-weight: 600;"></span>
       </div>
     </div>
@@ -118,47 +116,61 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
     </div>
   `;
 
-  // Toplu Dosya Yükleme Motoru
-  const fileInput = document.getElementById('drive-photo-input');
+  const triggerBtn = document.getElementById('btn-trigger-picker');
   const uploadStatus = document.getElementById('upload-status');
 
-  fileInput.onchange = async () => {
-    const files = Array.from(fileInput.files);
-    if (!files.length) return;
+  // Doğrudan JS üzerinden garantili MULTIPLE dosya seçici
+  triggerBtn.onclick = () => {
+    const filePicker = document.createElement('input');
+    filePicker.type = 'file';
+    filePicker.multiple = true;
+    filePicker.setAttribute('multiple', '');
+    filePicker.accept = 'image/*,video/*';
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      uploadStatus.style.color = '#00f2fe';
-      uploadStatus.textContent = `Uploading ${i + 1}/${files.length}: ${file.name}...`;
+    filePicker.onchange = async () => {
+      const files = Array.from(filePicker.files);
+      if (!files.length) return;
 
-      await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const payload = {
-              folderId: activeFolderId,
-              fileData: reader.result,
-              fileName: file.name,
-              mimeType: file.type
-            };
+      triggerBtn.disabled = true;
 
-            await fetch(EMAIL_WEBHOOK_URL, {
-              method: 'POST',
-              body: JSON.stringify(payload)
-            });
-          } catch (e) {
-            console.error(e);
-          }
-          resolve();
-        };
-        reader.readAsDataURL(file);
-      });
-    }
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        uploadStatus.style.color = '#00f2fe';
+        uploadStatus.textContent = `Uploading [${i + 1}/${files.length}]: ${file.name}...`;
 
-    uploadStatus.style.color = '#22c55e';
-    uploadStatus.textContent = `✓ Successfully uploaded ${files.length} file(s)!`;
-    setTimeout(() => { uploadStatus.textContent = ''; }, 4000);
-    loadMediaFromDrive(activeFolderId);
+        await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = async () => {
+            try {
+              const payload = {
+                folderId: activeFolderId,
+                fileData: reader.result,
+                fileName: file.name,
+                mimeType: file.type
+              };
+
+              await fetch(EMAIL_WEBHOOK_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+              });
+            } catch (err) {
+              console.error(err);
+            }
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      uploadStatus.style.color = '#22c55e';
+      uploadStatus.textContent = `✓ Uploaded ${files.length} file(s) successfully!`;
+      triggerBtn.disabled = false;
+      setTimeout(() => { uploadStatus.textContent = ''; }, 4500);
+
+      loadMediaFromDrive(activeFolderId);
+    };
+
+    filePicker.click();
   };
 
   loadMediaFromDrive(folderId);
@@ -189,7 +201,7 @@ async function loadMediaFromDrive(folderId) {
         card.innerHTML = `
           <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,242,254,0.08);">
             <span style="font-size: 1.8rem;">🎬</span>
-            <span style="font-size: 0.7rem; color: #fff; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+            <span style="font-size: 0.7rem; color: #fff; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px;">${item.name}</span>
           </div>
         `;
       } else {

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Etkinlik Odası</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Google Identity Services (OAuth Token için) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     .grid-layout {
       display: grid;
@@ -17,7 +19,6 @@
         grid-template-columns: 1fr;
       }
     }
-    /* Sohbet Kutusu */
     .chat-container {
       display: flex;
       flex-direction: column;
@@ -56,7 +57,6 @@
       margin-bottom: 3px;
       font-weight: bold;
     }
-    /* Oylama Listesi */
     .poll-list {
       display: flex;
       flex-direction: column;
@@ -88,15 +88,6 @@
       background: var(--neon-cyan);
       color: #000;
     }
-    /* Drive Bölümü */
-    .drive-banner {
-      margin-top: 24px;
-      background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), rgba(244, 63, 94, 0.15));
-      border: 1px dashed var(--neon-cyan);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -113,59 +104,75 @@
       <p id="event-desc" style="color: #94a3b8; font-size: 0.95rem;"></p>
     </div>
 
-    <!-- 1 TB Google Drive Medya Alanı -->
-    <div class="drive-banner" id="drive-box">
-      <h3 style="margin-bottom: 6px;">📸 Etkinlik Fotoğraf & Video Alanı (1 TB Drive)</h3>
-      <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 12px;">
-        Telefonundan ve bilgisayarından kayıpsız toplu fotoğraf yükleyebilir, dilediğin zaman orijinal kalitede indirebilirsin.
-      </p>
-      <a id="btn-drive-link" href="#" target="_blank" class="btn" style="display: inline-block; width: auto; padding: 10px 24px; text-decoration: none;">
-        📂 Google Drive Klasörünü Aç (Fotoğraf Yükle / İndir)
-      </a>
+    <!-- 5 TB Google Drive Medya Alanı -->
+    <div class="glass-box" style="margin-top: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="color: var(--neon-cyan); margin-bottom: 4px;">📸 Etkinlik Medya Alanı (5 TB Google Drive)</h3>
+          <p style="color: #94a3b8; font-size: 0.85rem;">Fotoğraf ve videoları toplu yükleyin, tam kalitede cihazınıza indirin.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <input type="file" id="media-file-input" multiple accept="image/*,video/*" style="display: none;">
+          <button id="btn-trigger-upload" class="btn" style="width: auto; padding: 10px 18px;">
+            ⬆️ Fotoğraf / Video Yükle
+          </button>
+          <button id="btn-toggle-gallery" class="btn-vote" style="padding: 10px 16px; border-radius: 14px;">
+            🖼️ Resimleri Göster
+          </button>
+        </div>
+      </div>
+
+      <!-- Yükleme İlerleme Durumu -->
+      <div id="upload-status" style="display: none; margin-top: 15px;">
+        <div id="upload-status-text" style="font-size: 0.9rem; color: var(--neon-cyan); margin-bottom: 6px;"></div>
+        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+          <div id="upload-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)); transition: width 0.2s;"></div>
+        </div>
+      </div>
+
+      <!-- Galeri Alanı -->
+      <div id="gallery-container" style="display: none; margin-top: 20px;">
+        <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;"></div>
+      </div>
     </div>
 
+    <!-- Sohbet ve Oylama Grid -->
     <div class="grid-layout">
-      <!-- 1. Canlı Mesajlaşma (Sohbet) -->
+      <!-- Canlı Mesajlaşma -->
       <div class="glass-box chat-container">
         <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Ortak Sohbet</h3>
-        <div class="chat-messages" id="chat-messages">
-          <!-- Mesajlar buraya düşecek -->
-        </div>
+        <div class="chat-messages" id="chat-messages"></div>
         <div style="display: flex; gap: 8px; margin-top: 12px;">
           <input type="text" id="chat-input" class="input-field" style="margin: 0;" placeholder="Mesajını yaz..." autocomplete="off">
           <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 20px;">Gönder</button>
         </div>
       </div>
 
-      <!-- 2. Öneri ve Oylama Paneli -->
+      <!-- Günlük Öneri ve Oylama -->
       <div class="glass-box">
-        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 Gün İçinde Ne Yapalım? (Ortak Öneri & Oy)</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Fikrini öner, arkadaşların oylasın!</p>
+        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 Gün İçinde Ne Yapalım?</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Ortak aktivite öner ve oyla!</p>
 
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="Örn: Akşam bowlinge gidelim mi?">
+          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="Örn: Akşam yürüyüşe çıkalım mı?">
           <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Ekle</button>
         </div>
 
-        <div class="poll-list" id="poll-list">
-          <!-- Oylamalar buraya listelenecek -->
-        </div>
+        <div class="poll-list" id="poll-list"></div>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { supabase } from './config.js';
+    import { supabase, GOOGLE_API_KEY, GOOGLE_CLIENT_ID } from './config.js';
 
-    // Oturum kontrolü
+    // 1. Kullanıcı Kontrolü
     const user = JSON.parse(localStorage.getItem('portal_user'));
     if (!user) {
       window.location.href = 'index.html';
     }
-
     document.getElementById('current-user-tag').textContent = `Giriş: ${user.username}`;
 
-    // URL'den Etkinlik ID'sini al
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get('id');
 
@@ -174,10 +181,12 @@
       window.location.href = 'index.html';
     }
 
-    // Yetki Güvenlik Kontrolü
+    let currentFolderId = '';
+    let accessToken = null;
+
+    // 2. Yetki Kontrolü
     async function verifyAccess() {
       if (user.is_admin) return true;
-
       const { data, error } = await supabase
         .from('event_access')
         .select('id')
@@ -193,45 +202,171 @@
       return true;
     }
 
-    // Etkinlik Detayı Yükle
+    // 3. Etkinlik Detayı ve Klasör ID Çıkarımı
     async function loadEventData() {
-      const { data: evt, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .single();
-
-      if (error || !evt) {
-        alert("Etkinlik bulunamadı.");
-        window.location.href = 'index.html';
-        return;
-      }
-
-      document.getElementById('event-title').textContent = evt.title;
-      document.getElementById('event-desc').textContent = evt.description || 'Detay girilmedi.';
-      
-      const driveLink = document.getElementById('btn-drive-link');
-      if (evt.drive_folder_url) {
-        driveLink.href = evt.drive_folder_url;
-      } else {
-        driveLink.textContent = 'Henüz Drive Klasörü Tanımlanmadı';
-        driveLink.style.pointerEvents = 'none';
-        driveLink.style.opacity = '0.5';
+      const { data: evt } = await supabase.from('events').select('*').eq('id', eventId).single();
+      if (evt) {
+        document.getElementById('event-title').textContent = evt.title;
+        document.getElementById('event-desc').textContent = evt.description || 'Detay girilmedi.';
+        
+        if (evt.drive_folder_url) {
+          const match = evt.drive_folder_url.match(/[-\w]{25,}/);
+          currentFolderId = match ? match[0] : evt.drive_folder_url;
+        }
       }
     }
 
-    // --- SOHBET / MESAJLAŞMA BÖLÜMÜ ---
+    // 4. Google Drive OAuth İzni
+    function getAccessToken(callback) {
+      if (accessToken) {
+        callback(accessToken);
+        return;
+      }
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly',
+        callback: (tokenResponse) => {
+          accessToken = tokenResponse.access_token;
+          callback(accessToken);
+        },
+      });
+      client.requestAccessToken();
+    }
+
+    // 5. Kesintisiz Resumable Upload
+    const fileInput = document.getElementById('media-file-input');
+    const triggerBtn = document.getElementById('btn-trigger-upload');
+    const uploadStatus = document.getElementById('upload-status');
+    const statusText = document.getElementById('upload-status-text');
+    const progressBar = document.getElementById('upload-progress-bar');
+
+    triggerBtn.addEventListener('click', () => {
+      if (!currentFolderId) {
+        alert("Bu etkinlik için henüz bir Drive klasörü atanmamış!");
+        return;
+      }
+      getAccessToken(() => fileInput.click());
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      uploadStatus.style.display = 'block';
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        statusText.textContent = `Yükleniyor (${i + 1}/${files.length}): ${file.name}`;
+        progressBar.style.width = '0%';
+
+        try {
+          const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json; charset=UTF-8',
+              'X-Upload-Content-Type': file.type || 'application/octet-stream',
+              'X-Upload-Content-Length': file.size
+            },
+            body: JSON.stringify({
+              name: file.name,
+              parents: [currentFolderId]
+            })
+          });
+
+          const locationUrl = initRes.headers.get('Location');
+          if (!locationUrl) throw new Error("Yükleme oturumu başlatılamadı.");
+
+          await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', locationUrl, true);
+            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+
+            xhr.upload.onprogress = (evt) => {
+              if (evt.lengthComputable) {
+                const percent = Math.round((evt.loaded / evt.total) * 100);
+                progressBar.style.width = `${percent}%`;
+                statusText.textContent = `Yükleniyor (${i + 1}/${files.length}): ${file.name} (%${percent})`;
+              }
+            };
+
+            xhr.onload = () => (xhr.status === 200 || xhr.status === 201) ? resolve() : reject(xhr.response);
+            xhr.onerror = () => reject(xhr.response);
+            xhr.send(file);
+          });
+
+        } catch (err) {
+          console.error("Yükleme hatası:", err);
+        }
+      }
+
+      statusText.textContent = "✅ Tüm dosyalar 5 TB Drive'a başarıyla yüklendi!";
+      progressBar.style.width = '100%';
+      fileInput.value = '';
+      setTimeout(() => { uploadStatus.style.display = 'none'; }, 4000);
+    });
+
+    // 6. Resimleri Listele & Tam Kalitede İndir
+    const btnToggleGallery = document.getElementById('btn-toggle-gallery');
+    const galleryContainer = document.getElementById('gallery-container');
+    const galleryGrid = document.getElementById('gallery-grid');
+
+    btnToggleGallery.addEventListener('click', () => {
+      if (galleryContainer.style.display === 'block') {
+        galleryContainer.style.display = 'none';
+        btnToggleGallery.textContent = '🖼️ Resimleri Göster';
+      } else {
+        galleryContainer.style.display = 'block';
+        btnToggleGallery.textContent = 'Kapat ✕';
+        fetchDriveFiles();
+      }
+    });
+
+    async function fetchDriveFiles() {
+      galleryGrid.innerHTML = '<p style="color:#94a3b8;">5 TB Drive taranıyor...</p>';
+      const url = `https://www.googleapis.com/drive/v3/files?q='${currentFolderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webContentLink)&key=${GOOGLE_API_KEY}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.files || data.files.length === 0) {
+          galleryGrid.innerHTML = '<p style="color:#94a3b8;">Bu klasörde henüz yüklenmiş bir dosya yok.</p>';
+          return;
+        }
+
+        galleryGrid.innerHTML = '';
+        data.files.forEach(file => {
+          const previewImg = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s400') : 'https://via.placeholder.com/200?text=Video/Dosya';
+          const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;
+
+          const card = document.createElement('div');
+          card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;";
+          card.innerHTML = `
+            <div style="height: 140px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+              <img src="${previewImg}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+            </div>
+            <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 0.75rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
+              <a href="${downloadLink}" target="_blank" class="btn" style="padding: 6px; font-size: 0.8rem; text-align: center; text-decoration: none;">
+                ⬇️ Orijinal İndir
+              </a>
+            </div>
+          `;
+          galleryGrid.appendChild(card);
+        });
+      } catch (err) {
+        galleryGrid.innerHTML = '<p style="color:#ef4444;">Dosyalar listelenemedi. Klasör erişim iznini kontrol edin.</p>';
+      }
+    }
+
+    // 7. Canlı Sohbet (Supabase Realtime)
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const btnSendChat = document.getElementById('btn-send-chat');
 
     async function loadMessages() {
-      const { data: msgs } = await supabase
-        .from('event_messages')
-        .select('*')
-        .eq('event_id', eventId)
-        .order('created_at', { ascending: true });
-
+      const { data: msgs } = await supabase.from('event_messages').select('*').eq('event_id', eventId).order('created_at', { ascending: true });
       chatMessages.innerHTML = '';
       (msgs || []).forEach(appendMessage);
       chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -252,7 +387,6 @@
     async function sendMessage() {
       const text = chatInput.value.trim();
       if (!text) return;
-
       chatInput.value = '';
       await supabase.from('event_messages').insert({
         event_id: eventId,
@@ -263,41 +397,27 @@
     }
 
     btnSendChat.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    // Realtime Mesaj Dinleyici (Canlı Akış)
-    supabase
-      .channel('chat-room-' + eventId)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'event_messages',
-        filter: `event_id=eq.${eventId}`
-      }, payload => {
-        appendMessage(payload.new);
-      })
-      .subscribe();
+    supabase.channel('chat-room-' + eventId).on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'event_messages',
+      filter: `event_id=eq.${eventId}`
+    }, payload => appendMessage(payload.new)).subscribe();
 
-    // --- ÖNERİ VE OYLAMA BÖLÜMÜ ---
+    // 8. Oylama
     const pollList = document.getElementById('poll-list');
     const pollInput = document.getElementById('poll-input');
     const btnAddPoll = document.getElementById('btn-add-poll');
 
     async function loadPolls() {
-      const { data: polls } = await supabase
-        .from('event_suggestions')
-        .select('*')
-        .eq('event_id', eventId)
-        .order('votes', { ascending: false });
-
+      const { data: polls } = await supabase.from('event_suggestions').select('*').eq('event_id', eventId).order('votes', { ascending: false });
       pollList.innerHTML = '';
       if (!polls || polls.length === 0) {
         pollList.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Henüz bir öneri yapılmadı. İlk fikri sen yaz!</p>';
         return;
       }
-
       polls.forEach(item => {
         const div = document.createElement('div');
         div.className = 'poll-item';
@@ -306,19 +426,19 @@
             <div style="font-size:0.95rem; font-weight:600;">${item.title}</div>
             <div style="font-size:0.75rem; color:#94a3b8;">Ekleyen: ${item.suggested_by}</div>
           </div>
-          <button class="btn-vote" data-id="${item.id}" data-votes="${item.votes}">
-            👍 ${item.votes} Oy
-          </button>
+          <button class="btn-vote" data-id="${item.id}">👍 ${item.votes} Oy</button>
         `;
-        div.querySelector('.btn-vote').addEventListener('click', () => voteSuggestion(item.id, item.votes));
+        div.querySelector('.btn-vote').addEventListener('click', async () => {
+          await supabase.from('event_suggestions').update({ votes: item.votes + 1 }).eq('id', item.id);
+          loadPolls();
+        });
         pollList.appendChild(div);
       });
     }
 
-    async function addSuggestion() {
+    btnAddPoll.addEventListener('click', async () => {
       const title = pollInput.value.trim();
       if (!title) return;
-
       pollInput.value = '';
       await supabase.from('event_suggestions').insert({
         event_id: eventId,
@@ -327,17 +447,7 @@
         votes: 1
       });
       loadPolls();
-    }
-
-    async function voteSuggestion(id, currentVotes) {
-      await supabase
-        .from('event_suggestions')
-        .update({ votes: currentVotes + 1 })
-        .eq('id', id);
-      loadPolls();
-    }
-
-    btnAddPoll.addEventListener('click', addSuggestion);
+    });
 
     // Başlat
     (async () => {

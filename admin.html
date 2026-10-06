@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Paneli - Etkinlik & İzin Yönetimi</title>
+  <title>Admin Panel - Event & Access Management</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .admin-grid {
@@ -85,44 +85,44 @@
 
   <div class="container">
     <div class="nav-header">
-      <a href="index.html">← Ana Sayfaya Dön</a>
+      <a href="index.html">← Back to Portal</a>
       <h2 style="background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        Yönetim Merkezi
+        Management Center
       </h2>
     </div>
 
-    <!-- ÜST BÖLÜM: YENİ ETKİNLİK VE KULLANICI EKLEME -->
+    <!-- TOP SECTION: CREATE EVENT & MANAGE USERS -->
     <div class="admin-grid">
-      <!-- 1. Yeni Etkinlik Oluştur -->
+      <!-- 1. Create Event -->
       <div class="glass-box">
-        <h3 style="color: var(--neon-cyan); margin-bottom: 6px;">🎉 Yeni Etkinlik Tanımla</h3>
+        <h3 style="color: var(--neon-cyan); margin-bottom: 6px;">🎉 Create New Event</h3>
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">
-          Her etkinlik için Drive'ında ayrı bir klasör açıp linkini buraya yapıştır (örn: Spa Day Klasörü).
+          Create a folder in Google Drive for this event and paste its link below.
         </p>
         
-        <input type="text" id="ev-title" class="input-field" placeholder="Etkinlik Adı (Örn: Alışveriş Günü)">
-        <textarea id="ev-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Kısa Açıklama"></textarea>
-        <input type="text" id="ev-drive" class="input-field" placeholder="O Etkinliğe Özel Google Drive Klasör Linki">
-        <button id="btn-create-event" class="btn">Etkinliği Yayınla</button>
+        <input type="text" id="ev-title" class="input-field" placeholder="Event Name (e.g. Shopping Day)">
+        <textarea id="ev-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Short Description"></textarea>
+        <input type="text" id="ev-drive" class="input-field" placeholder="Google Drive Folder Link for this Event">
+        <button id="btn-create-event" class="btn">Publish Event</button>
       </div>
 
-      <!-- 2. Yeni Kullanıcı Ekle -->
+      <!-- 2. Manage Users -->
       <div class="glass-box">
-        <h3 style="color: var(--neon-pink); margin-bottom: 6px;">👥 Yeni Kullanıcı Ekle</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Siteye giriş yapabilecek isimleri tanımla.</p>
+        <h3 style="color: var(--neon-pink); margin-bottom: 6px;">👥 Add New User</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Add usernames authorized to access the portal.</p>
         
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="new-user-input" class="input-field" style="margin: 0;" placeholder="Kullanıcı adı (örn: can)">
-          <button id="btn-add-user" class="btn" style="width: auto; padding: 0 18px;">Ekle</button>
+          <input type="text" id="new-user-input" class="input-field" style="margin: 0;" placeholder="Username (e.g. alex)">
+          <button id="btn-add-user" class="btn" style="width: auto; padding: 0 18px;">Add</button>
         </div>
 
         <div class="table-container" style="max-height: 200px; overflow-y: auto;">
           <table>
             <thead>
               <tr>
-                <th>İsim</th>
-                <th>Durum</th>
-                <th>İşlem</th>
+                <th>Username</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="user-table-body"></tbody>
@@ -131,46 +131,44 @@
       </div>
     </div>
 
-    <!-- ORTA BÖLÜM: ETKİNLİKLERİ YÖNETME, DÜZENLEME VE SİLME -->
+    <!-- MIDDLE SECTION: MANAGE & DELETE EVENTS -->
     <div class="glass-box" style="margin-top: 24px;">
-      <h3 style="color: var(--neon-cyan); margin-bottom: 6px;">📋 Etkinlikleri Yönet & Drive Klasörlerini Güncelle</h3>
+      <h3 style="color: var(--neon-cyan); margin-bottom: 6px;">📋 Manage Events & Drive Links</h3>
       <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 14px;">
-        Buradan etkinliklerin Drive klasör linklerini istediğin zaman güncelleyebilir veya etkinliği silebilirsin.
+        Update folder destinations anytime or remove inactive events.
       </p>
 
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th>Etkinlik Başlığı</th>
-              <th>Bağlı Drive Klasörü ID / Linki</th>
-              <th>Açıklama</th>
-              <th>İşlemler</th>
+              <th>Event Title</th>
+              <th>Assigned Drive Folder</th>
+              <th>Description</th>
+              <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="events-table-body">
-            <!-- Etkinlikler buraya listelenecek -->
-          </tbody>
+          <tbody id="events-table-body"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- ALT BÖLÜM: YETKİLENDİRME MATRİSİ -->
+    <!-- BOTTOM SECTION: ACCESS MATRIX -->
     <div class="glass-box" style="margin-top: 24px;">
-      <h3 style="color: var(--neon-pink); margin-bottom: 6px;">🔐 Kim Hangi Etkinliğe Girebilir?</h3>
+      <h3 style="color: var(--neon-pink); margin-bottom: 6px;">🔐 Event Access Permissions</h3>
       <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">
-        Kullanıcıyı seç, sadece tıklamasını istediğin etkinlikleri işaretle ve kaydet.
+        Select a user and check the specific events they are allowed to enter.
       </p>
 
       <div style="display: grid; grid-template-columns: 240px 1fr; gap: 20px;">
         <div>
-          <label style="font-size: 0.85rem; color: #cbd5e1;">Kullanıcı Seç:</label>
+          <label style="font-size: 0.85rem; color: #cbd5e1;">Select User:</label>
           <select id="select-user-perm" class="input-field" style="margin-top: 6px;"></select>
         </div>
         <div>
-          <label style="font-size: 0.85rem; color: #cbd5e1;">Tıklanabilir Etkinlikler:</label>
+          <label style="font-size: 0.85rem; color: #cbd5e1;">Accessible Events:</label>
           <div id="events-checklist" style="margin-top: 6px; max-height: 250px; overflow-y: auto;"></div>
-          <button id="btn-save-perms" class="btn" style="width: auto; padding: 10px 24px; margin-top: 14px;">Yetkileri Kaydet</button>
+          <button id="btn-save-perms" class="btn" style="width: auto; padding: 10px 24px; margin-top: 14px;">Save Permissions</button>
         </div>
       </div>
     </div>
@@ -179,10 +177,9 @@
   <script type="module">
     import { supabase } from './config.js';
 
-    // Güvenlik Doğrulaması
     const user = JSON.parse(localStorage.getItem('portal_user'));
     if (!user || !user.is_admin) {
-      alert("Bu sayfaya yalnızca yöneticiler erişebilir!");
+      alert("Access denied! Administrators only.");
       window.location.href = 'index.html';
     }
 
@@ -201,13 +198,13 @@
       renderPermissionSelect();
     }
 
-    // --- 1. ETKİNLİK YÖNETİMİ & SİLME ---
+    // 1. EVENTS MANAGEMENT
     function renderEvents() {
       const tbody = document.getElementById('events-table-body');
       tbody.innerHTML = '';
 
       if (allEvents.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Henüz eklenmiş bir etkinlik yok.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No events registered yet.</td></tr>';
         return;
       }
 
@@ -216,26 +213,24 @@
         tr.innerHTML = `
           <td><strong>${evt.title}</strong></td>
           <td>
-            <input type="text" class="input-field input-drive-link" value="${evt.drive_folder_url || ''}" placeholder="Drive Linki Yapıştır" style="margin: 0; padding: 6px 10px; font-size: 0.8rem; width: 280px;">
+            <input type="text" class="input-field input-drive-link" value="${evt.drive_folder_url || ''}" placeholder="Paste Drive Link" style="margin: 0; padding: 6px 10px; font-size: 0.8rem; width: 280px;">
           </td>
           <td style="color:#94a3b8; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${evt.description || '-'}</td>
           <td style="display: flex; gap: 6px;">
-            <button class="btn-action btn-save-drive" data-id="${evt.id}">💾 Drive'ı Kaydet</button>
-            <button class="btn-action btn-del btn-del-event" data-id="${evt.id}">🗑️ Sil</button>
+            <button class="btn-action btn-save-drive" data-id="${evt.id}">💾 Save Drive</button>
+            <button class="btn-action btn-del btn-del-event" data-id="${evt.id}">🗑️ Delete</button>
           </td>
         `;
 
-        // Drive Klasör Linkini Güncelle
         tr.querySelector('.btn-save-drive').addEventListener('click', async () => {
           const newLink = tr.querySelector('.input-drive-link').value.trim();
           await supabase.from('events').update({ drive_folder_url: newLink }).eq('id', evt.id);
-          alert(`"${evt.title}" etkinliğinin Drive klasörü güncellendi!`);
+          alert(`Drive link updated for "${evt.title}"!`);
           loadData();
         });
 
-        // Etkinliği Sil
         tr.querySelector('.btn-del-event').addEventListener('click', async () => {
-          if (confirm(`"${evt.title}" etkinliğini tamamen silmek istiyor musunuz?`)) {
+          if (confirm(`Are you sure you want to permanently delete "${evt.title}"?`)) {
             await supabase.from('events').delete().eq('id', evt.id);
             loadData();
           }
@@ -245,14 +240,13 @@
       });
     }
 
-    // Yeni Etkinlik Ekle
     document.getElementById('btn-create-event').addEventListener('click', async () => {
       const title = document.getElementById('ev-title').value.trim();
       const description = document.getElementById('ev-desc').value.trim();
       const drive_folder_url = document.getElementById('ev-drive').value.trim();
 
       if (!title) {
-        alert("Lütfen bir etkinlik adı girin.");
+        alert("Please provide an event name.");
         return;
       }
 
@@ -261,11 +255,11 @@
       document.getElementById('ev-title').value = '';
       document.getElementById('ev-desc').value = '';
       document.getElementById('ev-drive').value = '';
-      alert("Etkinlik başarıyla eklendi!");
+      alert("Event created successfully!");
       loadData();
     });
 
-    // --- 2. KULLANICI YÖNETİMİ ---
+    // 2. USER MANAGEMENT
     function renderUsers() {
       const tbody = document.getElementById('user-table-body');
       tbody.innerHTML = '';
@@ -275,11 +269,11 @@
           <td><strong>${u.username}</strong> ${u.is_admin ? '<span style="color:var(--neon-cyan); font-size:0.75rem;">(Admin)</span>' : ''}</td>
           <td>
             <button class="status-toggle ${u.is_active ? 'status-active' : 'status-inactive'}" data-id="${u.id}">
-              ${u.is_active ? 'Aktif' : 'Pasif'}
+              ${u.is_active ? 'Active' : 'Disabled'}
             </button>
           </td>
           <td>
-            ${!u.is_admin ? `<button class="btn-action btn-del btn-del-user" data-id="${u.id}">Sil</button>` : '-'}
+            ${!u.is_admin ? `<button class="btn-action btn-del btn-del-user" data-id="${u.id}">Delete</button>` : '-'}
           </td>
         `;
 
@@ -291,7 +285,7 @@
         const delBtn = tr.querySelector('.btn-del-user');
         if (delBtn) {
           delBtn.addEventListener('click', async () => {
-            if (confirm(`${u.username} kullanıcısını silmek istediğinize emin misiniz?`)) {
+            if (confirm(`Are you sure you want to delete user "${u.username}"?`)) {
               await supabase.from('users').delete().eq('id', u.id);
               loadData();
             }
@@ -308,14 +302,14 @@
 
       const { error } = await supabase.from('users').insert({ username: name });
       if (error) {
-        alert("Bu isim zaten kayıtlı!");
+        alert("This username already exists!");
       } else {
         document.getElementById('new-user-input').value = '';
         loadData();
       }
     });
 
-    // --- 3. YETKİLENDİRME MATRİSİ ---
+    // 3. PERMISSIONS
     const userSelect = document.getElementById('select-user-perm');
     const eventsChecklist = document.getElementById('events-checklist');
 
@@ -335,7 +329,7 @@
     async function loadUserPermissions() {
       const selectedUserId = userSelect.value;
       if (!selectedUserId) {
-        eventsChecklist.innerHTML = '<p style="color:#94a3b8;">Kullanıcı bulunamadı.</p>';
+        eventsChecklist.innerHTML = '<p style="color:#94a3b8;">No users found.</p>';
         return;
       }
 
@@ -376,7 +370,7 @@
         await supabase.from('event_access').insert(rows);
       }
 
-      alert("Yetkiler güncellendi!");
+      alert("Permissions saved successfully!");
     });
 
     loadData();

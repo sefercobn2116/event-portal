@@ -3,9 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Portal</title>
+  <title>Portal & Booking</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    .hub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 30px;
+    }
+    @media (max-width: 768px) {
+      .hub-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .hub-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .hub-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 12px 30px rgba(6, 182, 212, 0.25);
+    }
+    .hub-card.pink:hover {
+      border-color: var(--neon-pink);
+      box-shadow: 0 12px 30px rgba(244, 63, 94, 0.25);
+    }
+    .slot-pill {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid var(--neon-cyan);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    .slot-pill:hover {
+      background: var(--neon-cyan);
+      color: #000;
+    }
+    .slot-pill.selected {
+      background: var(--neon-cyan);
+      color: #000;
+      font-weight: bold;
+    }
     .grid-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -13,15 +66,9 @@
       margin-top: 20px;
     }
     @media (max-width: 850px) {
-      .grid-layout {
-        grid-template-columns: 1fr;
-      }
+      .grid-layout { grid-template-columns: 1fr; }
     }
-    .chat-container {
-      display: flex;
-      flex-direction: column;
-      height: 480px;
-    }
+    .chat-container { display: flex; flex-direction: column; height: 480px; }
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -49,20 +96,8 @@
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--glass-border);
     }
-    .msg-author {
-      font-size: 0.75rem;
-      opacity: 0.8;
-      margin-bottom: 3px;
-      font-weight: bold;
-    }
-    .poll-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 15px;
-      max-height: 280px;
-      overflow-y: auto;
-    }
+    .msg-author { font-size: 0.75rem; opacity: 0.8; margin-bottom: 3px; font-weight: bold; }
+    .poll-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; max-height: 280px; overflow-y: auto; }
     .poll-item {
       display: flex;
       justify-content: space-between;
@@ -82,10 +117,7 @@
       font-weight: bold;
       transition: 0.2s;
     }
-    .btn-vote:hover {
-      background: var(--neon-cyan);
-      color: #000;
-    }
+    .btn-vote:hover { background: var(--neon-cyan); color: #000; }
     .music-bar {
       display: flex;
       align-items: center;
@@ -95,87 +127,107 @@
       border-radius: 12px;
       border: 1px solid var(--glass-border);
     }
-    .btn-icon {
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      font-size: 1rem;
-    }
+    .btn-icon { background: none; border: none; color: #fff; cursor: pointer; font-size: 1rem; }
   </style>
 </head>
 <body>
 
-  <!-- Background Music Player -->
+  <!-- Kesintisiz Müzik Çalar -->
   <audio id="bg-audio" preload="auto"></audio>
 
-  <!-- 1. VIEW: LOGIN SCREEN -->
-  <div id="view-login" class="container">
-    <div class="glass-box login-wrap">
+  <!-- ================= 0. GÖRÜNÜM: ANA SEÇİM EKRANI (HUB) ================= -->
+  <div id="view-hub" class="container">
+    <div class="nav-header">
+      <h2 style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Welcome to Portal
+      </h2>
+      <!-- Müzik Kontrolleri -->
+      <div class="music-bar">
+        <button id="btn-prev-music" class="btn-icon">⏮️</button>
+        <button id="btn-music-toggle" class="btn-icon">▶️</button>
+        <button id="btn-next-music" class="btn-icon">⏭️</button>
+        <span id="music-title" style="font-size: 0.8rem; color: var(--neon-cyan); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Track 1</span>
+      </div>
+    </div>
+
+    <p style="text-align: center; color: #94a3b8; margin-top: 10px;">Select what you would like to explore today</p>
+
+    <div class="hub-grid">
+      <!-- Events Kartı -->
+      <div id="card-go-events" class="hub-card">
+        <span style="font-size: 3rem;">🎉</span>
+        <h2 style="color: var(--neon-cyan); margin: 0;">Event Portal</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Access active events, live group chats, suggestions and 5 TB media gallery.</p>
+        <span class="badge badge-open" style="margin-top: 10px;">Enter Events →</span>
+      </div>
+
+      <!-- Booking Kartı -->
+      <div id="card-go-booking" class="hub-card pink">
+        <span style="font-size: 3rem;">📅</span>
+        <h2 style="color: var(--neon-pink); margin: 0;">Book an Appointment</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">View my open calendar dates and pick an available time slot that fits your schedule.</p>
+        <span class="badge badge-open" style="margin-top: 10px; background: rgba(244,63,94,0.2); color: var(--neon-pink); border-color: var(--neon-pink);">Schedule Now →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 1. GÖRÜNÜM: ETKİNLİK GİRİŞİ ================= -->
+  <div id="view-login" class="container" style="display: none;">
+    <div class="nav-header">
+      <button class="btn btn-to-hub" style="width: auto; padding: 6px 14px; font-size: 0.85rem;">← Back to Main Hub</button>
+    </div>
+    <div class="glass-box login-wrap" style="margin-top: 30px;">
       <h1>Portal Login</h1>
-      <p style="color: #94a3b8; font-size: 0.9rem;">Enter your username to continue</p>
+      <p style="color: #94a3b8; font-size: 0.9rem;">Enter your username to access events</p>
       
       <input type="text" id="username-input" class="input-field" placeholder="e.g. sefer" autocomplete="off" />
-      <button id="btn-login" class="btn">Login & Enter</button>
+      <button id="btn-login" class="btn">Login & Continue</button>
       <p id="login-err" style="color: #f43f5e; margin-top: 12px; font-size: 0.85rem; display: none;"></p>
     </div>
   </div>
 
-  <!-- 2. VIEW: EVENTS DASHBOARD -->
+  <!-- ================= 2. GÖRÜNÜM: ETKİNLİK VİTRİNİ ================= -->
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div>
         <h2 id="welcome-text">Welcome</h2>
         <span style="font-size: 0.85rem; color: #94a3b8;">Events Dashboard</span>
       </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <!-- Music Playlist Controls -->
-        <div class="music-bar">
-          <button id="btn-prev-music" class="btn-icon">⏮️</button>
-          <button id="btn-music-toggle" class="btn-icon">⏸️</button>
-          <button id="btn-next-music" class="btn-icon">⏭️</button>
-          <span id="music-title" style="font-size: 0.8rem; color: var(--neon-cyan); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Track 1</span>
-        </div>
-        <a id="admin-link" href="admin.html" style="display: none;">Admin Panel</a>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="btn-to-hub" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Hub</button>
+        <a id="admin-link" href="admin.html" style="display: none;">Admin</a>
         <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Logout</button>
       </div>
     </div>
-
     <div id="events-list" class="events-grid"></div>
   </div>
 
-  <!-- 3. VIEW: EVENT DETAIL (Chat, Suggestions, Gallery) -->
+  <!-- ================= 3. GÖRÜNÜM: ETKİNLİK ODASI ================= -->
   <div id="view-event-detail" class="container" style="display: none;">
     <div class="nav-header">
       <button id="btn-back-dashboard" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Events</button>
       <span id="current-user-tag" style="font-size: 0.9rem; color: #94a3b8;"></span>
     </div>
 
-    <!-- Event Header -->
     <div class="glass-box" style="margin-bottom: 20px;">
       <h1 id="event-title" style="font-size: 1.8rem; margin-bottom: 6px;">Loading...</h1>
       <p id="event-desc" style="color: #94a3b8; font-size: 0.95rem;"></p>
     </div>
 
-    <!-- Media / Drive Section -->
+    <!-- Media Gallery -->
     <div class="glass-box" style="margin-top: 20px;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
           <h3 style="color: var(--neon-cyan); margin-bottom: 4px;">📸 Event Media Gallery</h3>
-          <p style="color: #94a3b8; font-size: 0.85rem;">Select & upload photos/videos, download in original resolution.</p>
+          <p style="color: #94a3b8; font-size: 0.85rem;">Upload full quality photos directly to Google Drive.</p>
         </div>
         <div style="display: flex; gap: 10px;">
           <input type="file" id="media-file-input" multiple accept="image/*,video/*" style="display: none;">
-          <button id="btn-trigger-upload" class="btn" style="width: auto; padding: 10px 18px;">
-            ⬆️ Upload Media
-          </button>
-          <button id="btn-toggle-gallery" class="btn-vote" style="padding: 10px 16px; border-radius: 14px;">
-            🖼️ View Photos
-          </button>
+          <button id="btn-trigger-upload" class="btn" style="width: auto; padding: 10px 18px;">⬆️ Upload Media</button>
+          <button id="btn-toggle-gallery" class="btn-vote" style="padding: 10px 16px; border-radius: 14px;">🖼️ View Photos</button>
         </div>
       </div>
 
-      <!-- Upload Progress -->
       <div id="upload-status" style="display: none; margin-top: 15px;">
         <div id="upload-status-text" style="font-size: 0.9rem; color: var(--neon-cyan); margin-bottom: 6px;"></div>
         <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
@@ -183,15 +235,13 @@
         </div>
       </div>
 
-      <!-- Gallery Grid -->
       <div id="gallery-container" style="display: none; margin-top: 20px;">
         <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;"></div>
       </div>
     </div>
 
-    <!-- Chat & Suggestions Grid -->
+    <!-- Chat & Suggestions -->
     <div class="grid-layout">
-      <!-- Live Chat -->
       <div class="glass-box chat-container">
         <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Group Chat</h3>
         <div class="chat-messages" id="chat-messages"></div>
@@ -201,17 +251,52 @@
         </div>
       </div>
 
-      <!-- Suggestions / Polls -->
       <div class="glass-box">
         <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 What's the Plan Today?</h3>
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Suggest an activity and vote!</p>
-
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="e.g. Grab evening cocktails?">
+          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="e.g. Coffee walk?">
           <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Add</button>
         </div>
-
         <div class="poll-list" id="poll-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 4. GÖRÜNÜM: RANDEVU ALMA TAKVİMİ ================= -->
+  <div id="view-booking" class="container" style="display: none;">
+    <div class="nav-header">
+      <button class="btn btn-to-hub" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Main Hub</button>
+      <span style="font-size: 0.9rem; color: #94a3b8;">Calendar Availability</span>
+    </div>
+
+    <div class="glass-box" style="margin-top: 20px;">
+      <h2 style="color: var(--neon-pink); margin-bottom: 6px;">📅 Book an Appointment</h2>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px;">
+        Pick an available date and time slot from the schedule below to book our meeting.
+      </p>
+
+      <!-- Tarih Seçici -->
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 6px;">Select Date:</label>
+        <select id="booking-date-select" class="input-field" style="max-width: 320px;"></select>
+      </div>
+
+      <!-- Müsait Saatler -->
+      <div style="margin-bottom: 24px;">
+        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 10px;">Available Time Slots:</label>
+        <div id="booking-slots-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+          <p style="color: #94a3b8; font-size: 0.85rem;">Select a date to view open slots.</p>
+        </div>
+      </div>
+
+      <!-- Randevu Formu -->
+      <div id="booking-form-wrap" style="display: none; border-top: 1px solid var(--glass-border); padding-top: 20px; max-width: 480px;">
+        <h4 style="color: var(--neon-cyan); margin-bottom: 12px;">Confirm Booking Details</h4>
+        <input type="text" id="book-name" class="input-field" placeholder="Your Name & Surname *">
+        <input type="text" id="book-contact" class="input-field" placeholder="Phone or Instagram / WhatsApp Handle *">
+        <textarea id="book-notes" class="input-field" style="height: 70px; resize: none;" placeholder="Note / Reason for meeting (optional)"></textarea>
+        <button id="btn-submit-booking" class="btn">Confirm Appointment</button>
       </div>
     </div>
   </div>
@@ -219,7 +304,7 @@
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    // PLAYLIST
+    // MÜZİK ÇALAR
     const playlist = [
       { title: "Lofi Chill Night", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" },
       { title: "Deep Atmosphere", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
@@ -240,11 +325,7 @@
     }
 
     function playTrack() {
-      audio.play().then(() => {
-        btnMusicToggle.textContent = '⏸️';
-      }).catch(() => {
-        btnMusicToggle.textContent = '▶️';
-      });
+      audio.play().then(() => { btnMusicToggle.textContent = '⏸️'; }).catch(() => { btnMusicToggle.textContent = '▶️'; });
     }
 
     btnNextMusic.addEventListener('click', () => {
@@ -266,20 +347,59 @@
     });
 
     btnMusicToggle.addEventListener('click', () => {
-      if (audio.paused) {
-        playTrack();
-      } else {
-        audio.pause();
-        btnMusicToggle.textContent = '▶️';
-      }
+      if (audio.paused) playTrack();
+      else { audio.pause(); btnMusicToggle.textContent = '▶️'; }
     });
 
     loadTrack(0);
 
-    // APP ROUTING & VIEWS
+    // GÖRÜNÜM YÖNETİMİ
+    const viewHub = document.getElementById('view-hub');
     const viewLogin = document.getElementById('view-login');
     const viewDashboard = document.getElementById('view-dashboard');
     const viewEventDetail = document.getElementById('view-event-detail');
+    const viewBooking = document.getElementById('view-booking');
+
+    function hideAllViews() {
+      viewHub.style.display = 'none';
+      viewLogin.style.display = 'none';
+      viewDashboard.style.display = 'none';
+      viewEventDetail.style.display = 'none';
+      viewBooking.style.display = 'none';
+    }
+
+    function showHub() {
+      hideAllViews();
+      viewHub.style.display = 'block';
+    }
+
+    document.querySelectorAll('.btn-to-hub').forEach(btn => btn.addEventListener('click', showHub));
+
+    // Kart Tıklamaları
+    document.getElementById('card-go-events').addEventListener('click', () => {
+      playTrack();
+      const user = JSON.parse(localStorage.getItem('portal_user'));
+      if (user) {
+        currentUser = user;
+        showDashboard();
+      } else {
+        hideAllViews();
+        viewLogin.style.display = 'block';
+      }
+    });
+
+    document.getElementById('card-go-booking').addEventListener('click', () => {
+      playTrack();
+      hideAllViews();
+      viewBooking.style.display = 'block';
+      loadAvailableDates();
+    });
+
+    // ETKİNLİK SİSTEMİ (LOGIN / DASHBOARD / ROOM)
+    let currentUser = null;
+    let activeEventId = null;
+    let activeFolderId = '';
+    let chatChannel = null;
 
     const usernameInput = document.getElementById('username-input');
     const btnLogin = document.getElementById('btn-login');
@@ -290,157 +410,90 @@
     const eventsList = document.getElementById('events-list');
     const btnBackDashboard = document.getElementById('btn-back-dashboard');
 
-    let currentUser = null;
-    let activeEventId = null;
-    let activeFolderId = '';
-    let chatChannel = null;
-
-    const savedUser = JSON.parse(localStorage.getItem('portal_user'));
-    if (savedUser) {
-      currentUser = savedUser;
-      showDashboard();
-    }
-
-    // 1. LOGIN
     btnLogin.addEventListener('click', async () => {
       const username = usernameInput.value.trim().toLowerCase();
       loginErr.style.display = 'none';
+      if (!username) { loginErr.textContent = 'Please enter your username.'; loginErr.style.display = 'block'; return; }
 
-      if (!username) {
-        loginErr.textContent = 'Please enter your username.';
-        loginErr.style.display = 'block';
-        return;
-      }
-
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('*')
-        .ilike('username', username)
-        .maybeSingle();
-
-      if (error || !user) {
-        loginErr.textContent = 'Username not found in system.';
-        loginErr.style.display = 'block';
-        return;
-      }
-
-      if (!user.is_active) {
-        loginErr.textContent = 'Your account access is currently disabled.';
-        loginErr.style.display = 'block';
-        return;
-      }
+      const { data: user } = await supabase.from('users').select('*').ilike('username', username).maybeSingle();
+      if (!user) { loginErr.textContent = 'Username not registered.'; loginErr.style.display = 'block'; return; }
+      if (!user.is_active) { loginErr.textContent = 'Account inactive.'; loginErr.style.display = 'block'; return; }
 
       currentUser = user;
       localStorage.setItem('portal_user', JSON.stringify(user));
-
-      playTrack();
       showDashboard();
     });
 
     btnLogout.addEventListener('click', () => {
       localStorage.removeItem('portal_user');
-      audio.pause();
-      location.reload();
+      showHub();
     });
 
-    // 2. DASHBOARD VIEW
     async function showDashboard() {
-      viewLogin.style.display = 'none';
-      viewEventDetail.style.display = 'none';
+      hideAllViews();
       viewDashboard.style.display = 'block';
-
       welcomeText.textContent = `Welcome, ${currentUser.username.toUpperCase()}`;
       if (currentUser.is_admin) adminLink.style.display = 'inline';
 
       const { data: allEvents } = await supabase.from('events').select('*').order('created_at', { ascending: false });
       const { data: userAccess } = await supabase.from('event_access').select('event_id').eq('user_id', currentUser.id);
-
       const allowedIds = new Set((userAccess || []).map(a => a.event_id));
+
       eventsList.innerHTML = '';
-
-      if (!allEvents || allEvents.length === 0) {
-        eventsList.innerHTML = '<p>No active events found.</p>';
-        return;
-      }
-
-      allEvents.forEach(evt => {
+      (allEvents || []).forEach(evt => {
         const canAccess = currentUser.is_admin || allowedIds.has(evt.id);
         const card = document.createElement('div');
         card.className = `event-card ${canAccess ? 'allowed' : 'locked'}`;
         card.innerHTML = `
           <div>
             <h3 style="font-size: 1.25rem; margin-bottom: 8px;">${evt.title}</h3>
-            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4;">${evt.description || 'No description provided.'}</p>
+            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4;">${evt.description || 'No description.'}</p>
           </div>
-          <div>
-            ${canAccess ? `<span class="badge badge-open">Click to Join →</span>` : `<span class="badge badge-lock">🔒 Locked</span>`}
-          </div>
+          <div>${canAccess ? `<span class="badge badge-open">Enter Room →</span>` : `<span class="badge badge-lock">🔒 Locked</span>`}</div>
         `;
-
-        if (canAccess) {
-          card.addEventListener('click', () => openEventDetail(evt));
-        }
-
+        if (canAccess) card.addEventListener('click', () => openEventDetail(evt));
         eventsList.appendChild(card);
       });
     }
 
-    // 3. EVENT ROOM VIEW
     async function openEventDetail(evt) {
       activeEventId = evt.id;
-
       if (evt.drive_folder_url) {
         const match = evt.drive_folder_url.match(/[-\w]{25,}/);
         activeFolderId = match ? match[0] : evt.drive_folder_url;
-      } else {
-        activeFolderId = '';
-      }
+      } else { activeFolderId = ''; }
 
-      viewDashboard.style.display = 'none';
+      hideAllViews();
       viewEventDetail.style.display = 'block';
-
       document.getElementById('current-user-tag').textContent = `User: ${currentUser.username}`;
       document.getElementById('event-title').textContent = evt.title;
-      document.getElementById('event-desc').textContent = evt.description || 'No description provided.';
+      document.getElementById('event-desc').textContent = evt.description || '';
 
       loadMessages();
       loadPolls();
 
       if (chatChannel) supabase.removeChannel(chatChannel);
-      chatChannel = supabase.channel('chat-room-' + activeEventId)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'event_messages',
-          filter: `event_id=eq.${activeEventId}`
-        }, payload => {
-          if (payload.new.username.toLowerCase() !== currentUser.username.toLowerCase()) {
-            appendMessage(payload.new);
-          }
-        })
-        .subscribe();
+      chatChannel = supabase.channel('chat-room-' + activeEventId).on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'event_messages',
+        filter: `event_id=eq.${activeEventId}`
+      }, payload => {
+        if (payload.new.username.toLowerCase() !== currentUser.username.toLowerCase()) appendMessage(payload.new);
+      }).subscribe();
     }
 
-    btnBackDashboard.addEventListener('click', () => {
-      showDashboard();
-    });
+    btnBackDashboard.addEventListener('click', showDashboard);
 
-    // 4. GROUP CHAT
+    // CHAT
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const btnSendChat = document.getElementById('btn-send-chat');
 
     async function loadMessages() {
-      const { data: msgs, error } = await supabase
-        .from('event_messages')
-        .select('*')
-        .eq('event_id', activeEventId)
-        .order('created_at', { ascending: true });
-
+      const { data: msgs } = await supabase.from('event_messages').select('*').eq('event_id', activeEventId).order('created_at', { ascending: true });
       chatMessages.innerHTML = '';
-      if (!error && msgs) {
-        msgs.forEach(appendMessage);
-      }
+      (msgs || []).forEach(appendMessage);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
@@ -448,10 +501,7 @@
       const isMine = msg.username.toLowerCase() === currentUser.username.toLowerCase();
       const div = document.createElement('div');
       div.className = `msg-item ${isMine ? 'mine' : 'theirs'}`;
-      div.innerHTML = `
-        <div class="msg-author">${msg.username}</div>
-        <div>${msg.message}</div>
-      `;
+      div.innerHTML = `<div class="msg-author">${msg.username}</div><div>${msg.message}</div>`;
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -459,31 +509,20 @@
     async function sendMessage() {
       const text = chatInput.value.trim();
       if (!text) return;
-
       chatInput.value = '';
-
-      appendMessage({
-        username: currentUser.username,
-        message: text
-      });
-
-      const { error } = await supabase.from('event_messages').insert({
+      appendMessage({ username: currentUser.username, message: text });
+      await supabase.from('event_messages').insert({
         event_id: activeEventId,
         user_id: currentUser.id,
         username: currentUser.username,
         message: text
       });
-
-      if (error) {
-        console.error("Chat insert error:", error);
-        alert("Failed to send message: " + error.message);
-      }
     }
 
     btnSendChat.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    // 5. SUGGESTIONS & VOTING
+    // SUGGESTIONS
     const pollList = document.getElementById('poll-list');
     const pollInput = document.getElementById('poll-input');
     const btnAddPoll = document.getElementById('btn-add-poll');
@@ -491,20 +530,10 @@
     async function loadPolls() {
       const { data: polls } = await supabase.from('event_suggestions').select('*').eq('event_id', activeEventId).order('votes', { ascending: false });
       pollList.innerHTML = '';
-      if (!polls || polls.length === 0) {
-        pollList.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">No suggestions yet. Post the first idea!</p>';
-        return;
-      }
-      polls.forEach(item => {
+      (polls || []).forEach(item => {
         const div = document.createElement('div');
         div.className = 'poll-item';
-        div.innerHTML = `
-          <div>
-            <div style="font-size:0.95rem; font-weight:600;">${item.title}</div>
-            <div style="font-size:0.75rem; color:#94a3b8;">Suggested by: ${item.suggested_by}</div>
-          </div>
-          <button class="btn-vote" data-id="${item.id}">👍 ${item.votes} Votes</button>
-        `;
+        div.innerHTML = `<div><div style="font-weight:600;">${item.title}</div><div style="font-size:0.75rem; color:#94a3b8;">${item.suggested_by}</div></div><button class="btn-vote">👍 ${item.votes}</button>`;
         div.querySelector('.btn-vote').addEventListener('click', async () => {
           await supabase.from('event_suggestions').update({ votes: item.votes + 1 }).eq('id', item.id);
           loadPolls();
@@ -517,146 +546,169 @@
       const title = pollInput.value.trim();
       if (!title) return;
       pollInput.value = '';
-      await supabase.from('event_suggestions').insert({
-        event_id: activeEventId,
-        suggested_by: currentUser.username,
-        title: title,
-        votes: 1
-      });
+      await supabase.from('event_suggestions').insert({ event_id: activeEventId, suggested_by: currentUser.username, title, votes: 1 });
       loadPolls();
     });
 
-    // 6. GOOGLE DRIVE UPLOAD
+    // 5 TB DRIVE UPLOAD & GALLERY
     const fileInput = document.getElementById('media-file-input');
     const triggerBtn = document.getElementById('btn-trigger-upload');
     const uploadStatus = document.getElementById('upload-status');
     const statusText = document.getElementById('upload-status-text');
     const progressBar = document.getElementById('upload-progress-bar');
 
-    triggerBtn.addEventListener('click', () => {
-      if (!activeFolderId) {
-        alert("No Google Drive folder assigned for this event!");
-        return;
-      }
-      fileInput.click();
-    });
-
+    triggerBtn.addEventListener('click', () => { if (!activeFolderId) return alert("No Drive folder!"); fileInput.click(); });
     fileInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
       if (!files.length) return;
-
       uploadStatus.style.display = 'block';
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         statusText.textContent = `Uploading (${i + 1}/${files.length}): ${file.name}`;
-        const percent = Math.round((i / files.length) * 100);
-        progressBar.style.width = `${percent}%`;
-
-        try {
-          const base64Data = await toBase64(file);
-          const cleanBase64 = base64Data.split(',')[1];
-
-          await fetch(UPLOAD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              folderId: activeFolderId,
-              fileName: file.name,
-              mimeType: file.type || 'image/jpeg',
-              fileData: cleanBase64
-            })
-          });
-        } catch (err) {
-          console.warn("Upload transfer completed:", file.name);
-        }
+        progressBar.style.width = `${Math.round((i / files.length) * 100)}%`;
+        const base64Data = await new Promise((res, rej) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => res(r.result); r.onerror = rej; });
+        await fetch(UPLOAD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ folderId: activeFolderId, fileName: file.name, mimeType: file.type || 'image/jpeg', fileData: base64Data.split(',')[1] })
+        });
       }
-
       progressBar.style.width = '100%';
-      statusText.textContent = "✅ All photos successfully uploaded to Google Drive!";
+      statusText.textContent = "✅ Upload completed!";
       fileInput.value = '';
-      setTimeout(() => { uploadStatus.style.display = 'none'; }, 4000);
-
-      if (galleryContainer.style.display === 'block') {
-        fetchDriveFiles();
-      }
+      setTimeout(() => uploadStatus.style.display = 'none', 3000);
+      if (document.getElementById('gallery-container').style.display === 'block') fetchDriveFiles();
     });
 
-    const toBase64 = file => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-
-    // 7. VIEW GALLERY & DOWNLOAD
     const btnToggleGallery = document.getElementById('btn-toggle-gallery');
     const galleryContainer = document.getElementById('gallery-container');
     const galleryGrid = document.getElementById('gallery-grid');
-
     btnToggleGallery.addEventListener('click', () => {
-      if (galleryContainer.style.display === 'block') {
-        galleryContainer.style.display = 'none';
-        btnToggleGallery.textContent = '🖼️ View Photos';
-      } else {
-        galleryContainer.style.display = 'block';
-        btnToggleGallery.textContent = 'Close ✕';
-        fetchDriveFiles();
-      }
+      if (galleryContainer.style.display === 'block') { galleryContainer.style.display = 'none'; btnToggleGallery.textContent = '🖼️ View Photos'; }
+      else { galleryContainer.style.display = 'block'; btnToggleGallery.textContent = 'Close ✕'; fetchDriveFiles(); }
     });
 
     async function fetchDriveFiles() {
       galleryGrid.innerHTML = '<p style="color:#94a3b8;">Scanning Google Drive...</p>';
-
-      const cleanId = activeFolderId.includes('folders/') 
-        ? activeFolderId.split('folders/')[1].split('?')[0] 
-        : activeFolderId;
-
-      const query = encodeURIComponent(`'${cleanId}' in parents and trashed = false`);
-      const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,mimeType,thumbnailLink,webContentLink)&key=${GOOGLE_API_KEY}`;
-
+      const cleanId = activeFolderId.includes('folders/') ? activeFolderId.split('folders/')[1].split('?')[0] : activeFolderId;
+      const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${cleanId}' in parents and trashed = false`)}&fields=files(id,name,mimeType,thumbnailLink)&key=${GOOGLE_API_KEY}`;
       try {
         const res = await fetch(url);
         const data = await res.json();
-
-        if (data.error) {
-          galleryGrid.innerHTML = `<p style="color:#ef4444;">API Error: ${data.error.message}</p>`;
-          return;
-        }
-
-        if (!data.files || data.files.length === 0) {
-          galleryGrid.innerHTML = '<p style="color:#94a3b8;">No photos uploaded to this folder yet.</p>';
-          return;
-        }
-
+        if (!data.files || data.files.length === 0) { galleryGrid.innerHTML = '<p style="color:#94a3b8;">No photos yet.</p>'; return; }
         galleryGrid.innerHTML = '';
-        data.files.forEach(file => {
-          const previewImg = file.thumbnailLink 
-            ? file.thumbnailLink.replace(/=s\d+/, '=s600') 
-            : `https://lh3.googleusercontent.com/d/${file.id}`;
-
-          const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;
-
+        data.files.forEach(f => {
           const card = document.createElement('div');
-          card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;";
+          card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;";
           card.innerHTML = `
-            <div style="height: 150px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-              <img src="${previewImg}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=File'">
-            </div>
-            <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
-              <span style="font-size: 0.75rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
-              <a href="${downloadLink}" target="_blank" class="btn" style="padding: 6px; font-size: 0.8rem; text-align: center; text-decoration: none;">
-                ⬇️ Download Original
-              </a>
-            </div>
+            <img src="${f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s500') : ''}" style="height: 140px; width: 100%; object-fit: cover;">
+            <div style="padding: 8px;"><a href="https://drive.google.com/uc?export=download&id=${f.id}" target="_blank" class="btn" style="padding: 4px; font-size: 0.75rem; text-align: center; text-decoration: none; display: block;">⬇️ Download</a></div>
           `;
           galleryGrid.appendChild(card);
         });
-
-      } catch (err) {
-        galleryGrid.innerHTML = '<p style="color:#ef4444;">Could not load files. Please check folder permissions.</p>';
-      }
+      } catch (e) { galleryGrid.innerHTML = '<p style="color:#ef4444;">Error fetching photos.</p>'; }
     }
+
+    // ================= 5. RANDEVU (BOOKING) MOTORU =================
+    const bookingDateSelect = document.getElementById('booking-date-select');
+    const bookingSlotsContainer = document.getElementById('booking-slots-container');
+    const bookingFormWrap = document.getElementById('booking-form-wrap');
+    let selectedSlotId = null;
+
+    async function loadAvailableDates() {
+      bookingDateSelect.innerHTML = '<option value="">Select Date...</option>';
+      const today = new Date().toISOString().split('T')[0];
+
+      // Sadece gelecekteki ve boş olan slotları çek
+      const { data: slots } = await supabase
+        .from('availability_slots')
+        .select('slot_date')
+        .gte('slot_date', today)
+        .eq('is_booked', false)
+        .order('slot_date');
+
+      if (!slots || slots.length === 0) {
+        bookingSlotsContainer.innerHTML = '<p style="color:#94a3b8;">No available slots currently scheduled. Please check back later!</p>';
+        return;
+      }
+
+      const uniqueDates = [...new Set(slots.map(s => s.slot_date))];
+      uniqueDates.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        bookingDateSelect.appendChild(opt);
+      });
+    }
+
+    bookingDateSelect.addEventListener('change', async () => {
+      const date = bookingDateSelect.value;
+      bookingFormWrap.style.display = 'none';
+      selectedSlotId = null;
+
+      if (!date) {
+        bookingSlotsContainer.innerHTML = '<p style="color:#94a3b8;">Select a date to view open slots.</p>';
+        return;
+      }
+
+      const { data: slots } = await supabase
+        .from('availability_slots')
+        .select('*')
+        .eq('slot_date', date)
+        .eq('is_booked', false)
+        .order('start_time');
+
+      bookingSlotsContainer.innerHTML = '';
+      if (!slots || slots.length === 0) {
+        bookingSlotsContainer.innerHTML = '<p style="color:#f43f5e;">All slots are booked for this date!</p>';
+        return;
+      }
+
+      slots.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'slot-pill';
+        btn.textContent = `${s.start_time} - ${s.end_time}`;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.slot-pill').forEach(el => el.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedSlotId = s.id;
+          bookingFormWrap.style.display = 'block';
+        });
+        bookingSlotsContainer.appendChild(btn);
+      });
+    });
+
+    document.getElementById('btn-submit-booking').addEventListener('click', async () => {
+      const name = document.getElementById('book-name').value.trim();
+      const contact = document.getElementById('book-contact').value.trim();
+      const notes = document.getElementById('book-notes').value.trim();
+
+      if (!selectedSlotId || !name || !contact) {
+        alert("Please fill in your name and contact info!");
+        return;
+      }
+
+      // 1. Randevuyu kaydet
+      const { error: appErr } = await supabase.from('appointments').insert({
+        slot_id: selectedSlotId,
+        client_name: name,
+        client_contact: contact,
+        notes: notes
+      });
+
+      if (appErr) return alert("Booking error: " + appErr.message);
+
+      // 2. Slotu rezerve et
+      await supabase.from('availability_slots').update({ is_booked: true }).eq('id', selectedSlotId);
+
+      alert("🎉 Your appointment has been booked successfully!");
+      document.getElementById('book-name').value = '';
+      document.getElementById('book-contact').value = '';
+      document.getElementById('book-notes').value = '';
+      bookingFormWrap.style.display = 'none';
+      loadAvailableDates();
+    });
   </script>
 </body>
 </html>

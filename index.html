@@ -288,7 +288,7 @@
       </div>
       <div style="display: flex; align-items: center; gap: 10px;">
         <button class="btn-to-hub" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Hub</button>
-        <a id="admin-link" href="admin.html" style="display: none; background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem;">Admin</a>
+        <a id="admin-link" href="admin.html" style="display: none; background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 8px; text-decoration: none;">Admin</a>
         <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Logout</button>
       </div>
     </div>
@@ -726,7 +726,7 @@
           card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;";
           card.innerHTML = `
             <img src="${f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s500') : ''}" style="height: 140px; width: 100%; object-fit: cover;">
-            <div style="padding: 8px;"><a href="https://drive.google.com/uc?export=download&id=${f.id}" target="_blank" class="btn" style="padding: 4px; font-size: 0.75rem; text-align: center; text-decoration: none; display: block;">⬇️ Download</a></div>
+            <div style="padding: 8px;"><a href="https://drive.google.com/uc?export=download&id=${f.id}" target="_blank" class="btn" style="padding: 4px; font-size: 0.75rem; text-align: center; text-decoration: none; display: block;">Download</a></div>
           `;
           galleryGrid.appendChild(card);
         });
@@ -751,46 +751,71 @@
     let selectedDateStr = '';
     let selectedSlotIds = new Set();
     let availableSlotsCache = [];
+    let calendarInitialized = false;
+
+    function formatLocalDate(dateStr) {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
 
     function initCalendar() {
       const startYear = new Date().getFullYear();
-      calYearSelect.innerHTML = '';
-      for (let y = startYear; y < startYear + 6; y++) {
-        const opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = y;
-        calYearSelect.appendChild(opt);
+
+      if (!calendarInitialized) {
+        calYearSelect.innerHTML = '';
+        for (let y = startYear; y < startYear + 6; y++) {
+          const opt = document.createElement('option');
+          opt.value = y;
+          opt.textContent = y;
+          calYearSelect.appendChild(opt);
+        }
+
+        calMonthSelect.innerHTML = '';
+        monthNames.forEach((m, idx) => {
+          const opt = document.createElement('option');
+          opt.value = idx;
+          opt.textContent = m;
+          calMonthSelect.appendChild(opt);
+        });
+
+        calMonthSelect.addEventListener('change', () => {
+          currentCalDate = new Date(currentCalDate.getFullYear(), Number(calMonthSelect.value), 1);
+          renderCalendar();
+        });
+
+        calYearSelect.addEventListener('change', () => {
+          currentCalDate = new Date(Number(calYearSelect.value), currentCalDate.getMonth(), 1);
+          renderCalendar();
+        });
+
+        calPrevMonth.addEventListener('click', () => {
+          currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() - 1, 1);
+          syncCalendarControls();
+          renderCalendar();
+        });
+
+        calNextMonth.addEventListener('click', () => {
+          currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() + 1, 1);
+          syncCalendarControls();
+          renderCalendar();
+        });
+
+        calendarInitialized = true;
       }
 
-      calMonthSelect.innerHTML = '';
-      monthNames.forEach((m, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = m;
-        calMonthSelect.appendChild(opt);
-      });
+      currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth(), 1);
+      syncCalendarControls();
+      renderCalendar();
+    }
 
+    function syncCalendarControls() {
       calMonthSelect.value = currentCalDate.getMonth();
       calYearSelect.value = currentCalDate.getFullYear();
-
-      calMonthSelect.addEventListener('change', () => { currentCalDate.setMonth(parseInt(calMonthSelect.value)); renderCalendar(); });
-      calYearSelect.addEventListener('change', () => { currentCalDate.setFullYear(parseInt(calYearSelect.value)); renderCalendar(); });
-
-      calPrevMonth.addEventListener('click', () => {
-        currentCalDate.setMonth(currentCalDate.getMonth() - 1);
-        calMonthSelect.value = currentCalDate.getMonth();
-        calYearSelect.value = currentCalDate.getFullYear();
-        renderCalendar();
-      });
-
-      calNextMonth.addEventListener('click', () => {
-        currentCalDate.setMonth(currentCalDate.getMonth() + 1);
-        calMonthSelect.value = currentCalDate.getMonth();
-        calYearSelect.value = currentCalDate.getFullYear();
-        renderCalendar();
-      });
-
-      renderCalendar();
     }
 
     async function renderCalendar() {
@@ -803,14 +828,12 @@
       const month = currentCalDate.getMonth();
       const totalDays = new Date(year, month + 1, 0).getDate();
 
-      // Pazartesi başlangıçlı hizalama (Pazartesi=0, Pazar=6)
       let startingDay = new Date(year, month, 1).getDay() - 1;
       if (startingDay === -1) startingDay = 6;
 
       const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
       const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`;
 
-      // Supabase'den bu ayın açık saatlerini çek
       const { data: slots } = await supabase
         .from('availability_slots')
         .select('*')
@@ -826,23 +849,24 @@
         slotMap[s.slot_date] = (slotMap[s.slot_date] || 0) + 1;
       });
 
-      // Ay başından önceki boş günler
-      for (let i = 0; i < startingDay; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'cal-day-cell empty';
-        calendarDaysGrid.appendChild(emptyCell);
-      }
+      const cellsNeeded = Math.ceil((startingDay + totalDays) / 7) * 7;
+      for (let i = 0; i < cellsNeeded; i++) {
+        const dayNumber = i - startingDay + 1;
+        if (i < startingDay || dayNumber > totalDays) {
+          const emptyCell = document.createElement('div');
+          emptyCell.className = 'cal-day-cell empty';
+          calendarDaysGrid.appendChild(emptyCell);
+          continue;
+        }
 
-      // Ayın günleri (1'den son güne kadar)
-      for (let day = 1; day <= totalDays; day++) {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
         const openHoursCount = slotMap[dateStr] || 0;
         const hasOpen = openHoursCount > 0;
 
         const cell = document.createElement('div');
         cell.className = `cal-day-cell ${hasOpen ? 'available' : ''}`;
         cell.innerHTML = `
-          <span>${day}</span>
+          <span>${dayNumber}</span>
           ${hasOpen ? `<span class="cal-badge-hours">● ${openHoursCount} hrs</span>` : ''}
         `;
 
@@ -860,18 +884,22 @@
     }
 
     function showHourlySlotsForDate(dateStr) {
-      const daySlots = availableSlotsCache.filter(s => s.slot_date === dateStr).sort((a,b) => a.hour_slot.localeCompare(b.hour_slot));
+      const daySlots = availableSlotsCache.filter(s => s.slot_date === dateStr).sort((a, b) => a.hour_slot.localeCompare(b.hour_slot));
       selectedDaySlotsWrap.style.display = 'block';
       bookingFormWrap.style.display = 'none';
       selectedSlotIds.clear();
 
-      const formatted = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-      selectedDateHeading.textContent = `Open Hours on ${formatted}:`;
+      selectedDateHeading.textContent = `Open Hours on ${formatLocalDate(dateStr)}:`;
       hourlySlotsContainer.innerHTML = '';
 
       if (currentUser) {
         document.getElementById('book-name').value = currentUser.username;
         document.getElementById('book-email').value = currentUser.email || '';
+      }
+
+      if (!daySlots.length) {
+        hourlySlotsContainer.innerHTML = '<p style="color:#94a3b8; margin: 0;">No open hours for this date.</p>';
+        return;
       }
 
       daySlots.forEach(s => {
@@ -887,11 +915,7 @@
             chip.classList.add('selected');
           }
 
-          if (selectedSlotIds.size > 0) {
-            bookingFormWrap.style.display = 'block';
-          } else {
-            bookingFormWrap.style.display = 'none';
-          }
+          bookingFormWrap.style.display = selectedSlotIds.size > 0 ? 'block' : 'none';
         });
         hourlySlotsContainer.appendChild(chip);
       });

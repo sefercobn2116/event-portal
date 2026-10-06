@@ -5,16 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Etkinlik Portalı</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    @media (max-width: 850px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 480px;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.25);
+    }
+    .msg-item {
+      padding: 10px 14px;
+      border-radius: 14px;
+      max-width: 80%;
+      word-break: break-word;
+      font-size: 0.9rem;
+    }
+    .msg-item.mine {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: #fff;
+    }
+    .msg-item.theirs {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+    }
+    .msg-author {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-bottom: 3px;
+      font-weight: bold;
+    }
+    .poll-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 15px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .poll-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .btn-vote {
+      background: rgba(6, 182, 212, 0.2);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .btn-vote:hover {
+      background: var(--neon-cyan);
+      color: #000;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Arka Plan Müziği -->
+  <!-- Kesintisiz Arka Plan Müziği (Sayfa yenilenmediği için hiç durmaz) -->
   <audio id="bg-audio" loop preload="auto">
     <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- 1. Giriş Ekranı -->
-  <div id="login-section" class="container">
+  <!-- 1. GÖRÜNÜM: GİRİŞ EKRANI -->
+  <div id="view-login" class="container">
     <div class="glass-box login-wrap">
       <h1>Portala Giriş</h1>
       <p style="color: #94a3b8; font-size: 0.9rem;">Devam etmek için adını yaz</p>
@@ -25,44 +107,136 @@
     </div>
   </div>
 
-  <!-- 2. Etkinlik Vitrini (Giriş Yapılınca Açılır) -->
-  <div id="dashboard-section" class="container" style="display: none;">
+  <!-- 2. GÖRÜNÜM: ETKİNLİK LİSTESİ (VİTRİN) -->
+  <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div>
         <h2 id="welcome-text">Hoş Geldin</h2>
         <span style="font-size: 0.85rem; color: #94a3b8;">Etkinlikler paneli</span>
       </div>
-      <div>
-        <a id="admin-link" href="admin.html" style="display: none; margin-right: 15px;">Admin Paneli</a>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="btn-music-toggle" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">🎵 Müziği Duraklat</button>
+        <a id="admin-link" href="admin.html" style="display: none;">Admin Paneli</a>
         <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Çıkış</button>
       </div>
     </div>
 
-    <div id="events-list" class="events-grid">
-      <!-- Etkinlik kartları JS ile yüklenecek -->
+    <div id="events-list" class="events-grid"></div>
+  </div>
+
+  <!-- 3. GÖRÜNÜM: SEÇİLEN ETKİNLİK DETAYI (Sohbet, Oylama, Galeri) -->
+  <div id="view-event-detail" class="container" style="display: none;">
+    <div class="nav-header">
+      <button id="btn-back-dashboard" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Etkinliklere Dön</button>
+      <span id="current-user-tag" style="font-size: 0.9rem; color: #94a3b8;"></span>
+    </div>
+
+    <!-- Etkinlik Başlığı -->
+    <div class="glass-box" style="margin-bottom: 20px;">
+      <h1 id="event-title" style="font-size: 1.8rem; margin-bottom: 6px;">Yükleniyor...</h1>
+      <p id="event-desc" style="color: #94a3b8; font-size: 0.95rem;"></p>
+    </div>
+
+    <!-- 5 TB Google Drive Medya Alanı -->
+    <div class="glass-box" style="margin-top: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="color: var(--neon-cyan); margin-bottom: 4px;">📸 Etkinlik Medya Alanı</h3>
+          <p style="color: #94a3b8; font-size: 0.85rem;">Fotoğrafları toplu seçip yükleyin, orijinal kalitede indirin.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <input type="file" id="media-file-input" multiple accept="image/*,video/*" style="display: none;">
+          <button id="btn-trigger-upload" class="btn" style="width: auto; padding: 10px 18px;">
+            ⬆️ Fotoğraf / Video Yükle
+          </button>
+          <button id="btn-toggle-gallery" class="btn-vote" style="padding: 10px 16px; border-radius: 14px;">
+            🖼️ Resimleri Göster
+          </button>
+        </div>
+      </div>
+
+      <div id="upload-status" style="display: none; margin-top: 15px;">
+        <div id="upload-status-text" style="font-size: 0.9rem; color: var(--neon-cyan); margin-bottom: 6px;"></div>
+        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+          <div id="upload-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)); transition: width 0.2s;"></div>
+        </div>
+      </div>
+
+      <div id="gallery-container" style="display: none; margin-top: 20px;">
+        <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;"></div>
+      </div>
+    </div>
+
+    <!-- Sohbet ve Oylama Grid -->
+    <div class="grid-layout">
+      <!-- Canlı Sohbet -->
+      <div class="glass-box chat-container">
+        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Ortak Sohbet</h3>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <input type="text" id="chat-input" class="input-field" style="margin: 0;" placeholder="Mesajını yaz..." autocomplete="off">
+          <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 20px;">Gönder</button>
+        </div>
+      </div>
+
+      <!-- Günlük Aktivite Oylama -->
+      <div class="glass-box">
+        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 Gün İçinde Ne Yapalım?</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Ortak aktivite öner ve oyla!</p>
+
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="Örn: Akşam kahve içelim mi?">
+          <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Ekle</button>
+        </div>
+
+        <div class="poll-list" id="poll-list"></div>
+      </div>
     </div>
   </div>
 
   <script type="module">
-    import { supabase } from './config.js';
+    import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    const loginSection = document.getElementById('login-section');
-    const dashboardSection = document.getElementById('dashboard-section');
+    // DOM Elemanları
+    const viewLogin = document.getElementById('view-login');
+    const viewDashboard = document.getElementById('view-dashboard');
+    const viewEventDetail = document.getElementById('view-event-detail');
+
     const usernameInput = document.getElementById('username-input');
     const btnLogin = document.getElementById('btn-login');
     const btnLogout = document.getElementById('btn-logout');
     const loginErr = document.getElementById('login-err');
-    const eventsList = document.getElementById('events-list');
     const welcomeText = document.getElementById('welcome-text');
     const adminLink = document.getElementById('admin-link');
+    const eventsList = document.getElementById('events-list');
+    const btnBackDashboard = document.getElementById('btn-back-dashboard');
     const audio = document.getElementById('bg-audio');
+    const btnMusicToggle = document.getElementById('btn-music-toggle');
 
-    // Sayfa açıldığında kayıtlı kullanıcı var mı kontrol et
+    let currentUser = null;
+    let activeEventId = null;
+    let activeFolderId = '';
+    let chatChannel = null;
+
+    // Müzik Duraklat/Devam Et
+    btnMusicToggle.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+        btnMusicToggle.textContent = '🎵 Müziği Duraklat';
+      } else {
+        audio.pause();
+        btnMusicToggle.textContent = '▶️ Müziği Başlat';
+      }
+    });
+
+    // Oturum Kontrolü
     const savedUser = JSON.parse(localStorage.getItem('portal_user'));
     if (savedUser) {
-      renderDashboard(savedUser);
+      currentUser = savedUser;
+      showDashboard();
     }
 
+    // 1. GİRİŞ İŞLEMİ
     btnLogin.addEventListener('click', async () => {
       const username = usernameInput.value.trim().toLowerCase();
       loginErr.style.display = 'none';
@@ -73,7 +247,6 @@
         return;
       }
 
-      // Supabase'den kontrol et
       const { data: user, error } = await supabase
         .from('users')
         .select('*')
@@ -81,7 +254,7 @@
         .maybeSingle();
 
       if (error || !user) {
-        loginErr.textContent = 'Bu isim sisteme kayıtlı değil.';
+        loginErr.textContent = 'Bu isim sistemde kayıtlı değil.';
         loginErr.style.display = 'block';
         return;
       }
@@ -92,51 +265,43 @@
         return;
       }
 
-      // Kullanıcı onaylandı, müziği çal
-      audio.play().catch(() => console.log('Ses başlatılamadı'));
-
+      currentUser = user;
       localStorage.setItem('portal_user', JSON.stringify(user));
-      renderDashboard(user);
+
+      // Giriş yapıldığı an müzik kesintisiz başlar
+      audio.play().catch(() => console.log('Müzik başlatılamadı'));
+
+      showDashboard();
     });
 
     btnLogout.addEventListener('click', () => {
       localStorage.removeItem('portal_user');
+      audio.pause();
       location.reload();
     });
 
-    async function renderDashboard(user) {
-      loginSection.style.display = 'none';
-      dashboardSection.style.display = 'block';
-      welcomeText.textContent = `Hoş Geldin, ${user.username.toUpperCase()}`;
+    // 2. DASHBOARD GÖRÜNÜMÜ
+    async function showDashboard() {
+      viewLogin.style.display = 'none';
+      viewEventDetail.style.display = 'none';
+      viewDashboard.style.display = 'block';
 
-      if (user.is_admin) {
-        adminLink.style.display = 'inline';
-      }
+      welcomeText.textContent = `Hoş Geldin, ${currentUser.username.toUpperCase()}`;
+      if (currentUser.is_admin) adminLink.style.display = 'inline';
 
-      // 1. Tüm etkinlikleri çek
-      const { data: allEvents, error: evError } = await supabase
-        .from('events')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      // 2. Kullanıcının erişebildiği etkinlikleri çek
-      const { data: userAccess } = await supabase
-        .from('event_access')
-        .select('event_id')
-        .eq('user_id', user.id);
+      const { data: allEvents } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      const { data: userAccess } = await supabase.from('event_access').select('event_id').eq('user_id', currentUser.id);
 
       const allowedIds = new Set((userAccess || []).map(a => a.event_id));
-
       eventsList.innerHTML = '';
+
       if (!allEvents || allEvents.length === 0) {
-        eventsList.innerHTML = '<p>Henüz eklenmiş etkinlik yok.</p>';
+        eventsList.innerHTML = '<p>Henüz etkinlik bulunmuyor.</p>';
         return;
       }
 
       allEvents.forEach(evt => {
-        // Admin ise her etkinliğe girebilir, değilse yetkisi var mı bak
-        const canAccess = user.is_admin || allowedIds.has(evt.id);
-
+        const canAccess = currentUser.is_admin || allowedIds.has(evt.id);
         const card = document.createElement('div');
         card.className = `event-card ${canAccess ? 'allowed' : 'locked'}`;
         card.innerHTML = `
@@ -145,20 +310,267 @@
             <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4;">${evt.description || 'Açıklama belirtilmedi.'}</p>
           </div>
           <div>
-            ${canAccess 
-              ? `<span class="badge badge-open">Tıkla ve Katıl →</span>` 
-              : `<span class="badge badge-lock">🔒 Kilitli</span>`}
+            ${canAccess ? `<span class="badge badge-open">Tıkla ve Katıl →</span>` : `<span class="badge badge-lock">🔒 Kilitli</span>`}
           </div>
         `;
 
         if (canAccess) {
-          card.addEventListener('click', () => {
-            window.location.href = `event.html?id=${evt.id}`;
-          });
+          card.addEventListener('click', () => openEventDetail(evt));
         }
 
         eventsList.appendChild(card);
       });
+    }
+
+    // 3. ETKİNLİK DETAYINA GEÇİŞ (MÜZİK ASLA KESİLMEZ)
+    async function openEventDetail(evt) {
+      activeEventId = evt.id;
+      
+      // Klasör ID'sini temizle
+      if (evt.drive_folder_url) {
+        const match = evt.drive_folder_url.match(/[-\w]{25,}/);
+        activeFolderId = match ? match[0] : evt.drive_folder_url;
+      } else {
+        activeFolderId = '';
+      }
+
+      viewDashboard.style.display = 'none';
+      viewEventDetail.style.display = 'block';
+
+      document.getElementById('current-user-tag').textContent = `Giriş: ${currentUser.username}`;
+      document.getElementById('event-title').textContent = evt.title;
+      document.getElementById('event-desc').textContent = evt.description || 'Detay girilmedi.';
+
+      // Sohbet ve Oylamayı Başlat
+      loadMessages();
+      loadPolls();
+
+      // Önceki dinleyiciyi temizleyip yenisini aç
+      if (chatChannel) supabase.removeChannel(chatChannel);
+      chatChannel = supabase.channel('chat-room-' + activeEventId).on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'event_messages',
+        filter: `event_id=eq.${activeEventId}`
+      }, payload => appendMessage(payload.new)).subscribe();
+    }
+
+    btnBackDashboard.addEventListener('click', () => {
+      showDashboard();
+    });
+
+    // 4. MESAJLAŞMA
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const btnSendChat = document.getElementById('btn-send-chat');
+
+    async function loadMessages() {
+      const { data: msgs } = await supabase.from('event_messages').select('*').eq('event_id', activeEventId).order('created_at', { ascending: true });
+      chatMessages.innerHTML = '';
+      (msgs || []).forEach(appendMessage);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function appendMessage(msg) {
+      const isMine = msg.username.toLowerCase() === currentUser.username.toLowerCase();
+      const div = document.createElement('div');
+      div.className = `msg-item ${isMine ? 'mine' : 'theirs'}`;
+      div.innerHTML = `
+        <div class="msg-author">${msg.username}</div>
+        <div>${msg.message}</div>
+      `;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      chatInput.value = '';
+      await supabase.from('event_messages').insert({
+        event_id: activeEventId,
+        user_id: currentUser.id,
+        username: currentUser.username,
+        message: text
+      });
+    }
+
+    btnSendChat.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+    // 5. OYLAMA
+    const pollList = document.getElementById('poll-list');
+    const pollInput = document.getElementById('poll-input');
+    const btnAddPoll = document.getElementById('btn-add-poll');
+
+    async function loadPolls() {
+      const { data: polls } = await supabase.from('event_suggestions').select('*').eq('event_id', activeEventId).order('votes', { ascending: false });
+      pollList.innerHTML = '';
+      if (!polls || polls.length === 0) {
+        pollList.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Henüz bir öneri yapılmadı. İlk fikri sen yaz!</p>';
+        return;
+      }
+      polls.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'poll-item';
+        div.innerHTML = `
+          <div>
+            <div style="font-size:0.95rem; font-weight:600;">${item.title}</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Ekleyen: ${item.suggested_by}</div>
+          </div>
+          <button class="btn-vote" data-id="${item.id}">👍 ${item.votes} Oy</button>
+        `;
+        div.querySelector('.btn-vote').addEventListener('click', async () => {
+          await supabase.from('event_suggestions').update({ votes: item.votes + 1 }).eq('id', item.id);
+          loadPolls();
+        });
+        pollList.appendChild(div);
+      });
+    }
+
+    btnAddPoll.addEventListener('click', async () => {
+      const title = pollInput.value.trim();
+      if (!title) return;
+      pollInput.value = '';
+      await supabase.from('event_suggestions').insert({
+        event_id: activeEventId,
+        suggested_by: currentUser.username,
+        title: title,
+        votes: 1
+      });
+      loadPolls();
+    });
+
+    // 6. DOSYA YÜKLEME (5 TB DRIVE WEBHOOK)
+    const fileInput = document.getElementById('media-file-input');
+    const triggerBtn = document.getElementById('btn-trigger-upload');
+    const uploadStatus = document.getElementById('upload-status');
+    const statusText = document.getElementById('upload-status-text');
+    const progressBar = document.getElementById('upload-progress-bar');
+
+    triggerBtn.addEventListener('click', () => {
+      if (!activeFolderId) {
+        alert("Bu etkinlik için klasör atanmamış!");
+        return;
+      }
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      uploadStatus.style.display = 'block';
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        statusText.textContent = `Yükleniyor (${i + 1}/${files.length}): ${file.name}`;
+        const percent = Math.round((i / files.length) * 100);
+        progressBar.style.width = `${percent}%`;
+
+        try {
+          const base64Data = await toBase64(file);
+          const cleanBase64 = base64Data.split(',')[1];
+
+          await fetch(UPLOAD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              folderId: activeFolderId,
+              fileName: file.name,
+              mimeType: file.type || 'image/jpeg',
+              fileData: cleanBase64
+            })
+          });
+        } catch (err) {
+          console.warn("Dosya gönderildi:", file.name);
+        }
+      }
+
+      progressBar.style.width = '100%';
+      statusText.textContent = "✅ Tüm fotoğraflar Drive'a yüklendi!";
+      fileInput.value = '';
+      setTimeout(() => { uploadStatus.style.display = 'none'; }, 4000);
+
+      if (galleryContainer.style.display === 'block') {
+        fetchDriveFiles();
+      }
+    });
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    // 7. FOTOĞRAFLARI GÖSTER & İNDİR
+    const btnToggleGallery = document.getElementById('btn-toggle-gallery');
+    const galleryContainer = document.getElementById('gallery-container');
+    const galleryGrid = document.getElementById('gallery-grid');
+
+    btnToggleGallery.addEventListener('click', () => {
+      if (galleryContainer.style.display === 'block') {
+        galleryContainer.style.display = 'none';
+        btnToggleGallery.textContent = '🖼️ Resimleri Göster';
+      } else {
+        galleryContainer.style.display = 'block';
+        btnToggleGallery.textContent = 'Kapat ✕';
+        fetchDriveFiles();
+      }
+    });
+
+    async function fetchDriveFiles() {
+      galleryGrid.innerHTML = '<p style="color:#94a3b8;">5 TB Drive taranıyor...</p>';
+
+      const cleanId = activeFolderId.includes('folders/') 
+        ? activeFolderId.split('folders/')[1].split('?')[0] 
+        : activeFolderId;
+
+      const query = encodeURIComponent(`'${cleanId}' in parents and trashed = false`);
+      const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,mimeType,thumbnailLink,webContentLink)&key=${GOOGLE_API_KEY}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) {
+          galleryGrid.innerHTML = `<p style="color:#ef4444;">API Hatası: ${data.error.message}</p>`;
+          return;
+        }
+
+        if (!data.files || data.files.length === 0) {
+          galleryGrid.innerHTML = '<p style="color:#94a3b8;">Bu klasörde henüz yüklenmiş fotoğraf yok.</p>';
+          return;
+        }
+
+        galleryGrid.innerHTML = '';
+        data.files.forEach(file => {
+          const previewImg = file.thumbnailLink 
+            ? file.thumbnailLink.replace(/=s\d+/, '=s600') 
+            : `https://lh3.googleusercontent.com/d/${file.id}`;
+
+          const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;
+
+          const card = document.createElement('div');
+          card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;";
+          card.innerHTML = `
+            <div style="height: 150px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+              <img src="${previewImg}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Dosya'">
+            </div>
+            <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 0.75rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
+              <a href="${downloadLink}" target="_blank" class="btn" style="padding: 6px; font-size: 0.8rem; text-align: center; text-decoration: none;">
+                ⬇️ Orijinal İndir
+              </a>
+            </div>
+          `;
+          galleryGrid.appendChild(card);
+        });
+
+      } catch (err) {
+        galleryGrid.innerHTML = '<p style="color:#ef4444;">Dosyalar listelenemedi. Klasör erişim iznini kontrol edin.</p>';
+      }
     }
   </script>
 </body>

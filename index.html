@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plan Zero | Member Portal</title>
+  <title id="docTitle">Plan Zero | Member Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@
       justify-content: center;
       align-items: center;
     }
-    .container { max-width: 720px; width: 100%; display: none; flex-direction: column; gap: 20px; }
+    .container { max-width: 760px; width: 100%; display: none; flex-direction: column; gap: 20px; }
     
     #gateModal {
       max-width: 400px; width: 100%; background: var(--card-bg); border: 1px solid var(--border);
@@ -96,26 +96,28 @@
     .sug-user { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
     .sug-text { font-size: 0.95rem; color: #fff; }
 
-    /* Gallery */
+    /* Gallery (Photos & Videos) */
     .gallery-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 14px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 14px;
     }
-    .photo-thumb {
-      border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: #000;
-      aspect-ratio: 1; position: relative;
+    .media-card {
+      border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: #000;
+      position: relative; display: flex; flex-direction: column;
     }
-    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .photo-overlay {
-      position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
-      display: flex; flex-direction: column; justify-content: space-between; padding: 8px;
+    .media-preview {
+      width: 100%; height: 180px; object-fit: cover; display: block; background: #000;
+    }
+    .media-footer {
+      padding: 8px 10px; background: rgba(15, 23, 42, 0.9);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.75rem; border-top: 1px solid var(--border);
     }
     .btn-download {
-      align-self: flex-end; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border);
-      color: #fff; border-radius: 8px; padding: 4px 8px; font-size: 0.75rem; text-decoration: none;
-      display: flex; align-items: center; gap: 4px; backdrop-filter: blur(6px);
+      background: rgba(56, 189, 248, 0.15); border: 1px solid var(--primary);
+      color: var(--primary); border-radius: 6px; padding: 3px 8px; font-size: 0.7rem; text-decoration: none;
+      font-weight: 700;
     }
     .btn-download:hover { background: var(--primary); color: #000; }
-    .photo-caption { font-size: 0.75rem; color: #fff; }
 
     input[type="text"], input[type="file"] {
       width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
@@ -124,19 +126,23 @@
     .btn-submit {
       width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 700;
-      cursor: pointer;
+      cursor: pointer; transition: opacity 0.2s;
     }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-secondary {
       background: rgba(15, 23, 42, 0.8); color: var(--primary); border: 1px solid var(--primary);
       border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
       white-space: nowrap;
+    }
+    .upload-status {
+      font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 8px; text-align: center; display: none;
     }
     .empty-state { text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px 0; }
   </style>
 </head>
 <body>
 
-  <!-- Gatekeeper (İsim Giriş Ekranı) -->
+  <!-- Gatekeeper -->
   <div id="gateModal">
     <h2>🔒 Access Gate</h2>
     <p>Enter your authorized name to view your events.</p>
@@ -147,14 +153,15 @@
     </div>
   </div>
 
+  <div id="remoteCustomContainer"></div>
+
   <!-- Ana Portal -->
   <div class="container" id="mainPortal">
     <header>
       <div class="header-left">
         <div id="welcomeBadge" class="welcome-pill">Member Access</div>
-        <h1>Plan Zero</h1>
+        <h1 id="appHeadline">Plan Zero</h1>
       </div>
-      <!-- Çıkış Yap Butonu -->
       <button class="btn-logout" onclick="logoutGuest()">Exit / Switch ➔</button>
     </header>
 
@@ -193,19 +200,26 @@
         </div>
       </div>
 
-      <!-- FOTOĞRAF YÜKLEME ALANI -->
+      <!-- TOPLU FOTOĞRAF VE VİDEO YÜKLEME ALANI -->
       <div class="card">
-        <h2>📸 Upload Memories</h2>
-        <input type="file" id="photoFileInput" accept="image/*" />
-        <input type="text" id="photoCaptionInput" placeholder="Add a short note or memory..." />
-        <button type="button" class="btn-submit" id="uploadBtn" onclick="uploadPhotoToEvent()">Save Photo to Vault 🚀</button>
+        <h2>📸 Upload Memories (Batch Photos & Videos)</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+          You can select <strong>multiple photos and videos</strong> at once from your gallery!
+        </p>
+        <!-- MULTIPLE ATTRIBUTE: Toplu seçim aktif -->
+        <input type="file" id="batchMediaInput" accept="image/*,video/*" multiple />
+        <input type="text" id="batchCaptionInput" placeholder="Add a shared caption / note (optional)..." />
+        <button type="button" class="btn-submit" id="btnUploadBatch" onclick="uploadBatchMedia()">
+          Upload All Selected Files 🚀
+        </button>
+        <div id="uploadStatusText" class="upload-status"></div>
       </div>
 
-      <!-- FOTOĞRAF ARŞİVİ (İNDİRME DESTEKLİ) -->
+      <!-- FOTOĞRAF & VİDEO ARŞİVİ -->
       <div class="card">
-        <h2>🖼️️ Memory Vault</h2>
+        <h2>🖼 Memory Vault</h2>
         <div class="gallery-grid" id="galleryContainer">
-          <p class="empty-state">No photos uploaded for this event yet.</p>
+          <p class="empty-state">No photos or videos uploaded for this event yet.</p>
         </div>
       </div>
     </div>
@@ -219,13 +233,32 @@
     let currentGuest = localStorage.getItem("pz_user");
     let activeEventId = null;
 
+    // OTA Realtime Config Dinleyici
+    async function fetchRemoteConfig() {
+      const { data } = await supabaseClient.from('remote_config').select('*').eq('id', 1).maybeSingle();
+      if (!data) return;
+      if (data.config_type === 'json') {
+        try {
+          const cfg = JSON.parse(data.payload);
+          if (cfg.title) {
+            document.getElementById('appHeadline').innerText = cfg.title;
+            document.title = cfg.title + " | Member Portal";
+          }
+          if (cfg.primary_color) document.documentElement.style.setProperty('--primary', cfg.primary_color);
+        } catch(e){}
+      } else if (data.config_type === 'raw_code') {
+        document.getElementById('remoteCustomContainer').innerHTML = data.payload;
+      }
+    }
+    fetchRemoteConfig();
+
     async function loginGuest() {
       const name = document.getElementById('gateNameInput').value.trim();
       const err = document.getElementById('gateError');
       err.style.display = 'none';
       if (!name) return;
 
-      const { data: guests, error } = await supabaseClient.from('guests').select('name');
+      const { data: guests } = await supabaseClient.from('guests').select('name');
       const isAllowed = guests && guests.some(g => g.name.toLowerCase() === name.toLowerCase());
 
       if (isAllowed) {
@@ -328,7 +361,7 @@
           `;
         });
       } else {
-        container.innerHTML = '<p class="empty-state">No ideas posted yet. Be the first!</p>';
+        container.innerHTML = '<p class="empty-state">No ideas posted yet.</p>';
       }
     }
 
@@ -347,70 +380,133 @@
       loadSuggestions();
     }
 
+    // Galeri Yükleme (Fotoğraf ve Video Algılama)
     async function loadEventPhotos() {
       const container = document.getElementById('galleryContainer');
-      container.innerHTML = '<p class="empty-state">Loading photos...</p>';
+      container.innerHTML = '<p class="empty-state">Loading media...</p>';
 
-      const { data: photos } = await supabaseClient
+      const { data: media } = await supabaseClient
         .from('event_memories')
         .select('*')
         .eq('event_id', activeEventId)
         .order('created_at', { ascending: false });
 
       container.innerHTML = '';
-      if (photos && photos.length > 0) {
-        photos.forEach((p, idx) => {
+      if (media && media.length > 0) {
+        media.forEach((item, idx) => {
+          const isVideo = item.image_data.startsWith('data:video') || item.caption.includes('[video]');
           const div = document.createElement('div');
-          div.className = 'photo-thumb';
+          div.className = 'media-card';
+
+          const previewHtml = isVideo
+            ? `<video src="${item.image_data}" class="media-preview" controls></video>`
+            : `<img src="${item.image_data}" class="media-preview" alt="Memory" loading="lazy" />`;
+
           div.innerHTML = `
-            <img src="${p.image_data}" alt="Memory" />
-            <div class="photo-overlay">
-              <a href="${p.image_data}" download="plan_zero_memory_${idx+1}.jpg" class="btn-download" title="Download Photo">
-                ⬇️ Download
-              </a>
-              <div class="photo-caption">
-                <strong>${p.caption || 'Memory'}</strong><br>
-                <small style="opacity:0.8;">by ${p.uploaded_by}</small>
+            ${previewHtml}
+            <div class="media-footer">
+              <div>
+                <strong>${item.caption ? item.caption.replace('[video]', '') : 'Memory'}</strong>
+                <div style="color:var(--text-muted); font-size:0.68rem;">by ${item.uploaded_by}</div>
               </div>
+              <a href="${item.image_data}" download="memory_${idx+1}${isVideo ? '.mp4' : '.jpg'}" class="btn-download">
+                ⬇️ Save
+              </a>
             </div>
           `;
           container.appendChild(div);
         });
       } else {
-        container.innerHTML = '<p class="empty-state">No photos uploaded for this event yet.</p>';
+        container.innerHTML = '<p class="empty-state">No photos or videos uploaded for this event yet.</p>';
       }
     }
 
-    function uploadPhotoToEvent() {
-      const fileInput = document.getElementById('photoFileInput');
-      const capInput = document.getElementById('photoCaptionInput');
-      const file = fileInput.files[0];
+    // Fotoğrafları Hızlı Yüklemek İçin Otomatik Boyutlandırma (Canvas)
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        if (!file.type.startsWith('image/')) {
+          // Video ise sıkıştırma yapmadan doğrudan Base64'e çevir
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+          return;
+        }
 
-      if (!file) {
-        alert("Please choose a photo first!");
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1400; // Harika kalite, düşük boyut
+            const scaleSize = MAX_WIDTH / img.width;
+            
+            if (scaleSize < 1) {
+              canvas.width = MAX_WIDTH;
+              canvas.height = img.height * scaleSize;
+            } else {
+              canvas.width = img.width;
+              canvas.height = img.height;
+            }
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // === TOPLU DOSYA YÜKLEME MOTORU ===
+    async function uploadBatchMedia() {
+      const fileInput = document.getElementById('batchMediaInput');
+      const capInput = document.getElementById('batchCaptionInput');
+      const btn = document.getElementById('btnUploadBatch');
+      const statusText = document.getElementById('uploadStatusText');
+
+      const files = Array.from(fileInput.files);
+      if (files.length === 0) {
+        alert("Please select at least one photo or video!");
         return;
       }
 
-      const btn = document.getElementById('uploadBtn');
-      btn.innerText = "Processing & Saving...";
       btn.disabled = true;
+      statusText.style.display = 'block';
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        await supabaseClient.from('event_memories').insert([{
-          event_id: activeEventId,
-          image_data: e.target.result,
-          caption: capInput.value.trim(),
-          uploaded_by: currentGuest
-        }]);
+      const baseCaption = capInput.value.trim();
+      let uploadedCount = 0;
 
-        fileInput.value = '';
-        capInput.value = '';
-        btn.innerText = "Save Photo to Vault 🚀";
-        btn.disabled = false;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        statusText.innerText = `Processing & Uploading: ${i + 1} of ${files.length} (${file.name})...`;
+
+        try {
+          const base64Data = await compressImage(file);
+          const isVid = file.type.startsWith('video');
+
+          await supabaseClient.from('event_memories').insert([{
+            event_id: activeEventId,
+            image_data: base64Data,
+            caption: (baseCaption || file.name) + (isVid ? ' [video]' : ''),
+            uploaded_by: currentGuest
+          }]);
+
+          uploadedCount++;
+        } catch (err) {
+          console.error("Upload error for file:", file.name, err);
+        }
+      }
+
+      statusText.innerText = `✅ Successfully uploaded ${uploadedCount} items to the vault!`;
+      fileInput.value = '';
+      capInput.value = '';
+      btn.disabled = false;
+
+      setTimeout(() => {
+        statusText.style.display = 'none';
         loadEventPhotos();
-      };
-      reader.readAsDataURL(file);
+      }, 1500);
     }
   </script>
 </body>

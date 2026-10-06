@@ -14,17 +14,22 @@ export function initBooking() {
       return;
     }
 
-    // Kullanıcı bilgileri artık doğrudan oturumdan (session) alınıyor
     const clientName = user.username || 'Kullanıcı';
     const clientEmail = user.email || '';
-    const contact = document.getElementById('book-contact')?.value.trim() || 'Belirtilmedi';
+    const contact = document.getElementById('book-contact')?.value.trim() || '-';
     const plan = document.getElementById('book-plan')?.value.trim();
 
     const dateStr = getActiveDate();
     const slots = getSelectedSlots();
 
-    if (!plan || slots.length === 0) {
-      alert('Lütfen bir açıklama yazın ve en az bir saat seçin.');
+    // Kontrol: Sadece saat seçimi ve açıklama notu zorunlu
+    if (!slots || slots.length === 0) {
+      alert('Lütfen yukarıdaki saatlerden en az birini seçin.');
+      return;
+    }
+
+    if (!plan) {
+      alert('Lütfen görüşme notu / planı alanını doldurun.');
       return;
     }
 
@@ -66,7 +71,7 @@ export function initBooking() {
         mode: 'no-cors'
       }).catch(e => console.warn('Mail webhook uyarısı:', e));
 
-      alert(`Randevunuz alındı! Onay maili ${clientEmail} adresinize iletildi.`);
+      alert(`Randevunuz başarıyla oluşturuldu! Bilgilendirme maili ${clientEmail} adresine gönderildi.`);
 
       // Formu temizle ve görünümü sıfırla
       if (document.getElementById('book-contact')) document.getElementById('book-contact').value = '';

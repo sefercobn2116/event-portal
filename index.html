@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plan Zero | Member Portal</title>
+  <title id="docTitle">Plan Zero | Member Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
+  <style id="dynamicStyle">
     :root {
       --bg: #070a12;
       --card-bg: rgba(15, 23, 42, 0.7);
@@ -59,7 +59,6 @@
       border-radius: 20px; padding: 22px; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.5);
     }
     
-    /* Event List Styles */
     .events-grid { display: flex; flex-direction: column; gap: 14px; }
     .event-card {
       background: rgba(2, 6, 23, 0.6); border: 1px solid var(--border);
@@ -74,7 +73,6 @@
       padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 0.8rem;
     }
 
-    /* Single Event View */
     #eventDetailView { display: none; flex-direction: column; gap: 20px; }
     .btn-back {
       background: transparent; border: none; color: var(--text-muted); font-size: 0.9rem;
@@ -82,7 +80,14 @@
     }
     .btn-back:hover { color: var(--primary); }
 
-    /* Gallery Grid */
+    .sug-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .sug-item {
+      background: rgba(2, 6, 23, 0.5); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .sug-user { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
+    .sug-text { font-size: 0.95rem; color: #fff; }
+
     .gallery-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 14px;
     }
@@ -91,10 +96,17 @@
       aspect-ratio: 1; position: relative;
     }
     .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .photo-info {
-      position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.85));
-      padding: 8px; font-size: 0.75rem; color: #fff;
+    .photo-overlay {
+      position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+      display: flex; flex-direction: column; justify-content: space-between; padding: 8px;
     }
+    .btn-download {
+      align-self: flex-end; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border);
+      color: #fff; border-radius: 8px; padding: 4px 8px; font-size: 0.75rem; text-decoration: none;
+      display: flex; align-items: center; gap: 4px; backdrop-filter: blur(6px);
+    }
+    .btn-download:hover { background: var(--primary); color: #000; }
+    .photo-caption { font-size: 0.75rem; color: #fff; }
 
     input[type="text"], input[type="file"] {
       width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
@@ -104,6 +116,11 @@
       width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 700;
       cursor: pointer;
+    }
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.8); color: var(--primary); border: 1px solid var(--primary);
+      border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+      white-space: nowrap;
     }
     .empty-state { text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px 0; }
   </style>
@@ -121,11 +138,14 @@
     </div>
   </div>
 
+  <!-- Dynamic Injection Hook (Admin kodları buraya da basabilir) -->
+  <div id="remoteCustomContainer"></div>
+
   <!-- Main Container -->
   <div class="container" id="mainPortal">
     <header>
       <div id="welcomeBadge" class="welcome-pill">Member Access</div>
-      <h1>Plan Zero</h1>
+      <h1 id="appHeadline">Plan Zero</h1>
       <p id="portalSub">Your exclusive events & memory vaults.</p>
     </header>
 
@@ -139,7 +159,7 @@
       </div>
     </div>
 
-    <!-- SINGLE EVENT VIEW & MEMORY VAULT -->
+    <!-- SINGLE EVENT VIEW -->
     <div id="eventDetailView">
       <button class="btn-back" onclick="backToEvents()">← Back to Events List</button>
 
@@ -149,12 +169,24 @@
         <p id="viewEventDesc" style="color:var(--text-muted); font-size:0.95rem; line-height:1.5;"></p>
       </div>
 
-      <!-- Upload Photo Form (File Selector) -->
+      <!-- SUGGESTIONS & IDEAS -->
       <div class="card">
-        <h2>📸 Upload Memories to this Event</h2>
+        <h2>💡 Suggestions & Ideas for this Event</h2>
         <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
-          Select a photo directly from your device. It will remain saved permanently in this event's archive.
+          Have a venue in mind, music idea, or routing request? Drop it here.
         </p>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <input type="text" id="sugInput" placeholder="Drop an idea or spot..." style="margin-bottom:0;" />
+          <button type="button" class="btn-secondary" onclick="addSuggestion()">Post Idea</button>
+        </div>
+        <div class="sug-list" id="suggestionsContainer">
+          <p class="empty-state">No ideas posted yet.</p>
+        </div>
+      </div>
+
+      <!-- Upload Photo Form -->
+      <div class="card">
+        <h2>📸 Upload Memories</h2>
         <input type="file" id="photoFileInput" accept="image/*" />
         <input type="text" id="photoCaptionInput" placeholder="Add a short note or memory..." />
         <button type="button" class="btn-submit" id="uploadBtn" onclick="uploadPhotoToEvent()">Save Photo to Vault 🚀</button>
@@ -178,6 +210,61 @@
     let currentGuest = localStorage.getItem("pz_user");
     let activeEventId = null;
 
+    // === OTA ENGINE: Remote Config & Live Self-Updating ===
+    async function fetchAndApplyRemoteConfig() {
+      const { data, error } = await supabaseClient.from('remote_config').select('*').eq('id', 1).single();
+      if (error || !data) return;
+
+      if (data.config_type === 'json') {
+        try {
+          const cfg = JSON.parse(data.payload);
+          if (cfg.title) {
+            document.getElementById('appHeadline').innerText = cfg.title;
+            document.title = cfg.title + " | Member Portal";
+          }
+          if (cfg.subtitle) document.getElementById('portalSub').innerText = cfg.subtitle;
+          if (cfg.primary_color) {
+            document.documentElement.style.setProperty('--primary', cfg.primary_color);
+          }
+          if (cfg.accent_color) {
+            document.documentElement.style.setProperty('--accent', cfg.accent_color);
+          }
+          if (cfg.custom_css) {
+            let el = document.getElementById('otaCss');
+            if (!el) {
+              el = document.createElement('style');
+              el.id = 'otaCss';
+              document.head.appendChild(el);
+            }
+            el.innerHTML = cfg.custom_css;
+          }
+        } catch(e) { console.error("JSON parse error:", e); }
+      } else if (data.config_type === 'raw_code') {
+        // Ham HTML / TXT / Script doğrudan enjekte edilir
+        const container = document.getElementById('remoteCustomContainer');
+        container.innerHTML = data.payload;
+        // Script tag'lerini dinamik çalıştır
+        const scripts = container.querySelectorAll("script");
+        scripts.forEach(oldScript => {
+          const newScript = document.createElement("script");
+          Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+          newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+          oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+      }
+    }
+
+    // Realtime Dinleyici: Admin bir şey gönderdiği an F5 atmadan güncelle!
+    supabaseClient
+      .channel('public:remote_config')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'remote_config' }, payload => {
+        fetchAndApplyRemoteConfig();
+      })
+      .subscribe();
+
+    fetchAndApplyRemoteConfig();
+
+    // === Standart Portal Fonksiyonları ===
     async function loginGuest() {
       const name = document.getElementById('gateNameInput').value.trim();
       const err = document.getElementById('gateError');
@@ -206,13 +293,11 @@
 
     if (currentGuest) openPortal();
 
-    // Sadece bu kişinin yetkili olduğu etkinlikleri çek
     async function loadAuthorizedEvents() {
       const { data: allEvents } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
       const container = document.getElementById('eventsContainer');
       container.innerHTML = '';
 
-      // Filtreleme: allowed_guests içinde bu isim var mı?
       const myEvents = (allEvents || []).filter(e => {
         if (!e.allowed_guests || e.allowed_guests.length === 0) return false;
         return e.allowed_guests.some(g => g.toLowerCase() === currentGuest.toLowerCase());
@@ -232,7 +317,7 @@
             <div class="event-title">${e.title}</div>
             <div class="event-meta">📅 ${dateStr}</div>
           </div>
-          <button class="btn-view">Open Vault ↗</button>
+          <button class="btn-view">Open Details & Vault ↗</button>
         `;
         card.onclick = () => openEventDetails(e);
         container.appendChild(card);
@@ -250,6 +335,7 @@
       document.getElementById('viewEventDesc').innerText = eventObj.description || 'No description provided.';
 
       loadEventPhotos();
+      loadSuggestions();
     }
 
     function backToEvents() {
@@ -257,6 +343,44 @@
       document.getElementById('eventDetailView').style.display = 'none';
       document.getElementById('eventsListView').style.display = 'block';
       loadAuthorizedEvents();
+    }
+
+    async function loadSuggestions() {
+      const container = document.getElementById('suggestionsContainer');
+      const { data: sugs } = await supabaseClient
+        .from('event_suggestions')
+        .select('*')
+        .eq('event_id', activeEventId)
+        .order('created_at', { ascending: false });
+
+      container.innerHTML = '';
+      if (sugs && sugs.length > 0) {
+        sugs.forEach(s => {
+          container.innerHTML += `
+            <div class="sug-item">
+              <span class="sug-user">${s.suggested_by}</span>
+              <span class="sug-text">${s.text}</span>
+            </div>
+          `;
+        });
+      } else {
+        container.innerHTML = '<p class="empty-state">No ideas posted yet. Be the first!</p>';
+      }
+    }
+
+    async function addSuggestion() {
+      const input = document.getElementById('sugInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      await supabaseClient.from('event_suggestions').insert([{
+        event_id: activeEventId,
+        suggested_by: currentGuest,
+        text: val
+      }]);
+
+      input.value = '';
+      loadSuggestions();
     }
 
     async function loadEventPhotos() {
@@ -271,14 +395,19 @@
 
       container.innerHTML = '';
       if (photos && photos.length > 0) {
-        photos.forEach(p => {
+        photos.forEach((p, idx) => {
           const div = document.createElement('div');
           div.className = 'photo-thumb';
           div.innerHTML = `
             <img src="${p.image_data}" alt="Memory" />
-            <div class="photo-info">
-              <div><strong>${p.caption || 'Memory'}</strong></div>
-              <div style="opacity:0.8; font-size:0.7rem;">by ${p.uploaded_by}</div>
+            <div class="photo-overlay">
+              <a href="${p.image_data}" download="plan_zero_memory_${idx+1}.jpg" class="btn-download" title="Download Photo">
+                ⬇️ Download
+              </a>
+              <div class="photo-caption">
+                <strong>${p.caption || 'Memory'}</strong><br>
+                <small style="opacity:0.8;">by ${p.uploaded_by}</small>
+              </div>
             </div>
           `;
           container.appendChild(div);
@@ -288,7 +417,6 @@
       }
     }
 
-    // Dosyadan Kalıcı Base64 Çevirip Kaydetme
     function uploadPhotoToEvent() {
       const fileInput = document.getElementById('photoFileInput');
       const capInput = document.getElementById('photoCaptionInput');
@@ -305,11 +433,9 @@
 
       const reader = new FileReader();
       reader.onload = async function(e) {
-        const base64Data = e.target.result;
-
         await supabaseClient.from('event_memories').insert([{
           event_id: activeEventId,
-          image_data: base64Data,
+          image_data: e.target.result,
           caption: capInput.value.trim(),
           uploaded_by: currentGuest
         }]);

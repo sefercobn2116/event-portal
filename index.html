@@ -13,10 +13,14 @@
     <div class="glass-box">
       <h2 id="auth-title" style="color: #00f2fe; text-align: center; margin-bottom: 20px;">Portal Girişi</h2>
       
+      <!-- Kullanıcı Adı (Girişte ve Kayıtta Ortak) -->
+      <input type="text" id="auth-username" class="input-field" placeholder="Kullanıcı Adı">
+
+      <!-- Sadece Kayıt Olurken Açılan E-posta -->
       <div id="auth-register-fields" style="display: none;">
-        <input type="text" id="reg-username" class="input-field" placeholder="Kullanıcı Adı">
+        <input type="email" id="reg-email" class="input-field" placeholder="E-posta Adresi *">
       </div>
-      <input type="email" id="auth-email" class="input-field" placeholder="E-posta Adresi">
+
       <input type="password" id="auth-password" class="input-field" placeholder="Şifre">
       
       <button id="btn-auth-submit" class="btn" style="width: 100%; margin-top: 8px;">Giriş Yap</button>
@@ -83,13 +87,13 @@
           <div id="hourly-slots-container" class="slot-matrix"></div>
         </div>
 
-        <!-- Randevu Rezervasyon Formu -->
+        <!-- Sadeleştirilmiş Randevu Rezervasyon Formu -->
         <div id="booking-form-wrap" style="display: none; margin-top: 20px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 14px;">
-          <h4 style="color: #00f2fe; margin-bottom: 12px;">Randevu Bilgilerinizi Girin</h4>
-          <input type="text" id="book-name" class="input-field" placeholder="Adınız Soyadınız *">
-          <input type="email" id="book-email" class="input-field" placeholder="E-posta Adresiniz (Onay buraya gelecektir) *">
-          <input type="text" id="book-contact" class="input-field" placeholder="Telefon / Telegram / Instagram *">
-          <textarea id="book-plan" class="input-field" style="height: 70px; resize: none;" placeholder="Görüşme amacı / planınız *"></textarea>
+          <h4 style="color: #00f2fe; margin-bottom: 8px;">Randevu Detayı</h4>
+          <p id="booking-user-badge" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;"></p>
+          
+          <input type="text" id="book-contact" class="input-field" placeholder="İletişim / Telegram / Telefon (İsteğe bağlı)">
+          <textarea id="book-plan" class="input-field" style="height: 80px; resize: none;" placeholder="Görüşme amacı / Notunuz / Planınız *"></textarea>
           
           <button id="btn-submit-booking" class="btn btn-pink" style="width: 100%;">Confirm Booking Now</button>
         </div>
@@ -103,20 +107,17 @@
         <div id="events-grid-list" style="display: grid; gap: 12px;"></div>
       </div>
 
-      <!-- Seçilen Etkinliğin Detay Odası (Galeri + Chat) -->
       <div id="event-detail-room" class="glass-box" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <h3 id="room-title" style="color: #00f2fe; margin: 0;">Etkinlik Odası</h3>
           <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.8rem;">Odayı Kapat</button>
         </div>
 
-        <!-- Galeri Alanı -->
         <div style="margin-bottom: 24px;">
           <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Fotoğraf Galerisi</h4>
           <div id="room-gallery-container"></div>
         </div>
 
-        <!-- Canlı Mesajlaşma Alanı -->
         <div>
           <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Canlı Mesajlaşma</h4>
           <div id="room-chat-messages" style="height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
@@ -129,7 +130,7 @@
     </div>
   </div>
 
-  <!-- MODÜL BAĞLANTILARI (BOOTLOADER) -->
+  <!-- BOOTLOADER -->
   <script type="module">
     import { supabase } from './config.js';
     import { getSessionUser, loginUser, registerUser, clearSession } from './modules/auth.js';
@@ -158,7 +159,6 @@
       }
     }
 
-    // AUTH İŞLEMLERİ
     function setupAuthEvents() {
       const toggleBtn = document.getElementById('toggle-auth-mode');
       const submitBtn = document.getElementById('btn-auth-submit');
@@ -183,18 +183,19 @@
       };
 
       submitBtn.onclick = async () => {
-        const email = document.getElementById('auth-email').value;
+        const username = document.getElementById('auth-username').value;
         const pass = document.getElementById('auth-password').value;
         statusEl.style.color = '#00f2fe';
         statusEl.textContent = 'İşleniyor...';
 
         try {
           if (isRegisterMode) {
-            const username = document.getElementById('reg-username').value;
-            if (!username) throw new Error('Lütfen bir kullanıcı adı girin.');
+            const email = document.getElementById('reg-email').value;
+            if (!username || !email || !pass) throw new Error('Tüm alanları doldurmanız gerekmektedir.');
             await registerUser(username, email, pass);
           } else {
-            await loginUser(email, pass);
+            if (!username || !pass) throw new Error('Kullanıcı adı ve şifre zorunludur.');
+            await loginUser(username, pass);
           }
           checkUserState();
         } catch (err) {
@@ -204,9 +205,11 @@
       };
     }
 
-    // DASHBOARD İŞLEMLERİ
     function setupDashboard(user) {
       document.getElementById('user-greeting').textContent = `Hoş Geldin, ${user.username}`;
+      const badge = document.getElementById('booking-user-badge');
+      if (badge) badge.textContent = `Randevu Alan: ${user.username} (${user.email})`;
+
       if (user.is_admin || user.role === 'admin') {
         document.getElementById('btn-admin-link').style.display = 'inline-flex';
         document.getElementById('user-role-text').textContent = 'Yetkili Yönetici';
@@ -217,7 +220,6 @@
         window.location.reload();
       };
 
-      // Menü Geçişleri
       const secBooking = document.getElementById('section-booking');
       const secEvents = document.getElementById('section-events');
 
@@ -234,11 +236,9 @@
         loadUserEvents(user);
       };
 
-      // Varsayılan olarak Randevu sekmesini aç
       document.getElementById('nav-btn-booking').click();
     }
 
-    // Kullanıcının Erişebildiği Etkinlikleri Listeleme
     async function loadUserEvents(user) {
       const container = document.getElementById('events-grid-list');
       container.innerHTML = '<p style="color: #94a3b8;">Etkinlikler yükleniyor...</p>';

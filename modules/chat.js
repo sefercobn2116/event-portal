@@ -5,7 +5,6 @@ import { getSessionUser } from './auth.js';
 let activeChatChannel = null;
 let activeSuggestionChannel = null;
 
-// ======================= 1. MESAJLAŞMA (CHAT) =======================
 export async function initEventChat(eventId, listContainerId) {
   const container = document.getElementById(listContainerId);
   if (!container) return;
@@ -15,7 +14,7 @@ export async function initEventChat(eventId, listContainerId) {
     activeChatChannel = null;
   }
 
-  container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem;">Mesajlar yükleniyor...</p>';
+  container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem;">Loading messages...</p>';
 
   const { data: messages } = await supabase
     .from('event_messages')
@@ -27,7 +26,6 @@ export async function initEventChat(eventId, listContainerId) {
   (messages || []).forEach(msg => appendChatMessage(container, msg));
   container.scrollTop = container.scrollHeight;
 
-  // Realtime Dinleyici (Sayfa yenilemeden anında düşer)
   activeChatChannel = supabase
     .channel(`chat_room_${eventId}`)
     .on('postgres_changes', {
@@ -51,7 +49,7 @@ function appendChatMessage(container, msg) {
 
   bubble.innerHTML = `
     <span style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 2px;">
-      ${msg.sender_name || 'Anonim'} • ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      ${msg.sender_name || 'Anonymous'} • ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
     </span>
     <div style="
       background: ${isMe ? 'linear-gradient(135deg, #00f2fe, #3b82f6)' : 'rgba(255,255,255,0.08)'};
@@ -85,7 +83,6 @@ export async function sendChatMessage(eventId, inputId) {
   }]);
 }
 
-// ======================= 2. CANLI ÖNERİLER (SUGGESTIONS) =======================
 export async function initEventSuggestions(eventId, listContainerId) {
   const container = document.getElementById(listContainerId);
   if (!container) return;
@@ -95,7 +92,7 @@ export async function initEventSuggestions(eventId, listContainerId) {
     activeSuggestionChannel = null;
   }
 
-  container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem;">Öneriler yükleniyor...</p>';
+  container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem;">Loading suggestions...</p>';
 
   const { data: suggestions } = await supabase
     .from('event_suggestions')
@@ -106,7 +103,6 @@ export async function initEventSuggestions(eventId, listContainerId) {
   container.innerHTML = '';
   (suggestions || []).forEach(sug => appendSuggestionCard(container, sug));
 
-  // Canlı Realtime Dinleyici (Öneri eklendiği anda listeye eklenir)
   activeSuggestionChannel = supabase
     .channel(`sug_room_${eventId}`)
     .on('postgres_changes', {

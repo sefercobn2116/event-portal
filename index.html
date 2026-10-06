@@ -15,17 +15,10 @@
   <meta name="apple-mobile-web-app-title" content="NEXUS">
 
   <link rel="stylesheet" href="style.css">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
-      });
-    }
-  </script>
 </head>
 <body>
 
-  <!-- 1. AUTH SCREEN -->
+  <!-- 1. GİRİŞ EKRANI -->
   <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
     <div class="glass-box" style="text-align: center;">
       <div style="margin-bottom: 16px;">
@@ -50,7 +43,7 @@
     </div>
   </div>
 
-  <!-- 2. MAIN DASHBOARD -->
+  <!-- 2. ANA PANEL -->
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
@@ -71,7 +64,7 @@
       </div>
     </div>
 
-    <!-- INVITE FRIENDS QR BANNER -->
+    <!-- QR DAVET BANNERI -->
     <div class="glass-box" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(255, 0, 127, 0.1)); border: 1px solid rgba(0, 242, 254, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
       <div>
         <h4 style="color: #00f2fe; margin: 0 0 4px 0;">✨ Bring Your Friends In</h4>
@@ -82,7 +75,7 @@
       </button>
     </div>
 
-    <!-- NAVIGATION HUB -->
+    <!-- SEKMELER (MY EVENTS / BOOKING) -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
       <div id="nav-btn-events" class="glass-box" style="cursor: pointer;">
         <h3 style="color: #00f2fe; margin-bottom: 8px;">🎉 My Events</h3>
@@ -94,7 +87,7 @@
       </div>
     </div>
 
-    <!-- SECTION A: BOOKING & CALENDAR -->
+    <!-- SEKME A: TAKVİM & RANDEVU -->
     <div id="section-booking" style="display: none;">
       <div class="glass-box">
         <h3 style="color: #ff007f; margin-bottom: 16px;">📅 Availability Calendar & Booking</h3>
@@ -129,10 +122,10 @@
       </div>
     </div>
 
-    <!-- SECTION B: EVENTS -->
+    <!-- SEKME B: ETKİNLİKLER -->
     <div id="section-events" style="display: none;">
       
-      <!-- HOST YOUR OWN EVENT (YETKİLİ KULLANICILAR) -->
+      <!-- ETKİNLİK OLUŞTURMA PANELİ -->
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -145,7 +138,6 @@
             <textarea id="uevt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
             <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Google Maps Link">
             
-            <!-- TARİH & SAAT ALANI -->
             <div style="margin-bottom: 12px;">
               <label for="uevt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">
                 📅 Event Date & Time
@@ -159,7 +151,6 @@
               <input type="checkbox" id="uevt-expenses"> Enable Shared Expenses (Split Bill)
             </label>
 
-            <!-- KULLANICI SEÇİCİ & CANLI ARAMA -->
             <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; margin-bottom: 14px;">
               <h5 style="color: #ff007f; margin: 0 0 8px 0;">Who Can See This Event?</h5>
               <input type="text" id="uevt-user-search" class="input-field" placeholder="🔍 Search members by name or email..." style="margin-bottom: 8px;">
@@ -190,22 +181,21 @@
           <button id="btn-close-room" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Close Room</button>
         </div>
 
-        <!-- SPOTIFY MINI PLAYER -->
         <div id="room-spotify-wrap" style="display: none; margin-bottom: 20px;"></div>
 
-        <!-- 1. ORTAK HESAP (SPLIT EXPENSES) -->
+        <!-- ORTAK HESAP -->
         <div id="room-expenses-section" style="display: none; margin-bottom: 24px;">
           <h4 style="color: #ff007f; font-size: 0.9rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
           <div id="room-expenses-container"></div>
         </div>
 
-        <!-- 2. PHOTO/VIDEO GALLERY -->
+        <!-- MEDYA GALERİSİ -->
         <div style="margin-bottom: 24px;">
           <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Shared Media Gallery</h4>
           <div id="room-gallery-container"></div>
         </div>
 
-        <!-- 3. LIVE SUGGESTIONS -->
+        <!-- ÖNERİLER -->
         <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
           <div style="display: flex; gap: 8px; margin-bottom: 12px;">
@@ -215,7 +205,7 @@
           <div id="room-suggestions-list" style="max-height: 180px; overflow-y: auto;"></div>
         </div>
 
-        <!-- 4. REALTIME CHAT -->
+        <!-- CHAT -->
         <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
           <div id="room-chat-messages" style="height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
@@ -228,7 +218,7 @@
     </div>
   </div>
 
-  <!-- QR INVITE MODAL -->
+  <!-- QR DAVET MODALI -->
   <div id="qr-modal" class="lightbox-overlay" style="display: none;">
     <div class="glass-box" style="max-width: 360px; text-align: center; position: relative;">
       <button id="btn-close-qr" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">✕</button>
@@ -247,30 +237,29 @@
 
   <script type="module">
     import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
-    import { getSessionUser, loginUser, registerUser, clearSession } from './modules/auth.js';
-    import { initCalendar } from './modules/calendar.js';
-    import { initBooking } from './modules/booking.js';
-    import { renderEventGallery } from './modules/gallery.js';
-    import { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } from './modules/chat.js';
-    import { initEventExpenses } from './modules/expenses.js';
 
     let isRegisterMode = false;
     let currentOpenEventId = null;
     let countdownInterval = null;
     let allPortalUsers = [];
 
-    // Hata yakalama garantili başlatıcı
-    window.addEventListener('load', () => {
+    // Session Yardımcıları
+    function getSessionUser() {
       try {
-        checkUserState();
-      } catch (err) {
-        console.error('Fatal initialization error:', err);
-        document.getElementById('view-auth').style.display = 'block';
+        const u = localStorage.getItem('portal_user');
+        return u ? JSON.parse(u) : null;
+      } catch (e) {
+        return null;
       }
-    });
+    }
+    function clearSession() {
+      localStorage.removeItem('portal_user');
+    }
 
-    async function checkUserState() {
+    // SAYFA AÇILIR AÇILMAZ KESİN GÖRÜNÜM BAŞLATICI
+    async function startApp() {
       let user = getSessionUser();
+      
       if (!user) {
         document.getElementById('view-auth').style.display = 'block';
         document.getElementById('view-dashboard').style.display = 'none';
@@ -278,21 +267,23 @@
         return;
       }
 
-      // Veritabanından yetkiyi hemen çek, hata alsa bile mevcut oturumla devam et
+      // Veritabanından en güncel kullanıcı bilgilerini çek
       try {
-        const { data: latestUser } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
-        if (latestUser) {
-          user = latestUser;
-          localStorage.setItem('portal_user', JSON.stringify(latestUser));
+        const { data: latest } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+        if (latest) {
+          user = latest;
+          localStorage.setItem('portal_user', JSON.stringify(latest));
         }
-      } catch (e) {
-        console.warn('User refresh fallback', e);
+      } catch (err) {
+        console.warn('User status sync warning:', err);
       }
 
       document.getElementById('view-auth').style.display = 'none';
       document.getElementById('view-dashboard').style.display = 'block';
       setupDashboard(user);
     }
+
+    startApp();
 
     function setupAuthEvents() {
       const toggleBtn = document.getElementById('toggle-auth-mode');
@@ -318,21 +309,34 @@
       };
 
       submitBtn.onclick = async () => {
-        const username = document.getElementById('auth-username').value;
+        const username = document.getElementById('auth-username').value.trim();
         const pass = document.getElementById('auth-password').value;
         statusEl.style.color = '#00f2fe';
         statusEl.textContent = 'Authenticating...';
 
         try {
           if (isRegisterMode) {
-            const email = document.getElementById('reg-email').value;
+            const email = document.getElementById('reg-email').value.trim();
             if (!username || !email || !pass) throw new Error('Please fill in all fields.');
-            await registerUser(username, email, pass);
+
+            const { data: newUser, error } = await supabase.from('users').insert([{
+              username,
+              email,
+              password_hash: pass,
+              role: 'user'
+            }]).select().single();
+
+            if (error) throw error;
+            localStorage.setItem('portal_user', JSON.stringify(newUser));
           } else {
             if (!username || !pass) throw new Error('Username and password are required.');
-            await loginUser(username, pass);
+
+            const { data: user, error } = await supabase.from('users').select('*').eq('username', username).eq('password_hash', pass).maybeSingle();
+            if (error || !user) throw new Error('Invalid username or password.');
+
+            localStorage.setItem('portal_user', JSON.stringify(user));
           }
-          checkUserState();
+          startApp();
         } catch (err) {
           statusEl.style.color = '#f43f5e';
           statusEl.textContent = err.message;
@@ -363,11 +367,17 @@
       const secBooking = document.getElementById('section-booking');
       const secEvents = document.getElementById('section-events');
 
-      document.getElementById('nav-btn-booking').onclick = () => {
+      document.getElementById('nav-btn-booking').onclick = async () => {
         secBooking.style.display = 'block';
         secEvents.style.display = 'none';
-        initCalendar();
-        initBooking();
+        try {
+          const { initCalendar } = await import('./modules/calendar.js');
+          initCalendar();
+        } catch(e) { console.warn(e); }
+        try {
+          const { initBooking } = await import('./modules/booking.js');
+          initBooking();
+        } catch(e) { console.warn(e); }
       };
 
       document.getElementById('nav-btn-events').onclick = () => {
@@ -381,7 +391,6 @@
         setupUserEventCreation(user);
       }
 
-      // Varsayılan olarak randevu sekmesini aç
       document.getElementById('nav-btn-booking').click();
     }
 
@@ -391,7 +400,6 @@
       const closeBtn = document.getElementById('btn-close-qr');
       const qrImg = document.getElementById('qr-code-img');
       const copyBtn = document.getElementById('btn-copy-portal-link');
-
       const portalUrl = window.location.href.split('#')[0].split('?')[0];
 
       openBtn.onclick = () => {
@@ -561,12 +569,11 @@
       });
     }
 
-    function openEventRoom(event) {
+    async function openEventRoom(event) {
       currentOpenEventId = event.id;
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
-      // 1. Konum
       const locWrap = document.getElementById('room-location-wrap');
       if (event.location && event.location.trim()) {
         const loc = event.location.trim();
@@ -581,7 +588,6 @@
         locWrap.style.display = 'none';
       }
 
-      // 2. Canlı Sayaç
       const cdBadge = document.getElementById('room-countdown-badge');
       if (countdownInterval) clearInterval(countdownInterval);
 
@@ -606,7 +612,6 @@
         cdBadge.style.display = 'none';
       }
 
-      // 3. Spotify Mini Player
       const spotWrap = document.getElementById('room-spotify-wrap');
       if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
         let spotEmbed = event.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
@@ -618,40 +623,48 @@
         spotWrap.style.display = 'none';
       }
 
-      // 4. İsteğe Bağlı Ortak Hesap
+      // Güvenli Harcama Bölüşümü Yüklemesi
       const expSection = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSection.style.display = 'block';
-        initEventExpenses(event.id, 'room-expenses-container');
+        try {
+          const { initEventExpenses } = await import('./modules/expenses.js');
+          initEventExpenses(event.id, 'room-expenses-container');
+        } catch (e) {
+          console.warn('Expenses module load error:', e);
+        }
       } else {
         expSection.style.display = 'none';
       }
 
       room.style.display = 'block';
 
-      // 5. Galeri, Sohbet ve Öneri
-      renderEventGallery('room-gallery-container', event.drive_folder_url);
-      initEventChat(event.id, 'room-chat-messages');
-      initEventSuggestions(event.id, 'room-suggestions-list');
+      // Galeri, Chat ve Önerileri Güvenli Yükle
+      try {
+        const { renderEventGallery } = await import('./modules/gallery.js');
+        renderEventGallery('room-gallery-container', event.drive_folder_url);
+      } catch(e) { console.warn(e); }
+
+      try {
+        const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
+        initEventChat(event.id, 'room-chat-messages');
+        initEventSuggestions(event.id, 'room-suggestions-list');
+
+        document.getElementById('btn-send-chat').onclick = () => sendChatMessage(currentOpenEventId, 'chat-input-text');
+        document.getElementById('chat-input-text').onkeydown = (e) => {
+          if (e.key === 'Enter') sendChatMessage(currentOpenEventId, 'chat-input-text');
+        };
+
+        document.getElementById('btn-send-suggestion').onclick = () => sendSuggestion(currentOpenEventId, 'suggestion-input');
+        document.getElementById('suggestion-input').onkeydown = (e) => {
+          if (e.key === 'Enter') sendSuggestion(currentOpenEventId, 'suggestion-input');
+        };
+      } catch(e) { console.warn(e); }
 
       document.getElementById('btn-close-room').onclick = () => {
         room.style.display = 'none';
         currentOpenEventId = null;
         if (countdownInterval) clearInterval(countdownInterval);
-      };
-
-      document.getElementById('btn-send-chat').onclick = () => {
-        sendChatMessage(currentOpenEventId, 'chat-input-text');
-      };
-      document.getElementById('chat-input-text').onkeydown = (e) => {
-        if (e.key === 'Enter') sendChatMessage(currentOpenEventId, 'chat-input-text');
-      };
-
-      document.getElementById('btn-send-suggestion').onclick = () => {
-        sendSuggestion(currentOpenEventId, 'suggestion-input');
-      };
-      document.getElementById('suggestion-input').onkeydown = (e) => {
-        if (e.key === 'Enter') sendSuggestion(currentOpenEventId, 'suggestion-input');
       };
 
       room.scrollIntoView({ behavior: 'smooth' });

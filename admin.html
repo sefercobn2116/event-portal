@@ -1,261 +1,248 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plan Zero | Mission Control</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg: #0b1120;
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --border: rgba(255, 255, 255, 0.12);
-      --primary: #38bdf8;
-      --danger: #ef4444;
-      --success: #22c55e;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 24px 16px 80px; display: flex; justify-content: center; }
-    .container { max-width: 850px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
-    h1 { font-size: 1.8rem; color: var(--primary); font-weight: 800; }
-    h2 { font-size: 1.2rem; margin-bottom: 12px; }
-    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
-    label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
-    input, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; }
-    button { background: var(--primary); color: #0b1120; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-    .btn-danger { background: var(--danger); color: #fff; padding: 6px 12px; font-size: 0.8rem; }
-    .btn-success { background: var(--success); color: #fff; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
-    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
-    th { color: var(--primary); }
-    #loginScreen { text-align: center; max-width: 360px; margin: 80px auto; }
-    #adminContent { display: none; }
-    .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-    .cb-item { background: #0f172a; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Zero ✦ Kontrol Paneli</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ===== SUPABASE BAĞLANTI AYARLARI =====
+  const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+  :root { --bg:#0f0f14; --card:#1a1a24; --accent:#7c5cff; --accent2:#00e0a4; --danger:#ff6b81; --text:#eaeaf0; --muted:#9a9ab0; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
+  body { background:var(--bg); color:var(--text); min-height:100vh; }
+  .wrap { max-width:860px; margin:0 auto; padding:24px 16px; }
+  .hidden { display:none !important; }
+
+  /* ŞİFRE KAPISI */
+  .gate { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:20px; }
+  .gate input { padding:14px 18px; border-radius:12px; border:1px solid #333; background:var(--card); color:var(--text); font-size:1.05rem; width:min(300px,90vw); text-align:center; outline:none; letter-spacing:4px; }
+  .gate input:focus { border-color:var(--accent); }
+  .btn { margin-top:14px; padding:13px 34px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+  .btn:hover { filter:brightness(1.15); }
+  .btn-sm { padding:7px 14px; font-size:.85rem; margin-top:0; }
+  .btn-danger { background:var(--danger); }
+  .err { color:var(--danger); margin-top:12px; }
+
+  header { display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1px solid #26263a; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  .title { font-size:1.4rem; font-weight:700; }
+  .title span { color:var(--accent2); }
+
+  .tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .tab { padding:10px 20px; border-radius:10px; background:var(--card); border:1px solid #26263a; color:var(--muted); cursor:pointer; font-size:.95rem; }
+  .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .card { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:16px; }
+  .card h2 { font-size:1.1rem; margin-bottom:14px; color:var(--accent2); }
+  input[type=text], input[type=datetime-local], textarea { width:100%; padding:11px 14px; border-radius:10px; border:1px solid #333; background:#12121c; color:var(--text); outline:none; margin-bottom:10px; font-family:inherit; }
+  input:focus, textarea:focus { border-color:var(--accent); }
+  label.f { font-size:.85rem; color:var(--muted); display:block; margin:6px 0 2px; }
+
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pill { background:#12121c; border:1px solid #333; padding:6px 14px; border-radius:999px; font-size:.9rem; display:inline-flex; align-items:center; gap:8px; }
+  .pill button { background:none; border:none; color:var(--danger); cursor:pointer; font-size:1rem; line-height:1; }
+
+  table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid #26263a; vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; }
+
+  .cbx { display:inline-flex; align-items:center; gap:6px; background:#12121c; border:1px solid #333; padding:7px 14px; border-radius:999px; margin:0 6px 6px 0; cursor:pointer; font-size:.9rem; }
+  .cbx input { accent-color:var(--accent); }
+  .msg { margin-top:10px; font-size:.9rem; min-height:1.2em; }
+  .ok { color:var(--accent2); } .bad { color:var(--danger); }
+</style>
+<base target="_blank">
 </head>
 <body>
 
-  <!-- Passcode -->
-  <div id="loginScreen" class="card">
-    <h2 style="margin-bottom:16px;">🔒 Mission Control Access</h2>
-    <input type="password" id="passInput" placeholder="Enter Admin Password..." style="margin-bottom:12px; text-align:center;" />
-    <button onclick="checkPass()" style="width:100%;">Authenticate</button>
+<!-- ŞİFRE KAPISI -->
+<div id="gate" class="gate">
+  <div class="title" style="margin-bottom:20px">Plan <span>Zero</span> 🛰️ Kontrol Paneli</div>
+  <input id="pass" type="password" placeholder="••••" inputmode="numeric">
+  <button class="btn" onclick="unlock()">Giriş</button>
+  <div class="err" id="gateErr"></div>
+</div>
+
+<!-- PANEL -->
+<div id="panel" class="wrap hidden">
+  <header>
+    <span class="title">Plan <span>Zero</span> 🛰️</span>
+    <button class="btn btn-sm btn-danger" onclick="lock()">Kilitle 🔒</button>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('guests', this)">👥 Davetliler</div>
+    <div class="tab" onclick="showTab('events', this)">🎉 Etkinlikler</div>
   </div>
 
-  <div class="container" id="adminContent">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h1>⚙️ Mission Control Studio</h1>
-      <a href="index.html" target="_blank" style="color:var(--primary); font-size:0.9rem; text-decoration:none;">Open Live Site ↗</a>
-    </div>
-
-    <!-- Master Guest List -->
+  <!-- DAVETLİLER -->
+  <div id="tab-guests">
     <div class="card">
-      <h2>🛡️️ Master Guest List</h2>
-      <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <input type="text" id="newGuestInput" placeholder="Add new person (e.g. Aleksandra)" />
-        <button onclick="addMasterGuest()">Add Person</button>
+      <h2>Yeni Davetli Ekle</h2>
+      <div class="row">
+        <input type="text" id="newGuest" placeholder="İsim (örn: Aleksandra)" style="flex:1;margin-bottom:0">
+        <button class="btn btn-sm" onclick="addGuest()">Ekle ➕</button>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="masterGuestsTable"></tbody>
-      </table>
+      <div class="msg" id="guestMsg"></div>
     </div>
-
-    <!-- Create Event Form -->
     <div class="card">
-      <h2>🎉 Create New Event & Assign Authorized Guests</h2>
-      <div class="form-row">
-        <div>
-          <label>Event Title</label>
-          <input type="text" id="evTitle" placeholder="e.g. Saturday Night & Shopping" />
-        </div>
-        <div>
-          <label>Date & Time</label>
-          <input type="datetime-local" id="evDate" />
-        </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <label>Description / Details</label>
-        <textarea id="evDesc" rows="2" placeholder="Shopping, cocktails, dinner..."></textarea>
-      </div>
-
-      <div style="margin-bottom:16px;">
-        <label>Who Can See & Access This Event? (Check to Authorize):</label>
-        <div id="guestCheckboxes" class="checkbox-group"></div>
-      </div>
-
-      <button class="btn-success" id="btnPublishEvent" onclick="createEvent()">+ Publish Event to Selected Guests</button>
-    </div>
-
-    <!-- All Events Table -->
-    <div class="card">
-      <h2>📅 All Events & Assigned Permissions</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Event</th>
-            <th>Date</th>
-            <th>Authorized Guests</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="eventsTable"></tbody>
-      </table>
+      <h2>Davetli Listesi</h2>
+      <div class="row" id="guestList"><span style="color:var(--muted)">Yükleniyor...</span></div>
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <!-- ETKİNLİKLER -->
+  <div id="tab-events" class="hidden">
+    <div class="card">
+      <h2>Yeni Etkinlik Oluştur</h2>
+      <label class="f">Etkinlik Adı</label>
+      <input type="text" id="evTitle" placeholder="örn: Pazar Kahvaltısı + Doğa Yürüyüşü">
+      <label class="f">Tarih & Saat</label>
+      <input type="datetime-local" id="evDate">
+      <label class="f">Açıklama</label>
+      <textarea id="evDesc" rows="3" placeholder="Buluşma yeri, saat detayı, ne getirmeleri gerektiği..."></textarea>
+      <label class="f">Kimler Katılabilir?</label>
+      <div id="evGuests" style="margin-bottom:10px"><span style="color:var(--muted);font-size:.9rem">Önce davetli eklemelisin.</span></div>
+      <button class="btn" onclick="createEvent()">Etkinliği Oluştur 🚀</button>
+      <div class="msg" id="evMsg"></div>
+    </div>
+    <div class="card">
+      <h2>Mevcut Etkinlikler</h2>
+      <table>
+        <thead><tr><th>Etkinlik</th><th>Tarih</th><th>Katılımcılar</th><th></th></tr></thead>
+        <tbody id="evTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-    let allGuestsList = [];
+<script>
+const ADMIN_PASS = "2116"; // Not: Bu yumuşak bir kilit — kodu gören herkes görür. Ciddi gizlilik gerekirse Supabase Auth kullanılmalı.
+const LS_ADMIN = "pz_admin_ok";
 
-    async function checkPass() {
-      const pass = document.getElementById('passInput').value;
-      if (pass === '2116') {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminContent').style.display = 'flex';
-        loadAll();
-      } else {
-        alert("Invalid Passcode!");
-      }
-    }
+function unlock() {
+  if (document.getElementById("pass").value === ADMIN_PASS) {
+    sessionStorage.setItem(LS_ADMIN, "1");
+    openPanel();
+  } else {
+    document.getElementById("gateErr").textContent = "Yanlış şifre.";
+  }
+}
+function lock() { sessionStorage.removeItem(LS_ADMIN); location.reload(); }
 
-    async function loadAll() {
-      // 1. Guests
-      const { data: guests } = await supabaseClient.from('guests').select('*').order('name');
-      allGuestsList = guests || [];
-      const gTable = document.getElementById('masterGuestsTable');
-      gTable.innerHTML = '';
-      const cbGroup = document.getElementById('guestCheckboxes');
-      cbGroup.innerHTML = '';
+function openPanel() {
+  document.getElementById("gate").classList.add("hidden");
+  document.getElementById("panel").classList.remove("hidden");
+  loadGuests();
+  loadEvents();
+}
 
-      if (allGuestsList.length === 0) {
-        gTable.innerHTML = '<tr><td colspan="2" style="color:var(--text-muted);">No guests found.</td></tr>';
-      } else {
-        allGuestsList.forEach(g => {
-          gTable.innerHTML += `
-            <tr>
-              <td><strong>${g.name}</strong></td>
-              <td><button class="btn-danger" onclick="deleteMasterGuest(${g.id})">Remove</button></td>
-            </tr>
-          `;
-          cbGroup.innerHTML += `
-            <label class="cb-item">
-              <input type="checkbox" name="assignGuest" value="${g.name}"> ${g.name}
-            </label>
-          `;
-        });
-      }
+function showTab(id, el) {
+  document.getElementById("tab-guests").classList.toggle("hidden", id !== "guests");
+  document.getElementById("tab-events").classList.toggle("hidden", id !== "events");
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+}
 
-      // 2. Events
-      const { data: evs } = await supabaseClient.from('events').select('*').order('event_date', { ascending: false });
-      const evTable = document.getElementById('eventsTable');
-      evTable.innerHTML = '';
-      if (evs && evs.length > 0) {
-        evs.forEach(e => {
-          const d = new Date(e.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          evTable.innerHTML += `
-            <tr>
-              <td><strong>${e.title}</strong></td>
-              <td>${d}</td>
-              <td style="color:var(--primary);">${e.allowed_guests || '-'}</td>
-              <td><button class="btn-danger" onclick="deleteEvent(${e.id})">Delete</button></td>
-            </tr>
-          `;
-        });
-      } else {
-        evTable.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);">No events found.</td></tr>';
-      }
-    }
+// ---------- DAVETLİLER ----------
+async function loadGuests() {
+  const { data } = await sb.from("guests").select("*").order("name");
+  const box = document.getElementById("guestList");
+  box.innerHTML = "";
+  if (!data || data.length === 0) { box.innerHTML = "<span style='color:var(--muted)'>Henüz davetli yok.</span>"; }
+  else data.forEach(g => {
+    const pill = document.createElement("span");
+    pill.className = "pill";
+    pill.innerHTML = `${esc(g.name)} <button title="Sil" onclick="delGuest(${g.id}, '${esc(g.name)}')">✕</button>`;
+    box.appendChild(pill);
+  });
+  // Etkinlik formundaki checkboxları da tazele
+  const cb = document.getElementById("evGuests");
+  cb.innerHTML = "";
+  if (!data || data.length === 0) { cb.innerHTML = "<span style='color:var(--muted);font-size:.9rem'>Önce davetli eklemelisin.</span>"; }
+  else data.forEach(g => {
+    const l = document.createElement("label");
+    l.className = "cbx";
+    l.innerHTML = `<input type="checkbox" value="${esc(g.name)}"> ${esc(g.name)}`;
+    cb.appendChild(l);
+  });
+}
 
-    async function addMasterGuest() {
-      const input = document.getElementById('newGuestInput');
-      const val = input.value.trim();
-      if (!val) return;
-      const { error } = await supabaseClient.from('guests').insert([{ name: val }]);
-      if (error) alert("Error adding guest: " + error.message);
-      else {
-        input.value = '';
-        loadAll();
-      }
-    }
+async function addGuest() {
+  const inp = document.getElementById("newGuest");
+  const msg = document.getElementById("guestMsg");
+  const name = inp.value.trim();
+  if (!name) return;
+  const { error } = await sb.from("guests").insert({ name });
+  if (error) { msg.className = "msg bad"; msg.textContent = "❌ " + error.message; return; }
+  msg.className = "msg ok"; msg.textContent = "✅ " + name + " eklendi.";
+  inp.value = "";
+  loadGuests();
+}
 
-    async function deleteMasterGuest(id) {
-      if (confirm("Remove guest?")) {
-        await supabaseClient.from('guests').delete().eq('id', id);
-        loadAll();
-      }
-    }
+async function delGuest(id, name) {
+  if (!confirm(`"${name}" davetli listesinden silinsin mi?`)) return;
+  await sb.from("guests").delete().eq("id", id);
+  loadGuests();
+}
 
-    // === BASİT VE HATASIZ ETKİNLİK OLUŞTURMA ===
-    async function createEvent() {
-      const titleInput = document.getElementById('evTitle');
-      const dateInput = document.getElementById('evDate');
-      const descInput = document.getElementById('evDesc');
-      const btn = document.getElementById('btnPublishEvent');
+// ---------- ETKİNLİKLER ----------
+async function createEvent() {
+  const title = document.getElementById("evTitle").value.trim();
+  const dateVal = document.getElementById("evDate").value;
+  const desc = document.getElementById("evDesc").value.trim();
+  const msg = document.getElementById("evMsg");
+  const guests = Array.from(document.querySelectorAll("#evGuests input:checked")).map(c => c.value);
 
-      const title = titleInput.value.trim();
-      const dateVal = dateInput.value;
-      const desc = descInput.value.trim();
+  if (!title || !dateVal) { msg.className = "msg bad"; msg.textContent = "❌ Etkinlik adı ve tarih zorunlu."; return; }
+  if (guests.length === 0) { msg.className = "msg bad"; msg.textContent = "❌ En az bir davetli seçmelisin."; return; }
 
-      const selected = [];
-      document.querySelectorAll('input[name="assignGuest"]:checked').forEach(cb => {
-        selected.push(cb.value);
-      });
+  const { error } = await sb.from("events").insert({
+    title, event_date: new Date(dateVal).toISOString(),
+    description: desc, allowed_guests: guests.join(",")
+  });
+  if (error) { msg.className = "msg bad"; msg.textContent = "❌ " + error.message; return; }
 
-      if (!title) {
-        alert("Lütfen etkinlik başlığını yazın!");
-        return;
-      }
-      if (!dateVal) {
-        alert("Lütfen tarih ve saat seçin!");
-        return;
-      }
+  msg.className = "msg ok"; msg.textContent = "✅ Etkinlik oluşturuldu!";
+  document.getElementById("evTitle").value = "";
+  document.getElementById("evDate").value = "";
+  document.getElementById("evDesc").value = "";
+  document.querySelectorAll("#evGuests input").forEach(c => c.checked = false);
+  loadEvents();
+}
 
-      btn.innerText = "Publishing...";
-      btn.disabled = true;
+async function loadEvents() {
+  const { data } = await sb.from("events").select("*").order("event_date");
+  const tb = document.getElementById("evTable");
+  tb.innerHTML = "";
+  if (!data || data.length === 0) { tb.innerHTML = "<tr><td colspan='4' style='color:var(--muted)'>Henüz etkinlik yok.</td></tr>"; return; }
+  data.forEach(ev => {
+    const tr = document.createElement("tr");
+    const d = new Date(ev.event_date);
+    tr.innerHTML = `
+      <td><b>${esc(ev.title)}</b><br><small style="color:var(--muted)">${esc(ev.description || "")}</small></td>
+      <td>${d.toLocaleDateString("tr-TR")}<br><small style="color:var(--muted)">${d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</small></td>
+      <td>${(ev.allowed_guests||"").split(",").map(g=>`<span class="pill" style="margin:2px 2px">${esc(g.trim())}</span>`).join("")}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delEvent(${ev.id}, '${esc(ev.title)}')">Sil 🗑️</button></td>`;
+    tb.appendChild(tr);
+  });
+}
 
-      // İsimleri tertemiz virgülle ayrılmış düz metin yapıyoruz: "Sefer,Aleksandra"
-      const guestsStr = selected.join(',');
+async function delEvent(id, title) {
+  if (!confirm(`"${title}" ve bağlı tüm anılar/öneriler silinsin mi?`)) return;
+  const { error } = await sb.from("events").delete().eq("id", id);
+  if (error) alert("Hata: " + error.message);
+  loadEvents();
+}
 
-      const { data, error } = await supabaseClient.from('events').insert([{
-        title: title,
-        event_date: new Date(dateVal).toISOString(),
-        description: desc,
-        allowed_guests: guestsStr
-      }]);
+function esc(s) { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
 
-      btn.innerText = "+ Publish Event to Selected Guests";
-      btn.disabled = false;
-
-      if (error) {
-        alert("Hata oluştu: " + error.message);
-      } else {
-        titleInput.value = '';
-        dateInput.value = '';
-        descInput.value = '';
-        alert("🎉 Etkinlik başarıyla oluşturuldu!");
-        loadAll();
-      }
-    }
-
-    async function deleteEvent(id) {
-      if (confirm("Delete this event?")) {
-        await supabaseClient.from('events').delete().eq('id', id);
-        loadAll();
-      }
-    }
-  </script>
+document.getElementById("pass").addEventListener("keydown", e => { if (e.key === "Enter") unlock(); });
+if (sessionStorage.getItem(LS_ADMIN) === "1") openPanel();
+</script>
 </body>
 </html>

@@ -178,7 +178,11 @@
               <div id="room-countdown-badge" style="display: none; background: rgba(255,0,127,0.15); border: 1px solid #ff007f; color: #ff007f; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"></div>
             </div>
           </div>
-          <button id="btn-close-room" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Close Room</button>
+          <div style="display: flex; gap: 8px;">
+            <!-- ODAYA ÜYE EKLEME BUTONU -->
+            <button id="btn-room-add-members" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">👥 + Invite</button>
+            <button id="btn-close-room" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Close Room</button>
+          </div>
         </div>
 
         <div id="room-spotify-wrap" style="display: none; margin-bottom: 20px;"></div>
@@ -221,6 +225,21 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 3. ETKİNLİĞE ÜYE EKLEME MODALI -->
+  <div id="room-members-modal" class="lightbox-overlay" style="display: none;">
+    <div class="glass-box" style="max-width: 420px; width: 90%; position: relative;">
+      <button id="btn-close-members-modal" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin-bottom: 8px;">Invite Members</h3>
+      <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 14px;">Select registered members to grant access to this event.</p>
+      
+      <input type="text" id="modal-member-search" class="input-field" placeholder="🔍 Search user..." style="margin-bottom: 10px;">
+      <div id="modal-members-list" style="max-height: 200px; overflow-y: auto; display: grid; gap: 6px; margin-bottom: 16px;"></div>
+
+      <button id="btn-save-room-members" class="btn" style="width: 100%;">Save & Update Members</button>
+      <div id="modal-member-status" style="margin-top: 8px; font-size: 0.8rem; text-align: center;"></div>
     </div>
   </div>
 
@@ -626,7 +645,7 @@
         spotWrap.style.display = 'none';
       }
 
-      // 1. Ortak Harcama (Split Expenses)
+      // 1. Ortak Harcama
       const expSection = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSection.style.display = 'block';
@@ -640,7 +659,7 @@
         expSection.style.display = 'none';
       }
 
-      // 2. Görevler & Getirilecekler Listesi (Tasks / Checklist)
+      // 2. Görevler & Getirilecekler Listesi (Tasks)
       try {
         const { initEventTasks } = await import('./modules/tasks.js');
         initEventTasks(event.id, 'room-tasks-container');
@@ -648,15 +667,20 @@
         console.warn('Tasks module fallback:', e);
       }
 
+      // 3. Odaya Üye Ekleme Butonu Ayarı
+      document.getElementById('btn-room-add-members').onclick = () => {
+        openInviteModal(event.id);
+      };
+
       room.style.display = 'block';
 
-      // 3. Galeri
+      // 4. Galeri
       try {
         const { renderEventGallery } = await import('./modules/gallery.js');
         renderEventGallery('room-gallery-container', event.drive_folder_url);
       } catch(e) { console.warn(e); }
 
-      // 4. Sohbet & Öneriler
+      // 5. Sohbet & Öneriler
       try {
         const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
         initEventChat(event.id, 'room-chat-messages');
@@ -680,6 +704,74 @@
       };
 
       room.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ETKİNLİĞE SONRADAN ÜYE EKLEME FONKSİYONU
+    async function openInviteModal(eventId) {
+      const modal = document.getElementById('room-members-modal');
+      const listEl = document.getElementById('modal-members-list');
+      const searchEl = document.getElementById('modal-member-search');
+      const saveBtn = document.getElementById('btn-save-room-members');
+      const statusEl = document.getElementById('modal-member-status');
+      
+      modal.style.display = 'flex';
+      statusEl.textContent = '';
+      listEl.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem;">Loading members...</p>';
+
+      const [{ data: users }, { data: currentAccess }] = await Promise.all([
+        supabase.from('users').select('id, username, email'),
+        supabase.from('event_access').select('user_id').eq('event_id', eventId)
+      ]);
+
+      const accessSet = new Set((currentAccess || []).map(a => a.user_id));
+      const allUsers = users || [];
+
+      function renderModalUsers(list) {
+        listEl.innerHTML = '';
+        list.forEach(u => {
+          const row = document.createElement('div');
+          row.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);';
+          row.innerHTML = `
+            <input type="checkbox" id="mchk-${u.id}" data-id="${u.id}" class="modal-user-chk" ${accessSet.has(u.id) ? 'checked' : ''} style="cursor: pointer; width: 16px; height: 16px;">
+            <label for="mchk-${u.id}" style="cursor: pointer;"><strong>${u.username}</strong> (${u.email})</label>
+          `;
+          listEl.appendChild(row);
+        });
+      }
+
+      renderModalUsers(allUsers);
+
+      searchEl.oninput = () => {
+        const q = searchEl.value.toLowerCase().trim();
+        renderModalUsers(allUsers.filter(u => u.username.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
+      };
+
+      document.getElementById('btn-close-members-modal').onclick = () => modal.style.display = 'none';
+
+      saveBtn.onclick = async () => {
+        saveBtn.disabled = true;
+        statusEl.style.color = '#00f2fe';
+        statusEl.textContent = 'Updating members...';
+
+        const selectedIds = Array.from(document.querySelectorAll('.modal-user-chk:checked')).map(cb => parseInt(cb.dataset.id));
+
+        await supabase.from('event_access').delete().eq('event_id', eventId);
+        if (selectedIds.length > 0) {
+          const payload = selectedIds.map(uId => ({
+            event_id: eventId,
+            user_id: uId,
+            granted_at: new Date().toISOString()
+          }));
+          await supabase.from('event_access').insert(payload);
+        }
+
+        statusEl.style.color = '#22c55e';
+        statusEl.textContent = '✓ Members updated successfully!';
+        setTimeout(() => {
+          modal.style.display = 'none';
+          saveBtn.disabled = false;
+        }, 1200);
+      };
     }
   </script>
 </body>

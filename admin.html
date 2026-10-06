@@ -6,28 +6,84 @@
   <title>Admin Dashboard & Hourly Schedule</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .admin-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-top: 20px;
+    /* 7 SÜTUNLU TAKVİM MATRİSİ (ADMIN) */
+    .admin-cal-card {
+      background: rgba(18, 24, 43, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
     }
-    @media (max-width: 950px) { .admin-grid { grid-template-columns: 1fr; } }
-    .table-container { margin-top: 15px; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--glass-border); vertical-align: middle; }
-    th { color: var(--neon-cyan); }
-    .btn-action {
-      background: none;
-      border: 1px solid rgba(255,255,255,0.2);
+    .cal-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 10px;
+    }
+    .cal-nav-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff;
-      padding: 5px 10px;
-      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      font-size: 0.75rem;
+      font-size: 1rem;
     }
-    .btn-del { border-color: rgba(244,63,94,0.4); color: #f43f5e; }
-    .btn-del:hover { background: #f43f5e; color: #fff; }
+    .cal-nav-btn:hover { background: #00f2fe; color: #000; }
+    .cal-weekdays {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .cal-weekday-label {
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .cal-days-grid {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      gap: 6px !important;
+    }
+    .admin-day-cell {
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .admin-day-cell:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .admin-day-cell.empty { background: transparent; cursor: default; }
+    .admin-day-cell.has-open {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      color: #fff;
+    }
+    .admin-day-cell.selected {
+      border-color: #ff007f !important;
+      background: #ff007f !important;
+      color: #fff !important;
+      box-shadow: 0 0 16px rgba(255,0,127,0.6);
+    }
+
+    /* SAAT AÇ / KAPA */
     .hour-toggle-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -37,28 +93,26 @@
     .hour-toggle-btn {
       padding: 8px;
       border-radius: 10px;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
-      border: 1px solid var(--glass-border);
+      border: 1px solid rgba(255,255,255,0.15);
       cursor: pointer;
       text-align: center;
       transition: 0.2s;
     }
-    .hour-toggle-btn.closed {
-      background: rgba(255, 255, 255, 0.04);
-      color: #64748b;
-    }
-    .hour-toggle-btn.open {
-      background: rgba(16, 185, 129, 0.2);
-      border-color: #10b981;
-      color: #10b981;
-    }
-    .hour-toggle-btn.booked {
-      background: rgba(244, 63, 94, 0.25);
-      border-color: #f43f5e;
-      color: #f43f5e;
-      cursor: not-allowed;
-    }
+    .hour-toggle-btn.closed { background: rgba(255, 255, 255, 0.04); color: #64748b; }
+    .hour-toggle-btn.open { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981; }
+    .hour-toggle-btn.booked { background: rgba(244, 63, 94, 0.25); border-color: #f43f5e; color: #f43f5e; cursor: not-allowed; }
+
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+    @media (max-width: 950px) { .admin-grid { grid-template-columns: 1fr; } }
+    .table-container { margin-top: 15px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.12); vertical-align: middle; }
+    th { color: #00f2fe; }
+    .btn-action { background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
+    .btn-del { border-color: rgba(244,63,94,0.4); color: #f43f5e; }
+    .btn-del:hover { background: #f43f5e; color: #fff; }
   </style>
 </head>
 <body>
@@ -66,46 +120,57 @@
   <div class="container">
     <div class="nav-header">
       <a href="index.html">← Back to Main Hub</a>
-      <h2 style="background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      <h2 style="background: linear-gradient(135deg, #ff007f, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
         Admin Hourly Schedule & Bookings
       </h2>
     </div>
 
-    <!-- 1. TAKVİM VE GELEN RANDEVULAR -->
+    <!-- 1. TAKVİM VE RANDEVULAR -->
     <div class="admin-grid">
-      <!-- Takvim & Saat Aç/Kapa Paneli -->
+      <!-- 7 Sütunlu Takvim -->
       <div class="glass-box">
-        <h3 style="color: var(--neon-cyan); margin-bottom: 6px;">📅 Hourly Schedule Manager</h3>
+        <h3 style="color: #00f2fe; margin-bottom: 6px;">📅 Hourly Schedule Manager</h3>
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 14px;">
-          Click any date to open or close its hourly slots.
+          Click any date on the calendar to open or close its hourly slots.
         </p>
 
-        <div class="calendar-wrapper" style="padding: 12px; margin-bottom: 14px;">
-          <div class="calendar-header">
-            <button id="admin-cal-prev" class="calendar-nav-btn">‹</button>
+        <div class="admin-cal-card">
+          <div class="cal-top-bar">
+            <button id="admin-cal-prev" class="cal-nav-btn">‹</button>
             <div style="display: flex; gap: 8px;">
               <select id="admin-cal-month" class="input-field" style="margin:0; padding:4px 8px; width:auto;"></select>
               <select id="admin-cal-year" class="input-field" style="margin:0; padding:4px 8px; width:auto;"></select>
             </div>
-            <button id="admin-cal-next" class="calendar-nav-btn">›</button>
+            <button id="admin-cal-next" class="cal-nav-btn">›</button>
           </div>
-          <div class="calendar-grid" id="admin-calendar-grid"></div>
+
+          <div class="cal-weekdays">
+            <div class="cal-weekday-label">Mon</div>
+            <div class="cal-weekday-label">Tue</div>
+            <div class="cal-weekday-label">Wed</div>
+            <div class="cal-weekday-label">Thu</div>
+            <div class="cal-weekday-label">Fri</div>
+            <div class="cal-weekday-label">Sat</div>
+            <div class="cal-weekday-label">Sun</div>
+          </div>
+
+          <div class="cal-days-grid" id="admin-calendar-grid"></div>
         </div>
 
-        <!-- Seçilen Günün Saatlik Slotları -->
-        <div id="admin-hourly-manager" style="display: none; background: rgba(0,0,0,0.35); padding: 16px; border-radius: 14px; border: 1px solid var(--glass-border);">
+        <!-- Seçilen Günün Saatlerini Aç/Kapa -->
+        <div id="admin-hourly-manager" style="display: none; background: rgba(0,0,0,0.35); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-            <h4 id="admin-date-title" style="color: var(--neon-pink);">Hours for:</h4>
+            <h4 id="admin-date-title" style="color: #ff007f;">Hours for:</h4>
             <span style="font-size:0.75rem; color:#94a3b8;">Green = Open, Red = Booked</span>
           </div>
           <div class="hour-toggle-grid" id="hours-buttons-wrap"></div>
         </div>
       </div>
 
-      <!-- Gelen Randevular & Planlar -->
+      <!-- Randevu Listesi -->
       <div class="glass-box">
-        <h3 style="color: var(--neon-pink); margin-bottom: 6px;">📥 Booked Appointments & Activity Plans</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">See who booked and what they want to do.</p>
+        <h3 style="color: #ff007f; margin-bottom: 6px;">📥 Booked Appointments & Plans</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Meetings scheduled by visitors.</p>
 
         <div class="table-container" style="max-height: 480px; overflow-y: auto;">
           <table>
@@ -124,10 +189,10 @@
       </div>
     </div>
 
-    <!-- 2. ETKİNLİK VE KULLANICI LİSTESİ -->
+    <!-- 2. ETKİNLİK VE KULLANICILAR -->
     <div class="admin-grid" style="margin-top: 24px;">
       <div class="glass-box">
-        <h3 style="color: var(--neon-cyan); margin-bottom: 6px;">🎉 Create New Event</h3>
+        <h3 style="color: #00f2fe; margin-bottom: 6px;">🎉 Create New Event</h3>
         <input type="text" id="ev-title" class="input-field" placeholder="Event Title">
         <textarea id="ev-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
         <input type="text" id="ev-drive" class="input-field" placeholder="Google Drive Folder Link">
@@ -135,7 +200,7 @@
       </div>
 
       <div class="glass-box">
-        <h3 style="color: var(--neon-pink); margin-bottom: 6px;">👥 Registered Users</h3>
+        <h3 style="color: #ff007f; margin-bottom: 6px;">👥 Registered Users</h3>
         <div class="table-container" style="max-height: 220px; overflow-y: auto;">
           <table>
             <thead><tr><th>Username</th><th>Email</th><th>Status</th></tr></thead>
@@ -147,7 +212,7 @@
 
     <!-- 3. ETKİNLİK LİSTESİ -->
     <div class="glass-box" style="margin-top: 24px;">
-      <h3 style="color: var(--neon-cyan); margin-bottom: 6px;">📋 Existing Events</h3>
+      <h3 style="color: #00f2fe; margin-bottom: 6px;">📋 Existing Events</h3>
       <div class="table-container">
         <table>
           <thead><tr><th>Title</th><th>Drive Folder Link</th><th>Actions</th></tr></thead>
@@ -167,9 +232,7 @@
     }
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    // Sabit Standart Saat Dilimleri (09:00 - 23:00)
     const standardHours = [
       "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00",
       "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00",
@@ -234,13 +297,6 @@
     async function renderAdminCalendar() {
       adminCalendarGrid.innerHTML = '';
 
-      dayNames.forEach(d => {
-        const h = document.createElement('div');
-        h.className = 'calendar-day-header';
-        h.textContent = d;
-        adminCalendarGrid.appendChild(h);
-      });
-
       const year = currentCalDate.getFullYear();
       const month = currentCalDate.getMonth();
       const totalDays = new Date(year, month + 1, 0).getDate();
@@ -266,8 +322,7 @@
 
       for (let i = 0; i < startingDay; i++) {
         const empty = document.createElement('div');
-        empty.className = 'calendar-cell';
-        empty.style.opacity = '0.1';
+        empty.className = 'admin-day-cell empty';
         adminCalendarGrid.appendChild(empty);
       }
 
@@ -276,14 +331,14 @@
         const openHours = slotMap[dateStr] || 0;
 
         const cell = document.createElement('div');
-        cell.className = `calendar-cell admin-cell ${openHours > 0 ? 'admin-has-slots' : ''}`;
+        cell.className = `admin-day-cell ${openHours > 0 ? 'has-open' : ''}`;
         cell.innerHTML = `
           <span>${day}</span>
-          ${openHours > 0 ? `<span style="font-size:0.65rem; color:#10b981; margin-top:2px;">${openHours} hrs</span>` : ''}
+          ${openHours > 0 ? `<span style="font-size:0.65rem; color:#10b981; margin-top:2px;">${openHours}h</span>` : ''}
         `;
 
         cell.addEventListener('click', () => {
-          document.querySelectorAll('.admin-cell').forEach(c => c.classList.remove('selected'));
+          document.querySelectorAll('.admin-day-cell').forEach(c => c.classList.remove('selected'));
           cell.classList.add('selected');
           openHourlyManager(dateStr);
         });
@@ -295,7 +350,7 @@
     async function openHourlyManager(dateStr) {
       selectedDateStr = dateStr;
       adminHourlyManager.style.display = 'block';
-      adminDateTitle.textContent = `Schedule for: ${dateStr}`;
+      adminDateTitle.textContent = `Hours for: ${dateStr}`;
       loadDayHours(dateStr);
     }
 
@@ -336,7 +391,6 @@
         if (stateClass !== 'booked') {
           btn.addEventListener('click', async () => {
             const nextActive = stateClass !== 'open';
-            
             await supabase.from('availability_slots').upsert({
               slot_date: dateStr,
               hour_slot: h,
@@ -353,7 +407,7 @@
       });
     }
 
-    // --- GELEN RANDEVULAR LİSTESİ ---
+    // RANDEVULAR
     async function loadAppointments() {
       const tbody = document.getElementById('appointments-table-body');
       tbody.innerHTML = '';
@@ -372,9 +426,9 @@
         const slotsText = Array.isArray(a.selected_slots) ? a.selected_slots.join('<br>') : a.selected_slots;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${a.appointment_date}</strong><br><span style="color:var(--neon-cyan); font-size:0.75rem;">${slotsText}</span></td>
+          <td><strong>${a.appointment_date}</strong><br><span style="color:#00f2fe; font-size:0.75rem;">${slotsText}</span></td>
           <td><strong>${a.client_name}</strong><br><span style="font-size:0.75rem; color:#94a3b8;">${a.client_email}</span></td>
-          <td><span style="color:var(--neon-pink);">${a.client_contact}</span></td>
+          <td><span style="color:#ff007f;">${a.client_contact}</span></td>
           <td style="font-size:0.8rem; color:#cbd5e1; max-width:200px;">${a.activity_plan}</td>
           <td><button class="btn-action btn-del btn-cancel-app" data-id="${a.id}">Cancel</button></td>
         `;
@@ -382,7 +436,6 @@
         tr.querySelector('.btn-cancel-app').addEventListener('click', async () => {
           if (confirm("Cancel this appointment and free up the hours?")) {
             await supabase.from('appointments').delete().eq('id', a.id);
-            // Saatleri tekrar rezerve olmamış yap
             if (Array.isArray(a.selected_slots)) {
               await supabase.from('availability_slots')
                 .update({ is_booked: false })
@@ -399,7 +452,7 @@
       });
     }
 
-    // --- ETKİNLİKLER VE KULLANICILAR ---
+    // ETKİNLİKLER & KULLANICILAR
     async function loadEvents() {
       const tbody = document.getElementById('events-table-body');
       tbody.innerHTML = '';
@@ -453,7 +506,7 @@
       (users || []).forEach(u => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${u.username}</strong> ${u.is_admin ? '<span style="color:var(--neon-cyan); font-size:0.75rem;">(Admin)</span>' : ''}</td>
+          <td><strong>${u.username}</strong> ${u.is_admin ? '<span style="color:#00f2fe; font-size:0.75rem;">(Admin)</span>' : ''}</td>
           <td>${u.email || '-'}</td>
           <td><span style="color:${u.is_active ? '#10b981' : '#f43f5e'};">${u.is_active ? 'Active' : 'Disabled'}</span></td>
         `;

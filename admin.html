@@ -36,6 +36,7 @@
     .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
     .cb-item { background: #0f172a; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
     .code-box { font-family: monospace; font-size: 0.85rem; line-height: 1.4; }
+    .error-banner { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: #f87171; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-top: 10px; display: none; word-break: break-all; }
   </style>
 </head>
 <body>
@@ -75,7 +76,7 @@
 
       <div style="margin-bottom:12px;">
         <label>Code Payload:</label>
-        <textarea id="otaPayload" rows="7" class="code-box"></textarea>
+        <textarea id="otaPayload" rows="6" class="code-box"></textarea>
       </div>
 
       <button class="btn-success" onclick="deployOtaCode()">🚀 Deploy Live to Index (Instant OTA)</button>
@@ -124,6 +125,7 @@
       </div>
 
       <button class="btn-success" id="btnPublishEvent" onclick="createEvent()">+ Publish Event to Selected Guests</button>
+      <div id="eventErrorBanner" class="error-banner"></div>
     </div>
 
     <!-- 4. Aktif Etkinlikler Tablosu -->
@@ -267,8 +269,11 @@
       }
     }
 
-    // === GÜNCELLENMİŞ VE SAĞLAMLAŞTIRILMIŞ ETKİNLİK OLUŞTURMA ===
+    // === GÜÇLENDİRİLMİŞ ETKİNLİK OLUŞTURMA ===
     async function createEvent() {
+      const errBanner = document.getElementById('eventErrorBanner');
+      errBanner.style.display = 'none';
+
       const titleInput = document.getElementById('evTitle');
       const dateInput = document.getElementById('evDate');
       const descInput = document.getElementById('evDesc');
@@ -295,28 +300,35 @@
       btn.innerText = "Publishing...";
       btn.disabled = true;
 
-      // Tarih formatını garanti ISO formatına çevir
-      const parsedDate = new Date(dateVal).toISOString();
+      try {
+        const isoDate = new Date(dateVal).toISOString();
 
-      const { data, error } = await supabaseClient.from('events').insert([{
-        title: title,
-        event_date: parsedDate,
-        description: desc,
-        allowed_guests: selectedGuests
-      }]).select();
+        const insertPayload = {
+          title: title,
+          event_date: isoDate,
+          description: desc,
+          allowed_guests: selectedGuests
+        };
 
-      btn.innerText = "+ Publish Event to Selected Guests";
-      btn.disabled = false;
+        const { data, error } = await supabaseClient.from('events').insert([insertPayload]).select();
 
-      if (error) {
-        alert("Etkinlik oluşturma hatası: " + error.message);
-        console.error("Event creation error:", error);
-      } else {
+        if (error) {
+          throw error;
+        }
+
         titleInput.value = '';
         dateInput.value = '';
         descInput.value = '';
-        alert("🎉 Etkinlik başarıyla oluşturuldu ve seçilen kişilere tanımlandı!");
+        alert("🎉 Etkinlik başarıyla oluşturuldu!");
         loadAll();
+      } catch (err) {
+        console.error("Etkinlik hatası:", err);
+        errBanner.innerText = "Hata Detayı: " + (err.message || JSON.stringify(err));
+        errBanner.style.display = 'block';
+        alert("Etkinlik oluşturulamadı! Hata: " + (err.message || "Bilinmeyen hata"));
+      } finally {
+        btn.innerText = "+ Publish Event to Selected Guests";
+        btn.disabled = false;
       }
     }
 

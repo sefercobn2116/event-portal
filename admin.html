@@ -1,295 +1,307 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plan Zero ✦ Kontrol Paneli</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // ===== SUPABASE BAĞLANTI AYARLARI =====
-  const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
-<style>
-  :root { --bg:#0f0f14; --card:#1a1a24; --accent:#7c5cff; --accent2:#00e0a4; --danger:#ff6b81; --text:#eaeaf0; --muted:#9a9ab0; }
-  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
-  body { background:var(--bg); color:var(--text); min-height:100vh; }
-  .wrap { max-width:860px; margin:0 auto; padding:24px 16px; }
-  .hidden { display:none !important; }
-
-  /* ŞİFRE KAPISI */
-  .gate { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:20px; }
-  .gate input { padding:14px 18px; border-radius:12px; border:1px solid #333; background:var(--card); color:var(--text); font-size:1.05rem; width:min(300px,90vw); text-align:center; outline:none; letter-spacing:4px; }
-  .gate input:focus { border-color:var(--accent); }
-  .btn { margin-top:14px; padding:13px 34px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
-  .btn:hover { filter:brightness(1.15); }
-  .btn-sm { padding:7px 14px; font-size:.85rem; margin-top:0; }
-  .btn-danger { background:var(--danger); }
-  .err { color:var(--danger); margin-top:12px; }
-
-  header { display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1px solid #26263a; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
-  .title { font-size:1.4rem; font-weight:700; }
-  .title span { color:var(--accent2); }
-
-  .tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-  .tab { padding:10px 20px; border-radius:10px; background:var(--card); border:1px solid #26263a; color:var(--muted); cursor:pointer; font-size:.95rem; }
-  .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-  .card { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:16px; }
-  .card h2 { font-size:1.1rem; margin-bottom:14px; color:var(--accent2); }
-  input[type=text], input[type=datetime-local], textarea { width:100%; padding:11px 14px; border-radius:10px; border:1px solid #333; background:#12121c; color:var(--text); outline:none; margin-bottom:10px; font-family:inherit; }
-  input:focus, textarea:focus { border-color:var(--accent); }
-  label.f { font-size:.85rem; color:var(--muted); display:block; margin:6px 0 2px; }
-
-  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .pill { background:#12121c; border:1px solid #333; padding:6px 14px; border-radius:999px; font-size:.9rem; display:inline-flex; align-items:center; gap:8px; }
-  .pill button { background:none; border:none; color:var(--danger); cursor:pointer; font-size:1rem; line-height:1; }
-
-  table { width:100%; border-collapse:collapse; font-size:.9rem; }
-  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid #26263a; vertical-align:top; }
-  th { color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; }
-
-  .cbx { display:inline-flex; align-items:center; gap:6px; background:#12121c; border:1px solid #333; padding:7px 14px; border-radius:999px; margin:0 6px 6px 0; cursor:pointer; font-size:.9rem; }
-  .cbx input { accent-color:var(--accent); }
-  .msg { margin-top:10px; font-size:.95rem; min-height:1.2em; font-weight:600; }
-  .ok { color:var(--accent2); } .bad { color:var(--danger); }
-</style>
-<base target="_blank">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Paneli</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    @media (max-width: 900px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .table-container {
+      margin-top: 15px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    th {
+      color: var(--neon-cyan);
+    }
+    .status-toggle {
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .status-active {
+      background: #10b981;
+      color: #fff;
+    }
+    .status-inactive {
+      background: #ef4444;
+      color: #fff;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+  </style>
 </head>
 <body>
 
-<!-- ŞİFRE KAPISI -->
-<div id="gate" class="gate">
-  <div class="title" style="margin-bottom:20px">Plan <span>Zero</span> 🛰️️ Kontrol Paneli</div>
-  <input id="pass" type="password" placeholder="••••" inputmode="numeric">
-  <button class="btn" onclick="unlock()">Giriş</button>
-  <div class="err" id="gateErr"></div>
-</div>
+  <div class="container">
+    <div class="nav-header">
+      <a href="index.html">← Ana Sayfaya Dön</a>
+      <h2 style="background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Yönetici Paneli
+      </h2>
+    </div>
 
-<!-- PANEL -->
-<div id="panel" class="wrap hidden">
-  <header>
-    <span class="title">Plan <span>Zero</span> 🛰️</span>
-    <button class="btn btn-sm btn-danger" onclick="lock()">Kilitle 🔒</button>
-  </header>
+    <div class="admin-grid">
+      <!-- 1. Kullanıcı Yönetimi -->
+      <div class="glass-box">
+        <h3>👥 Kullanıcılar & Giriş İzni</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Yeni isim ekle ya da bir ismin giriş iznini kapat/aç.</p>
+        
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="new-user-input" class="input-field" style="margin: 0;" placeholder="Yeni kullanıcı adı">
+          <button id="btn-add-user" class="btn" style="width: auto; padding: 0 16px;">Ekle</button>
+        </div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('guests', this)">👥 Davetliler</div>
-    <div class="tab" onclick="showTab('events', this)">🎉 Etkinlikler</div>
-  </div>
-
-  <!-- DAVETLİLER -->
-  <div id="tab-guests">
-    <div class="card">
-      <h2>Yeni Davetli Ekle</h2>
-      <div class="row">
-        <input type="text" id="newGuest" placeholder="İsim (örn: Aleksandra)" style="flex:1;margin-bottom:0">
-        <button class="btn btn-sm" onclick="addGuest()">Ekle ➕</button>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>İsim</th>
+                <th>Rol</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="user-table-body">
+              <!-- Kullanıcılar listelenecek -->
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="msg" id="guestMsg"></div>
+
+      <!-- 2. Yeni Etkinlik Oluştur -->
+      <div class="glass-box">
+        <h3>🎉 Yeni Etkinlik Tanımla</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Drive klasörü linkini ekleyerek kayıpsız fotoğraf alanı oluştur.</p>
+        
+        <input type="text" id="ev-title" class="input-field" placeholder="Etkinlik Adı (Örn: Hafta Sonu Kampları)">
+        <textarea id="ev-desc" class="input-field" style="height: 70px; resize: none;" placeholder="Açıklama"></textarea>
+        <input type="url" id="ev-drive" class="input-field" placeholder="1 TB Google Drive Klasör Linki">
+        <button id="btn-create-event" class="btn">Etkinliği Yayınla</button>
+      </div>
     </div>
-    <div class="card">
-      <h2>Davetli Listesi</h2>
-      <div class="row" id="guestList"><span style="color:var(--muted)">Yükleniyor...</span></div>
+
+    <!-- 3. Yetkilendirme Matrisi -->
+    <div class="glass-box" style="margin-top: 24px;">
+      <h3>🔐 Etkinlik Yetkilendirme Paneli</h3>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">
+        Soldan bir kullanıcı seç, sağdaki listeden hangi etkinliklere tıklayıp girebileceğini işaretle.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 240px 1fr; gap: 20px;">
+        <div>
+          <label style="font-size: 0.85rem; color: #cbd5e1;">Kullanıcı Seç:</label>
+          <select id="select-user-perm" class="input-field" style="margin-top: 6px;"></select>
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #cbd5e1;">Erişebileceği Etkinlikler:</label>
+          <div id="events-checklist" style="margin-top: 6px; max-height: 250px; overflow-y: auto;">
+            <!-- Checkbox'lar -->
+          </div>
+          <button id="btn-save-perms" class="btn" style="width: auto; padding: 10px 24px; margin-top: 14px;">Yetkileri Kaydet</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ETKİNLİKLER -->
-  <div id="tab-events" class="hidden">
-    <div class="card">
-      <h2>Yeni Etkinlik Oluştur</h2>
-      <label class="f">Etkinlik Adı</label>
-      <input type="text" id="evTitle" placeholder="örn: Cumartesi Kahvesi & Yürüyüş">
-      <label class="f">Tarih & Saat</label>
-      <input type="datetime-local" id="evDate">
-      <label class="f">Açıklama</label>
-      <textarea id="evDesc" rows="3" placeholder="Buluşma yeri, detaylar..."></textarea>
-      <label class="f">Kimler Katılabilir? (Hiçbiri seçilmezse herkese açık olur)</label>
-      <div id="evGuests" style="margin-bottom:10px"><span style="color:var(--muted);font-size:.9rem">Önce davetli eklemelisin.</span></div>
-      <button class="btn" id="btnSubmitEv" onclick="createEvent()">Etkinliği Oluştur 🚀</button>
-      <div class="msg" id="evMsg"></div>
-    </div>
-    <div class="card">
-      <h2>Mevcut Etkinlikler</h2>
-      <table>
-        <thead><tr><th>Etkinlik</th><th>Tarih</th><th>Katılımcılar</th><th></th></tr></thead>
-        <tbody id="evTable"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
+  <script type="module">
+    import { supabase } from './config.js';
 
-<script>
-const ADMIN_PASS = "2116";
-const LS_ADMIN = "pz_admin_ok";
-
-function unlock() {
-  if (document.getElementById("pass").value === ADMIN_PASS) {
-    sessionStorage.setItem(LS_ADMIN, "1");
-    openPanel();
-  } else {
-    document.getElementById("gateErr").textContent = "Yanlış şifre.";
-  }
-}
-function lock() { sessionStorage.removeItem(LS_ADMIN); location.reload(); }
-
-function openPanel() {
-  document.getElementById("gate").classList.add("hidden");
-  document.getElementById("panel").classList.remove("hidden");
-  loadGuests();
-  loadEvents();
-}
-
-function showTab(id, el) {
-  document.getElementById("tab-guests").classList.toggle("hidden", id !== "guests");
-  document.getElementById("tab-events").classList.toggle("hidden", id !== "events");
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  el.classList.add("active");
-}
-
-// ---------- DAVETLİLER ----------
-async function loadGuests() {
-  const { data } = await sb.from("guests").select("*").order("name");
-  const box = document.getElementById("guestList");
-  box.innerHTML = "";
-  if (!data || data.length === 0) { box.innerHTML = "<span style='color:var(--muted)'>Henüz davetli yok.</span>"; }
-  else data.forEach(g => {
-    const pill = document.createElement("span");
-    pill.className = "pill";
-    pill.innerHTML = `${esc(g.name)} <button title="Sil" onclick="delGuest(${g.id}, '${esc(g.name)}')">✕</button>`;
-    box.appendChild(pill);
-  });
-
-  const cb = document.getElementById("evGuests");
-  cb.innerHTML = "";
-  if (!data || data.length === 0) { cb.innerHTML = "<span style='color:var(--muted);font-size:.9rem'>Davetli bulunamadı.</span>"; }
-  else data.forEach(g => {
-    const l = document.createElement("label");
-    l.className = "cbx";
-    l.innerHTML = `<input type="checkbox" value="${esc(g.name)}"> ${esc(g.name)}`;
-    cb.appendChild(l);
-  });
-}
-
-async function addGuest() {
-  const inp = document.getElementById("newGuest");
-  const msg = document.getElementById("guestMsg");
-  const name = inp.value.trim();
-  if (!name) return;
-  const { error } = await sb.from("guests").insert({ name });
-  if (error) { msg.className = "msg bad"; msg.textContent = "❌ " + error.message; return; }
-  msg.className = "msg ok"; msg.textContent = "✅ " + name + " eklendi.";
-  inp.value = "";
-  loadGuests();
-}
-
-async function delGuest(id, name) {
-  if (!confirm(`"${name}" davetli listesinden silinsin mi?`)) return;
-  await sb.from("guests").delete().eq("id", id);
-  loadGuests();
-}
-
-// ---------- ETKİNLİKLER (HATA GİDERİLDİ) ----------
-async function createEvent() {
-  const title = document.getElementById("evTitle").value.trim();
-  const dateVal = document.getElementById("evDate").value;
-  const desc = document.getElementById("evDesc").value.trim();
-  const msg = document.getElementById("evMsg");
-  const btn = document.getElementById("btnSubmitEv");
-  const selectedGuests = Array.from(document.querySelectorAll("#evGuests input:checked")).map(c => c.value);
-
-  if (!title) {
-    msg.className = "msg bad";
-    msg.textContent = "❌ Etkinlik adı zorunludur.";
-    return;
-  }
-
-  // Tarih boşsa varsayılan olarak şu anki zamanı al
-  let eventDateIso;
-  if (!dateVal) {
-    eventDateIso = new Date().toISOString();
-  } else {
-    const parsed = new Date(dateVal);
-    eventDateIso = isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
-  }
-
-  // Davetli seçilmediyse tüm kayıtlı davetlileri otomatik yetkilendir
-  let guestsStr = selectedGuests.join(",");
-  if (!guestsStr) {
-    const allCbs = Array.from(document.querySelectorAll("#evGuests input")).map(c => c.value);
-    guestsStr = allCbs.join(",");
-  }
-
-  btn.disabled = true;
-  btn.innerText = "Kaydediliyor...";
-  msg.textContent = "";
-
-  try {
-    const { data, error } = await sb.from("events").insert([{
-      title: title,
-      event_date: eventDateIso,
-      description: desc,
-      allowed_guests: guestsStr
-    }]).select();
-
-    if (error) {
-      msg.className = "msg bad";
-      msg.textContent = "❌ Supabase Hatası: " + error.message;
-      alert("Hata: " + error.message);
-    } else {
-      msg.className = "msg ok";
-      msg.textContent = "✅ Etkinlik başarıyla oluşturuldu!";
-      document.getElementById("evTitle").value = "";
-      document.getElementById("evDate").value = "";
-      document.getElementById("evDesc").value = "";
-      document.querySelectorAll("#evGuests input").forEach(c => c.checked = false);
-      loadEvents();
+    // Güvenlik Kontrolü
+    const user = JSON.parse(localStorage.getItem('portal_user'));
+    if (!user || !user.is_admin) {
+      alert("Bu sayfaya yalnızca yöneticiler erişebilir!");
+      window.location.href = 'index.html';
     }
-  } catch (err) {
-    msg.className = "msg bad";
-    msg.textContent = "❌ Beklenmedik hata: " + err.message;
-  } finally {
-    btn.disabled = false;
-    btn.innerText = "Etkinliği Oluştur 🚀";
-  }
-}
 
-async function loadEvents() {
-  const { data, error } = await sb.from("events").select("*").order("event_date", { ascending: false });
-  const tb = document.getElementById("evTable");
-  tb.innerHTML = "";
-  if (error) {
-    tb.innerHTML = `<tr><td colspan='4' style='color:var(--danger)'>Hata: ${esc(error.message)}</td></tr>`;
-    return;
-  }
-  if (!data || data.length === 0) {
-    tb.innerHTML = "<tr><td colspan='4' style='color:var(--muted)'>Henüz etkinlik yok.</td></tr>";
-    return;
-  }
-  data.forEach(ev => {
-    const tr = document.createElement("tr");
-    const d = new Date(ev.event_date);
-    tr.innerHTML = `
-      <td><b>${esc(ev.title)}</b><br><small style="color:var(--muted)">${esc(ev.description || "")}</small></td>
-      <td>${d.toLocaleDateString("tr-TR")}<br><small style="color:var(--muted)">${d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</small></td>
-      <td>${(ev.allowed_guests||"").split(",").filter(Boolean).map(g=>`<span class="pill" style="margin:2px 2px">${esc(g.trim())}</span>`).join("") || '<span style="color:var(--muted)">Herkes</span>'}</td>
-      <td><button class="btn btn-sm btn-danger" onclick="delEvent(${ev.id}, '${esc(ev.title)}')">Sil 🗑️</button></td>`;
-    tb.appendChild(tr);
-  });
-}
+    let allUsers = [];
+    let allEvents = [];
 
-async function delEvent(id, title) {
-  if (!confirm(`"${title}" ve bağlı tüm anılar/öneriler silinsin mi?`)) return;
-  const { error } = await sb.from("events").delete().eq("id", id);
-  if (error) alert("Hata: " + error.message);
-  loadEvents();
-}
+    async function loadData() {
+      const { data: u } = await supabase.from('users').select('*').order('username');
+      allUsers = u || [];
 
-function esc(s) { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
+      const { data: e } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      allEvents = e || [];
 
-document.getElementById("pass").addEventListener("keydown", e => { if (e.key === "Enter") unlock(); });
-if (sessionStorage.getItem(LS_ADMIN) === "1") openPanel();
-</script>
+      renderUsers();
+      renderPermissionSelect();
+    }
+
+    // 1. Kullanıcı Listesi Çiz
+    function renderUsers() {
+      const tbody = document.getElementById('user-table-body');
+      tbody.innerHTML = '';
+      allUsers.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${u.username}</strong></td>
+          <td>${u.is_admin ? '<span style="color:var(--neon-cyan)">Admin</span>' : 'Üye'}</td>
+          <td>
+            <button class="status-toggle ${u.is_active ? 'status-active' : 'status-inactive'}" data-id="${u.id}" data-active="${u.is_active}">
+              ${u.is_active ? 'Aktif' : 'Pasif'}
+            </button>
+          </td>
+          <td>
+            ${!u.is_admin ? `<button class="btn-del" data-id="${u.id}" style="background:none; border:none; color:#f43f5e; cursor:pointer;">Sil</button>` : ''}
+          </td>
+        `;
+        
+        tr.querySelector('.status-toggle').addEventListener('click', () => toggleUserStatus(u.id, u.is_active));
+        const delBtn = tr.querySelector('.btn-del');
+        if (delBtn) delBtn.addEventListener('click', () => deleteUser(u.id));
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function toggleUserStatus(id, current) {
+      await supabase.from('users').update({ is_active: !current }).eq('id', id);
+      loadData();
+    }
+
+    async function deleteUser(id) {
+      if (confirm('Kullanıcıyı silmek istediğinize emin misiniz?')) {
+        await supabase.from('users').delete().eq('id', id);
+        loadData();
+      }
+    }
+
+    // Yeni Kullanıcı Ekle
+    document.getElementById('btn-add-user').addEventListener('click', async () => {
+      const name = document.getElementById('new-user-input').value.trim().toLowerCase();
+      if (!name) return;
+      
+      const { error } = await supabase.from('users').insert({ username: name });
+      if (error) {
+        alert("Bu isim zaten mevcut veya bir hata oluştu.");
+      } else {
+        document.getElementById('new-user-input').value = '';
+        loadData();
+      }
+    });
+
+    // Yeni Etkinlik Ekle
+    document.getElementById('btn-create-event').addEventListener('click', async () => {
+      const title = document.getElementById('ev-title').value.trim();
+      const description = document.getElementById('ev-desc').value.trim();
+      const drive_folder_url = document.getElementById('ev-drive').value.trim();
+
+      if (!title) {
+        alert("Lütfen bir etkinlik adı yazın.");
+        return;
+      }
+
+      await supabase.from('events').insert({
+        title,
+        description,
+        drive_folder_url
+      });
+
+      document.getElementById('ev-title').value = '';
+      document.getElementById('ev-desc').value = '';
+      document.getElementById('ev-drive').value = '';
+      alert("Etkinlik başarıyla oluşturuldu!");
+      loadData();
+    });
+
+    // 2. Yetkilendirme Seçim Listeleri
+    const userSelect = document.getElementById('select-user-perm');
+    const eventsChecklist = document.getElementById('events-checklist');
+
+    function renderPermissionSelect() {
+      userSelect.innerHTML = '';
+      allUsers.filter(u => !u.is_admin).forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.username;
+        userSelect.appendChild(opt);
+      });
+      loadUserPermissions();
+    }
+
+    userSelect.addEventListener('change', loadUserPermissions);
+
+    async function loadUserPermissions() {
+      const selectedUserId = userSelect.value;
+      if (!selectedUserId) {
+        eventsChecklist.innerHTML = '<p style="color:#94a3b8;">Kullanıcı bulunamadı.</p>';
+        return;
+      }
+
+      // Kullanıcının kayıtlı izinlerini çek
+      const { data: allowed } = await supabase
+        .from('event_access')
+        .select('event_id')
+        .eq('user_id', selectedUserId);
+
+      const allowedSet = new Set((allowed || []).map(a => a.event_id));
+
+      eventsChecklist.innerHTML = '';
+      allEvents.forEach(evt => {
+        const item = document.createElement('div');
+        item.className = 'checkbox-item';
+        const isChecked = allowedSet.has(evt.id) ? 'checked' : '';
+        item.innerHTML = `
+          <input type="checkbox" id="chk-${evt.id}" value="${evt.id}" ${isChecked}>
+          <label for="chk-${evt.id}" style="cursor:pointer; font-size:0.95rem;">${evt.title}</label>
+        `;
+        eventsChecklist.appendChild(item);
+      });
+    }
+
+    // Yetkileri Kaydet
+    document.getElementById('btn-save-perms').addEventListener('click', async () => {
+      const selectedUserId = userSelect.value;
+      if (!selectedUserId) return;
+
+      const checkedBoxes = eventsChecklist.querySelectorAll('input[type="checkbox"]:checked');
+      const selectedEventIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+      // Önce mevcut yetkileri temizle
+      await supabase.from('event_access').delete().eq('user_id', selectedUserId);
+
+      // Yeni yetkileri ekle
+      if (selectedEventIds.length > 0) {
+        const rows = selectedEventIds.map(eId => ({
+          user_id: selectedUserId,
+          event_id: eId
+        }));
+        await supabase.from('event_access').insert(rows);
+      }
+
+      alert("Yetkiler güncellendi!");
+    });
+
+    loadData();
+  </script>
 </body>
 </html>

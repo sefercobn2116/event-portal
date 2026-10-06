@@ -344,10 +344,10 @@
   "is_active": true
 }'></textarea>
 
-        <div style="display: flex; gap: 12px; align-items: center; margin-top: 10px;">
+        <div style="display: flex; gap: 12px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
           <button id="btn-deploy-module" class="btn" style="width: auto; padding: 12px 28px;">📤 Modülü Yükle ve Dağıt</button>
           <button id="btn-cancel-edit" class="btn" style="width: auto; padding: 12px 20px; display: none; background: rgba(255,255,255,0.1); color: #fff;">Vazgeç</button>
-          <span id="deploy-status" style="font-size: 0.85rem; color: #00f2fe;"></span>
+          <span id="deploy-status" style="font-size: 0.85rem; font-weight: 600;"></span>
         </div>
       </div>
 
@@ -526,7 +526,12 @@
         .select('*')
         .order('updated_at', { ascending: false });
 
-      if (error || !modules || modules.length === 0) {
+      if (error) {
+        container.innerHTML = `<p style="color: #f43f5e;">Veritabanı Hatası: ${error.message}</p>`;
+        return;
+      }
+
+      if (!modules || modules.length === 0) {
         container.innerHTML = '<p style="color: #94a3b8;">Henüz kayıtlı modül bulunamadı.</p>';
         return;
       }
@@ -622,6 +627,7 @@
 
       try {
         const manifest = JSON.parse(rawJson);
+        statusEl.style.color = '#00f2fe';
         statusEl.textContent = 'Kaydediliyor...';
 
         if (ghRepo && ghToken && manifest.file_code && manifest.file_path) {
@@ -643,16 +649,25 @@
           .from('app_modules')
           .upsert(payload, { onConflict: 'module_key' });
 
-        if (error) throw error;
+        if (error) {
+          statusEl.style.color = '#f43f5e';
+          statusEl.textContent = `✗ Hata: ${error.message}`;
+          console.error("Yükleme Hatası:", error);
+          return;
+        }
 
-        statusEl.textContent = '✓ Başarıyla kaydedildi ve canlıya alındı!';
+        statusEl.style.color = '#22c55e';
+        statusEl.textContent = '✓ Başarıyla kaydedildi ve listeye eklendi!';
         document.getElementById('module-json-input').value = '';
         deployBtn.textContent = '📤 Modülü Yükle ve Dağıt';
         deployBtn.classList.remove('btn-pink');
         document.getElementById('btn-cancel-edit').style.display = 'none';
-        loadModulesList();
+        
+        await loadModulesList();
       } catch (err) {
-        statusEl.textContent = `✗ Hata: ${err.message}`;
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = `✗ JSON Ayrıştırma Hatası: ${err.message}`;
+        console.error("JSON Hatası:", err);
       }
     });
 
@@ -1057,29 +1072,73 @@
     });
 
     // ==========================================
-    // 5. REZERVASYONLAR LİSTESİ
+    // 5. REZERVASYONLAR LİSTESİ VE İPTAL ETME
     // ==========================================
     async function loadBookings() {
-      const { data: bookings } = await supabase.from('appointments').select('*').order('appointment_date', { ascending: false });
+      const { data: bookings, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .order('appointment_date', { ascending: false });
+
       const list = document.getElementById('bookings-list');
+      if (!list) return;
       list.innerHTML = '';
 
-      if (!bookings || bookings.length === 0) {
-        list.innerHTML = '<p style="color: #94a3b8;">No bookings found.</p>';
+      if (error || !bookings || bookings.length === 0) {
+        list.innerHTML = '<p style="color: #94a3b8;">Henüz kayıtlı randevu bulunamadı.</p>';
         return;
       }
 
       bookings.forEach(booking => {
         const card = document.createElement('div');
         card.className = 'glass-box';
+        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 12px;';
+        
         card.innerHTML = `
-          <h4 style="color: #00f2fe; margin-bottom: 8px;">📅 ${booking.appointment_date}</h4>
-          <p><strong>Client:</strong> ${booking.client_name}</p>
-          <p><strong>Email:</strong> ${booking.client_email}</p>
-          <p><strong>Contact:</strong> ${booking.client_contact}</p>
-          <p><strong>Plan:</strong> ${booking.activity_plan}</p>
-          <p style="color: #94a3b8; font-size: 0.85rem;"><strong>Hours:</strong> ${(booking.selected_slots || []).join(', ')}</p>
+          <div style="flex: 1; min-width: 250px;">
+            <h4 style="color: #00f2fe; margin-bottom: 8px; font-size: 1.1rem;">📅 ${booking.appointment_date}</h4>
+            <p style="margin: 4px 0;"><strong>Danışan / Ziyaretçi:</strong> ${booking.client_name}</p>
+            <p style="margin: 4px 0;"><strong>E-posta:</strong> ${booking.client_email}</p>
+            <p style="margin: 4px 0;"><strong>İletişim:</strong> ${booking.client_contact}</p>
+            <p style="margin: 4px 0;"><strong>Aktivite / Plan:</strong> ${booking.activity_plan}</p>
+            <p style="color: #00f2fe; font-size: 0.85rem; margin-top: 6px;">
+              <strong>Seçilen Saatler:</strong> ${(booking.selected_slots || []).join(', ')}
+            </p>
+          </div>
+          <div>
+            <button class="btn-cancel-booking" style="background: rgba(244, 63, 94, 0.15); border: 1px solid #f43f5e; color: #f43f5e; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.2s;">
+              ❌ Randevuyu İptal Et
+            </button>
+          </div>
         `;
+
+        card.querySelector('.btn-cancel-booking').addEventListener('click', async () => {
+          const confirmCancel = confirm(
+            `${booking.client_name} adlı kişinin ${booking.appointment_date} tarihindeki randevusunu iptal etmek istediğinize emin misiniz?\n\n(Bu işlem seçili saatleri takvimde diğer kullanıcılar için tekrar erişime açacaktır.)`
+          );
+          if (!confirmCancel) return;
+
+          try {
+            await supabase
+              .from('appointments')
+              .delete()
+              .eq('id', booking.id);
+
+            if (booking.selected_slots && booking.selected_slots.length > 0) {
+              await supabase
+                .from('availability_slots')
+                .update({ is_booked: false })
+                .eq('slot_date', booking.appointment_date)
+                .in('hour_slot', booking.selected_slots);
+            }
+
+            alert('Randevu başarıyla iptal edildi ve saatler takvime iade edildi.');
+            loadBookings();
+          } catch (err) {
+            alert(`İptal sırasında hata oluştu: ${err.message}`);
+          }
+        });
+
         list.appendChild(card);
       });
     }

@@ -18,15 +18,16 @@ export function clearSession() {
   localStorage.removeItem('portal_user');
 }
 
-// ARTIK KULLANICI ADI VEYA E-POSTA İLE GİRİŞ YAPILABİLİR
+// BÜYÜK/KÜÇÜK HARFE DUYARSIZ (ILIKE) ARAMA
 export async function loginUser(usernameOrEmail, password) {
   const cleanInput = usernameOrEmail.trim();
 
+  // ilike ile Sefer, sefer veya SEFER yazılsa da bulur
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .or(`username.eq.${cleanInput},email.eq.${cleanInput.toLowerCase()}`)
-    .eq('password', password)
+    .or(`username.ilike.${cleanInput},email.ilike.${cleanInput}`)
+    .eq('password', password.trim())
     .maybeSingle();
 
   if (error || !data) {
@@ -41,11 +42,10 @@ export async function registerUser(username, email, password) {
   const cleanUsername = username.trim();
   const cleanEmail = email.trim().toLowerCase();
 
-  // Çakışma kontrolü
   const { data: existing } = await supabase
     .from('users')
     .select('id')
-    .or(`username.eq.${cleanUsername},email.eq.${cleanEmail}`)
+    .or(`username.ilike.${cleanUsername},email.ilike.${cleanEmail}`)
     .maybeSingle();
 
   if (existing) {
@@ -57,7 +57,7 @@ export async function registerUser(username, email, password) {
     .insert([{
       username: cleanUsername,
       email: cleanEmail,
-      password: password,
+      password: password.trim(),
       role: 'user',
       is_admin: false
     }])

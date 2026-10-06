@@ -18,13 +18,13 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background: var(--bg); color: var(--text); padding: 24px 16px 80px; display: flex; justify-content: center; }
-    .container { max-width: 900px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+    .container { max-width: 850px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
     h1 { font-size: 1.8rem; color: var(--primary); font-weight: 800; }
     h2 { font-size: 1.2rem; margin-bottom: 12px; }
     .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
     label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
-    input, textarea, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; }
+    input, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; }
     button { background: var(--primary); color: #0b1120; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
     .btn-danger { background: var(--danger); color: #fff; padding: 6px 12px; font-size: 0.8rem; }
     .btn-success { background: var(--success); color: #fff; }
@@ -35,11 +35,11 @@
     #adminContent { display: none; }
     .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
     .cb-item { background: #0f172a; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-    .code-box { font-family: monospace; font-size: 0.85rem; line-height: 1.4; tab-size: 2; }
   </style>
 </head>
 <body>
 
+  <!-- Şifre Ekranı -->
   <div id="loginScreen" class="card">
     <h2 style="margin-bottom:16px;">🔒 Mission Control Access</h2>
     <input type="password" id="passInput" placeholder="Enter Admin Password..." style="margin-bottom:12px; text-align:center;" />
@@ -48,41 +48,14 @@
 
   <div class="container" id="adminContent">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h1>⚙️ Mission Control Studio</h1>
-      <a href="index.html" target="_blank" style="color:var(--primary); font-size:0.9rem; text-decoration:none;">Open Live Site ↗</a>
+      <h1>⚙️ Event & Guest Command Studio</h1>
+      <a href="index.html" target="_blank" style="color:var(--primary); font-size:0.9rem; text-decoration:none;">Open Portal ↗</a>
     </div>
 
-    <!-- OTA REMOTE CODE TERMINAL (CANLI JSON / TXT YÜKLEYİCİ) -->
-    <div class="card" style="border: 1px solid var(--primary);">
-      <h2>⚡ Remote Code & Config Terminal (OTA Deployer)</h2>
-      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
-        Update the live <code>index.html</code> instantaneously without opening GitHub. Send JSON config or Ham TXT/HTML/JS code!
-      </p>
-
-      <div class="form-row">
-        <div>
-          <label>Payload Type</label>
-          <select id="otaType" onchange="toggleTemplateHint()">
-            <option value="json">JSON Configuration (Title, Theme, Subtitle, CSS)</option>
-            <option value="raw_code">Raw Code / TXT / HTML / JS Injection</option>
-          </select>
-        </div>
-        <div style="display:flex; align-items:flex-end;">
-          <button type="button" onclick="loadSampleJson()" style="background:#1e293b; color:var(--primary); border:1px solid var(--primary);">Load Sample JSON</button>
-        </div>
-      </div>
-
-      <div style="margin-bottom:12px;">
-        <label>Code Payload (JSON or TXT/HTML):</label>
-        <textarea id="otaPayload" rows="8" class="code-box"></textarea>
-      </div>
-
-      <button class="btn-success" onclick="deployOtaCode()">🚀 Deploy Live to Index (Instant OTA)</button>
-    </div>
-
-    <!-- Master Guest Whitelist -->
+    <!-- 1. Kişi Listesi (Master Guest List) -->
     <div class="card">
       <h2>🛡️ Master Guest List</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">Add authorized names who can access the site and be assigned to events.</p>
       <div style="display:flex; gap:8px; margin-bottom:12px;">
         <input type="text" id="newGuestInput" placeholder="Add new person (e.g. Aleksandra)" />
         <button onclick="addMasterGuest()">Add Person</button>
@@ -98,13 +71,13 @@
       </table>
     </div>
 
-    <!-- Create Event -->
+    <!-- 2. Etkinlik Oluşturma & Kişi Yetkilendirme -->
     <div class="card">
       <h2>🎉 Create New Event & Assign Authorized Guests</h2>
       <div class="form-row">
         <div>
           <label>Event Title</label>
-          <input type="text" id="evTitle" placeholder="e.g. Belgrade Night Out" />
+          <input type="text" id="evTitle" placeholder="e.g. Saturday Night & Shopping" />
         </div>
         <div>
           <label>Date & Time</label>
@@ -124,7 +97,7 @@
       <button class="btn-success" onclick="createEvent()">+ Publish Event to Selected Guests</button>
     </div>
 
-    <!-- Active Events Table -->
+    <!-- 3. Tüm Etkinlikler Tablosu -->
     <div class="card">
       <h2>📅 All Events & Assigned Permissions</h2>
       <table>
@@ -160,37 +133,35 @@
     }
 
     async function loadAll() {
-      // 1. OTA Mevcut Ayarını Çek
-      const { data: ota } = await supabaseClient.from('remote_config').select('*').eq('id', 1).maybeSingle();
-      if (ota) {
-        document.getElementById('otaType').value = ota.config_type || 'json';
-        document.getElementById('otaPayload').value = ota.payload || '';
-      }
-
-      // 2. Guests
-      const { data: guests } = await supabaseClient.from('guests').select('*').order('name');
+      // 1. Guests
+      const { data: guests, error: gErr } = await supabaseClient.from('guests').select('*').order('name');
       allGuestsList = guests || [];
+      
       const gTable = document.getElementById('masterGuestsTable');
       gTable.innerHTML = '';
       const cbGroup = document.getElementById('guestCheckboxes');
       cbGroup.innerHTML = '';
 
-      allGuestsList.forEach(g => {
-        gTable.innerHTML += `
-          <tr>
-            <td><strong>${g.name}</strong></td>
-            <td><button class="btn-danger" onclick="deleteMasterGuest(${g.id})">Remove</button></td>
-          </tr>
-        `;
-        cbGroup.innerHTML += `
-          <label class="cb-item">
-            <input type="checkbox" name="assignGuest" value="${g.name}"> ${g.name}
-          </label>
-        `;
-      });
+      if (allGuestsList.length === 0) {
+        gTable.innerHTML = '<tr><td colspan="2" style="color:var(--text-muted);">No guests found.</td></tr>';
+      } else {
+        allGuestsList.forEach(g => {
+          gTable.innerHTML += `
+            <tr>
+              <td><strong>${g.name}</strong></td>
+              <td><button class="btn-danger" onclick="deleteMasterGuest(${g.id})">Remove</button></td>
+            </tr>
+          `;
+          cbGroup.innerHTML += `
+            <label class="cb-item">
+              <input type="checkbox" name="assignGuest" value="${g.name}"> ${g.name}
+            </label>
+          `;
+        });
+      }
 
-      // 3. Events
-      const { data: evs } = await supabaseClient.from('events').select('*').order('event_date', { ascending: false });
+      // 2. Events
+      const { data: evs, error: eErr } = await supabaseClient.from('events').select('*').order('event_date', { ascending: false });
       const evTable = document.getElementById('eventsTable');
       evTable.innerHTML = '';
       if (evs && evs.length > 0) {
@@ -205,47 +176,23 @@
             </tr>
           `;
         });
-      }
-    }
-
-    // OTA Deploy
-    async function deployOtaCode() {
-      const type = document.getElementById('otaType').value;
-      const payload = document.getElementById('otaPayload').value.trim();
-
-      const { error } = await supabaseClient.from('remote_config').upsert({
-        id: 1,
-        config_type: type,
-        payload: payload,
-        updated_at: new Date().toISOString()
-      });
-
-      if (error) {
-        alert("Deploy failed: " + error.message);
       } else {
-        alert("🚀 Deployed live! index.html has updated in real-time.");
+        evTable.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);">No events found.</td></tr>';
       }
-    }
-
-    function loadSampleJson() {
-      document.getElementById('otaType').value = 'json';
-      const sample = {
-        title: "Plan Zero | Elite Operations",
-        subtitle: "Private guest list & exclusive weekend vaults.",
-        primary_color: "#38bdf8",
-        accent_color: "#f43f5e",
-        custom_css: "/* Ekstra CSS */ body { letter-spacing: -0.2px; }"
-      };
-      document.getElementById('otaPayload').value = JSON.stringify(sample, null, 2);
     }
 
     async function addMasterGuest() {
       const input = document.getElementById('newGuestInput');
       const val = input.value.trim();
       if (!val) return;
-      await supabaseClient.from('guests').insert([{ name: val }]);
-      input.value = '';
-      loadAll();
+
+      const { error } = await supabaseClient.from('guests').insert([{ name: val }]);
+      if (error) {
+        alert("Error adding guest: " + error.message);
+      } else {
+        input.value = '';
+        loadAll();
+      }
     }
 
     async function deleteMasterGuest(id) {
@@ -270,21 +217,25 @@
         return;
       }
 
-      await supabaseClient.from('events').insert([{
+      const { error } = await supabaseClient.from('events').insert([{
         title: title,
         event_date: new Date(date).toISOString(),
         description: desc,
         allowed_guests: selectedGuests
       }]);
 
-      document.getElementById('evTitle').value = '';
-      document.getElementById('evDesc').value = '';
-      alert("Event published successfully!");
-      loadAll();
+      if (error) {
+        alert("Error creating event: " + error.message);
+      } else {
+        document.getElementById('evTitle').value = '';
+        document.getElementById('evDesc').value = '';
+        alert("Event created & assigned successfully!");
+        loadAll();
+      }
     }
 
     async function deleteEvent(id) {
-      if (confirm("Delete this event?")) {
+      if (confirm("Delete this event and all its uploaded photos?")) {
         await supabaseClient.from('events').delete().eq('id', id);
         loadAll();
       }

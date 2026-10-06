@@ -67,7 +67,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: BOOKINGS & REFUND -->
+    <!-- TAB 2: BOOKINGS -->
     <div id="tab-bookings" class="admin-tab-content" style="display: none;">
       <div class="glass-box">
         <h3 style="color: #00f2fe; margin-bottom: 16px;">Scheduled Appointments</h3>
@@ -75,18 +75,18 @@
       </div>
     </div>
 
-    <!-- TAB 3: EVENT MANAGER (ADMIN) -->
+    <!-- TAB 3: EVENT MANAGER -->
     <div id="tab-events" class="admin-tab-content" style="display: none;">
       <div class="glass-box" style="margin-bottom: 20px;">
         <h3 style="color: #ff007f; margin-bottom: 12px;">Create New Event (Auto Drive Folder)</h3>
-        <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title * (Drive folder will be created automatically)">
+        <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title *">
         <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
         <input type="text" id="new-evt-loc" class="input-field" placeholder="Location / Maps link (Optional)">
         <input type="datetime-local" id="new-evt-date" class="input-field" title="Event Date and Time">
         <input type="text" id="new-evt-spotify" class="input-field" placeholder="Spotify Playlist URL (Optional)">
         
         <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.85rem; color: #00f2fe; cursor: pointer;">
-          <input type="checkbox" id="new-evt-expenses"> Enable Shared Expenses (Split Bill) for this event
+          <input type="checkbox" id="new-evt-expenses"> Enable Shared Expenses (Split Bill)
         </label>
 
         <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Create Event & Auto-Generate Drive</button>
@@ -98,14 +98,11 @@
       </div>
     </div>
 
-    <!-- TAB 4: ACCESS CONTROL & USER PERMISSIONS -->
+    <!-- TAB 4: ACCESS CONTROL & ROLES -->
     <div id="tab-assignments" class="admin-tab-content" style="display: none;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="glass-box">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="color: #00f2fe; margin: 0;">Registered Users</h3>
-          </div>
-          <!-- Canlı İsim Arama -->
+          <h3 style="color: #00f2fe; margin-bottom: 12px;">Registered Users</h3>
           <input type="text" id="search-user-input" class="input-field" placeholder="🔍 Search user by name or email..." style="margin-bottom: 12px;">
           <div id="adm-users-list" style="max-height: 420px; overflow-y: auto;"></div>
         </div>
@@ -114,15 +111,15 @@
           <h3 style="color: #ff007f; margin-bottom: 14px;">User Permissions & Visibility</h3>
           <p id="adm-selected-user-name" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Pick a user from the left panel</p>
           
-          <div id="user-role-toggles" style="display: none; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #00f2fe; cursor: pointer;">
-              <input type="checkbox" id="perm-can-create-events">
-              <strong>Allow User to Create Events</strong>
+          <div id="user-role-toggles" style="display: none; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(0, 242, 254, 0.2);">
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #00f2fe; cursor: pointer;">
+              <input type="checkbox" id="perm-can-create-events" style="width: 18px; height: 18px; cursor: pointer;">
+              <strong>Allow User to Create Events (Host Space)</strong>
             </label>
           </div>
 
           <h4 style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 8px;">Allowed Events for this User:</h4>
-          <div id="adm-event-checks" style="display: grid; gap: 8px; margin-bottom: 16px; max-height: 220px; overflow-y: auto;"></div>
+          <div id="adm-event-checks" style="display: grid; gap: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto;"></div>
           <button id="btn-adm-save-perms" class="btn" style="width: 100%;" disabled>Save Permissions</button>
         </div>
       </div>
@@ -366,7 +363,6 @@
       });
     }
 
-    // ETKİNLİK OLUŞTURMA & OTOMATİK DRIVE KLASÖRÜ
     document.getElementById('btn-adm-create-evt').onclick = async () => {
       const title = document.getElementById('new-evt-title').value.trim();
       const desc = document.getElementById('new-evt-desc').value.trim();
@@ -392,7 +388,7 @@
           autoDriveUrl = d.folderId;
         }
       } catch (e) {
-        console.warn('Auto drive folder fallback:', e);
+        console.warn('Auto drive fallback:', e);
       }
 
       const user = getSessionUser();
@@ -420,7 +416,7 @@
       loadEvents();
     };
 
-    // KULLANICI LİSTESİ VE CANLI ARAMA
+    // KULLANICI LİSTESİ VE YETKİLERİ
     async function loadUsers() {
       const { data: users } = await supabase.from('users').select('*');
       allUsersCache = users || [];
@@ -446,7 +442,7 @@
           </div>
           <div style="text-align: right;">
             <span style="font-size: 0.75rem; color: #00f2fe; display: block;">${u.role || 'user'}</span>
-            ${u.can_create_events ? '<span style="font-size: 0.7rem; color: #22c55e;">Creator</span>' : ''}
+            ${(u.can_create_events || u.role === 'admin' || u.is_admin) ? '<span style="font-size: 0.7rem; color: #22c55e; font-weight: bold;">✓ Can Create</span>' : ''}
           </div>
         `;
         item.onclick = () => {
@@ -491,28 +487,45 @@
       document.getElementById('btn-adm-save-perms').disabled = false;
     }
 
+    // YETKİ KAYDETME BUTONU (GARANTİLİ YAZMA)
     document.getElementById('btn-adm-save-perms').onclick = async () => {
       if (!selectedUserForPerms) return;
+      const saveBtn = document.getElementById('btn-adm-save-perms');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving permissions...';
+
       const checkedBoxes = Array.from(document.querySelectorAll('#adm-event-checks input[type="checkbox"]:checked'));
       const eventIds = checkedBoxes.map(cb => parseInt(cb.dataset.id));
       const canCreate = document.getElementById('perm-can-create-events').checked;
 
-      // 1. Etkinlik Açma Yetkisini Güncelle
-      await supabase.from('users').update({ can_create_events: canCreate }).eq('id', selectedUserForPerms.id);
+      try {
+        // 1. can_create_events kolonunu güncelle
+        const { error: userErr } = await supabase
+          .from('users')
+          .update({ can_create_events: canCreate })
+          .eq('id', selectedUserForPerms.id);
 
-      // 2. Görünürlük İzinlerini Güncelle
-      await supabase.from('event_access').delete().eq('user_id', selectedUserForPerms.id);
-      if (eventIds.length > 0) {
-        const records = eventIds.map(eId => ({
-          user_id: selectedUserForPerms.id,
-          event_id: eId,
-          granted_at: new Date().toISOString()
-        }));
-        await supabase.from('event_access').insert(records);
+        if (userErr) throw userErr;
+
+        // 2. Görünürlük izinlerini güncelle
+        await supabase.from('event_access').delete().eq('user_id', selectedUserForPerms.id);
+        if (eventIds.length > 0) {
+          const records = eventIds.map(eId => ({
+            user_id: selectedUserForPerms.id,
+            event_id: eId,
+            granted_at: new Date().toISOString()
+          }));
+          await supabase.from('event_access').insert(records);
+        }
+
+        alert(`✓ Permissions successfully updated for ${selectedUserForPerms.username}!`);
+        await loadUsers();
+      } catch (err) {
+        alert('Failed to save permissions: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Permissions';
       }
-
-      alert(`Permissions updated for ${selectedUserForPerms.username}!`);
-      loadUsers();
     };
   </script>
 </body>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 12px; overflow-x: auto; }
+    .admin-tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-bottom: 3px solid transparent; }
+    .admin-tab-btn.active { color: #00f2fe; border-bottom-color: #00f2fe; }
+    .user-item, .event-item { background: rgba(18, 24, 43, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="nav-header">
+      <div>
+        <h2 id="admin-title" style="color: #00f2fe;">Admin Dashboard</h2>
+        <span style="font-size: 0.85rem; color: #ff007f;">Yönetici Paneli</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="index.html" class="btn" style="text-decoration: none; padding: 6px 16px; font-size: 0.85rem;">← Portala Dön</a>
+        <button id="btn-admin-logout" class="btn" style="padding: 6px 16px; font-size: 0.85rem;">Çıkış</button>
+      </div>
+    </div>
+
+    <!-- SEKMELER -->
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" data-tab="calendar">📅 Takvim ve Saat Belirleme</button>
+      <button class="admin-tab-btn" data-tab="bookings">📋 Randevular & İptal</button>
+      <button class="admin-tab-btn" data-tab="events">🎉 Etkinlik Yönetimi</button>
+      <button class="admin-tab-btn" data-tab="assignments">👥 Kullanıcı İzinleri</button>
+    </div>
+
+    <!-- TAB 1: TAKVİM & SAAT BELİRLEME -->
+    <div id="tab-calendar" class="admin-tab-content">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="glass-box">
+          <div class="cal-top-bar">
+            <button id="adm-cal-prev" class="cal-nav-btn">‹</button>
+            <div style="display: flex; gap: 6px;">
+              <select id="adm-month-sel" class="cal-dropdown"></select>
+              <select id="adm-year-sel" class="cal-dropdown"></select>
+            </div>
+            <button id="adm-cal-next" class="cal-nav-btn">›</button>
+          </div>
+          <div class="cal-weekdays">
+            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+          </div>
+          <div class="cal-days-grid" id="adm-calendar-days"></div>
+        </div>
+
+        <div class="glass-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 id="adm-slot-heading" style="color: #00f2fe; margin: 0;">Bir Gün Seçin</h4>
+            <div id="adm-bulk-btns" style="display: none; gap: 6px;">
+              <button id="btn-adm-all" class="btn" style="padding: 4px 8px; font-size: 0.75rem;">Hepsini Seç</button>
+              <button id="btn-adm-clear" class="btn btn-pink" style="padding: 4px 8px; font-size: 0.75rem;">Temizle</button>
+            </div>
+          </div>
+          <div id="adm-slot-matrix" class="slot-matrix" style="display: none; max-height: 380px; overflow-y: auto;"></div>
+          <button id="btn-adm-save-slots" class="btn" style="width: 100%; display: none; margin-top: 14px;">💾 Seçili Saatleri Kaydet</button>
+          <div id="adm-save-status" style="margin-top: 10px; font-size: 0.85rem; text-align: center;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: RANDEVULAR & İPTAL -->
+    <div id="tab-bookings" class="admin-tab-content" style="display: none;">
+      <div class="glass-box">
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">Alınan Randevular</h3>
+        <div id="adm-bookings-list" style="display: grid; gap: 12px;"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ETKİNLİK YÖNETİMİ -->
+    <div id="tab-events" class="admin-tab-content" style="display: none;">
+      <div class="glass-box" style="margin-bottom: 20px;">
+        <h3 style="color: #ff007f; margin-bottom: 12px;">Yeni Etkinlik Ekle</h3>
+        <input type="text" id="new-evt-title" class="input-field" placeholder="Etkinlik Başlığı *">
+        <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Açıklama"></textarea>
+        <input type="text" id="new-evt-drive" class="input-field" placeholder="Google Drive Klasör ID veya Linki">
+        <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Etkinlik Oluştur</button>
+      </div>
+      <div class="glass-box">
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">Kayıtlı Etkinlikler</h3>
+        <div id="adm-events-list"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: KULLANICI ERİŞİM ATAMA -->
+    <div id="tab-assignments" class="admin-tab-content" style="display: none;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="glass-box">
+          <h3 style="color: #00f2fe; margin-bottom: 14px;">Kullanıcılar</h3>
+          <div id="adm-users-list"></div>
+        </div>
+        <div class="glass-box">
+          <h3 style="color: #ff007f; margin-bottom: 14px;">Etkinlik İzinleri</h3>
+          <p id="adm-selected-user-name" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Soldan bir kullanıcı seçin</p>
+          <div id="adm-event-checks" style="display: grid; gap: 8px; margin-bottom: 16px;"></div>
+          <button id="btn-adm-save-perms" class="btn" style="width: 100%;" disabled>İzinleri Kaydet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+    import { getSessionUser, clearSession } from './modules/auth.js';
+    import { monthNames } from './modules/calendar.js';
+
+    let currentCal = new Date();
+    let selectedDate = null;
+    let activeSlots = new Set();
+    let bookedSlots = new Set();
+    let selectedUserForPerms = null;
+
+    const HOURS_24 = [];
+    for (let h = 0; h < 24; h++) {
+      const s = String(h).padStart(2, '0') + ':00';
+      const e = String((h + 1) % 24).padStart(2, '0') + ':00';
+      HOURS_24.push(`${s} - ${e}`);
+    }
+
+    window.addEventListener('load', () => {
+      const user = getSessionUser();
+      if (!user || (!user.is_admin && user.role !== 'admin')) {
+        window.location.href = 'index.html';
+        return;
+      }
+      document.getElementById('admin-title').textContent = `Admin - ${user.username}`;
+      setupTabs();
+      initAdminCal();
+      loadBookings();
+      loadEvents();
+      loadUsers();
+    });
+
+    document.getElementById('btn-admin-logout').onclick = () => {
+      clearSession();
+      window.location.href = 'index.html';
+    };
+
+    function setupTabs() {
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
+          document.getElementById(`tab-${btn.dataset.tab}`).style.display = 'block';
+        };
+      });
+    }
+
+    // TAKVİM MOTORU
+    function initAdminCal() {
+      const mSel = document.getElementById('adm-month-sel');
+      const ySel = document.getElementById('adm-year-sel');
+      mSel.innerHTML = '';
+      monthNames.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.textContent = m; mSel.appendChild(o); });
+      ySel.innerHTML = '';
+      for (let y = 2026; y < 2032; y++) { const o = document.createElement('option'); o.value = y; o.textContent = y; ySel.appendChild(o); }
+      mSel.value = currentCal.getMonth();
+      ySel.value = currentCal.getFullYear();
+
+      mSel.onchange = () => { currentCal.setMonth(parseInt(mSel.value)); renderAdminCal(); };
+      ySel.onchange = () => { currentCal.setFullYear(parseInt(ySel.value)); renderAdminCal(); };
+      document.getElementById('adm-cal-prev').onclick = () => { currentCal.setMonth(currentCal.getMonth() - 1); mSel.value = currentCal.getMonth(); ySel.value = currentCal.getFullYear(); renderAdminCal(); };
+      document.getElementById('adm-cal-next').onclick = () => { currentCal.setMonth(currentCal.getMonth() + 1); mSel.value = currentCal.getMonth(); ySel.value = currentCal.getFullYear(); renderAdminCal(); };
+
+      renderAdminCal();
+    }
+
+    async function renderAdminCal() {
+      const grid = document.getElementById('adm-calendar-days');
+      grid.innerHTML = '';
+      const yr = currentCal.getFullYear(), mo = currentCal.getMonth();
+      const total = new Date(yr, mo + 1, 0).getDate();
+      let start = new Date(yr, mo, 1).getDay() - 1;
+      if (start === -1) start = 6;
+
+      const sStr = `${yr}-${String(mo + 1).padStart(2, '0')}-01`;
+      const eStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(total).padStart(2, '0')}`;
+
+      const { data: slots } = await supabase.from('availability_slots').select('slot_date').gte('slot_date', sStr).lte('slot_date', eStr).eq('is_active', true);
+      const sMap = {};
+      (slots || []).forEach(s => { sMap[s.slot_date] = (sMap[s.slot_date] || 0) + 1; });
+
+      for (let i = 0; i < start; i++) {
+        const emp = document.createElement('div');
+        emp.className = 'cal-day-cell empty';
+        grid.appendChild(emp);
+      }
+
+      for (let d = 1; d <= total; d++) {
+        const dStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const cnt = sMap[dStr] || 0;
+        const cell = document.createElement('div');
+        cell.className = `cal-day-cell ${cnt > 0 ? 'available' : ''} ${selectedDate === dStr ? 'selected' : ''}`;
+        cell.innerHTML = `<span>${d}</span>${cnt > 0 ? `<span class="cal-badge-hours">${cnt}h</span>` : ''}`;
+        cell.onclick = () => {
+          document.querySelectorAll('#adm-calendar-days .cal-day-cell').forEach(c => c.classList.remove('selected'));
+          cell.classList.add('selected');
+          selectDayForSlots(dStr);
+        };
+        grid.appendChild(cell);
+      }
+    }
+
+    async function selectDayForSlots(dateStr) {
+      selectedDate = dateStr;
+      activeSlots.clear();
+      bookedSlots.clear();
+
+      document.getElementById('adm-slot-heading').textContent = `Saatleri Yönet: ${dateStr}`;
+      document.getElementById('adm-bulk-btns').style.display = 'flex';
+      document.getElementById('adm-slot-matrix').style.display = 'grid';
+      document.getElementById('btn-adm-save-slots').style.display = 'block';
+
+      const { data: slots } = await supabase.from('availability_slots').select('*').eq('slot_date', dateStr);
+      (slots || []).forEach(s => {
+        if (s.is_booked) bookedSlots.add(s.hour_slot);
+        else if (s.is_active) activeSlots.add(s.hour_slot);
+      });
+
+      renderSlotButtons();
+    }
+
+    function renderSlotButtons() {
+      const cont = document.getElementById('adm-slot-matrix');
+      cont.innerHTML = '';
+      HOURS_24.forEach(h => {
+        const btn = document.createElement('div');
+        btn.className = 'slot-btn';
+        btn.textContent = h;
+
+        if (bookedSlots.has(h)) {
+          btn.classList.add('booked');
+          btn.title = 'Rezerve edilmiş saat';
+        } else {
+          if (activeSlots.has(h)) btn.classList.add('active');
+          btn.onclick = () => {
+            if (activeSlots.has(h)) { activeSlots.delete(h); btn.classList.remove('active'); }
+            else { activeSlots.add(h); btn.classList.add('active'); }
+          };
+        }
+        cont.appendChild(btn);
+      });
+    }
+
+    document.getElementById('btn-adm-all').onclick = () => {
+      HOURS_24.forEach(h => { if (!bookedSlots.has(h)) activeSlots.add(h); });
+      renderSlotButtons();
+    };
+    document.getElementById('btn-adm-clear').onclick = () => {
+      activeSlots.clear();
+      renderSlotButtons();
+    };
+
+    document.getElementById('btn-adm-save-slots').onclick = async () => {
+      if (!selectedDate) return;
+      const status = document.getElementById('adm-save-status');
+      status.style.color = '#00f2fe';
+      status.textContent = 'Kaydediliyor...';
+
+      await supabase.from('availability_slots').delete().eq('slot_date', selectedDate).eq('is_booked', false);
+      if (activeSlots.size > 0) {
+        const payload = Array.from(activeSlots).map(h => ({
+          slot_date: selectedDate,
+          hour_slot: h,
+          is_active: true,
+          is_booked: false
+        }));
+        await supabase.from('availability_slots').insert(payload);
+      }
+
+      status.style.color = '#22c55e';
+      status.textContent = '✓ Saatler başarıyla kaydedildi!';
+      renderAdminCal();
+    };
+
+    // RANDEVULAR VE İPTAL MOTORU
+    async function loadBookings() {
+      const list = document.getElementById('adm-bookings-list');
+      const { data: bookings } = await supabase.from('appointments').select('*').order('appointment_date', { ascending: false });
+      list.innerHTML = '';
+
+      if (!bookings || bookings.length === 0) {
+        list.innerHTML = '<p style="color: #94a3b8;">Henüz randevu bulunmuyor.</p>';
+        return;
+      }
+
+      bookings.forEach(b => {
+        const card = document.createElement('div');
+        card.className = 'glass-box';
+        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+        card.innerHTML = `
+          <div>
+            <strong style="color: #00f2fe;">${b.appointment_date}</strong> (${(b.selected_slots || []).join(', ')})
+            <p style="margin: 4px 0;"><strong>${b.client_name}</strong> - ${b.client_email} / ${b.client_contact}</p>
+            <p style="color: #94a3b8; font-size: 0.85rem;">Not: ${b.activity_plan}</p>
+          </div>
+          <button class="btn btn-pink btn-cancel-b" style="padding: 6px 12px; font-size: 0.8rem;">❌ İptal Et & İade Et</button>
+        `;
+
+        card.querySelector('.btn-cancel-b').onclick = async () => {
+          if (!confirm(`${b.client_name} randevusunu iptal edip saatleri takvime iade etmek istiyor musunuz?`)) return;
+          await supabase.from('appointments').delete().eq('id', b.id);
+          if (b.selected_slots && b.selected_slots.length > 0) {
+            await supabase.from('availability_slots').update({ is_booked: false }).eq('slot_date', b.appointment_date).in('hour_slot', b.selected_slots);
+          }
+          alert('Randevu iptal edildi ve saatler takvime iade edildi.');
+          loadBookings();
+          renderAdminCal();
+        };
+
+        list.appendChild(card);
+      });
+    }
+
+    // ETKİNLİK YÖNETİMİ
+    async function loadEvents() {
+      const list = document.getElementById('adm-events-list');
+      const { data: events } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      list.innerHTML = '';
+      (events || []).forEach(evt => {
+        const row = document.createElement('div');
+        row.className = 'event-item';
+        row.innerHTML = `
+          <div>
+            <strong style="color: #00f2fe;">${evt.title}</strong>
+            <p style="color: #94a3b8; font-size: 0.8rem;">Drive: ${evt.drive_folder_url || 'Yok'}</p>
+          </div>
+          <button class="btn btn-pink btn-del-evt" style="padding: 4px 10px; font-size: 0.75rem;">Sil</button>
+        `;
+        row.querySelector('.btn-del-evt').onclick = async () => {
+          if (!confirm(`"${evt.title}" silinsin mi?`)) return;
+          await supabase.from('events').delete().eq('id', evt.id);
+          loadEvents();
+        };
+        list.appendChild(row);
+      });
+    }
+
+    document.getElementById('btn-adm-create-evt').onclick = async () => {
+      const title = document.getElementById('new-evt-title').value.trim();
+      const desc = document.getElementById('new-evt-desc').value.trim();
+      const drive = document.getElementById('new-evt-drive').value.trim();
+      if (!title) return alert('Başlık zorunludur!');
+
+      await supabase.from('events').insert([{ title, description: desc, drive_folder_url: drive }]);
+      document.getElementById('new-evt-title').value = '';
+      document.getElementById('new-evt-desc').value = '';
+      document.getElementById('new-evt-drive').value = '';
+      loadEvents();
+    };
+
+    // KULLANICI İZİNLERİ
+    async function loadUsers() {
+      const list = document.getElementById('adm-users-list');
+      const { data: users } = await supabase.from('users').select('*');
+      list.innerHTML = '';
+      (users || []).forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'user-item';
+        item.style.cursor = 'pointer';
+        item.innerHTML = `
+          <div>
+            <strong>${u.username}</strong>
+            <div style="font-size: 0.75rem; color: #94a3b8;">${u.email}</div>
+          </div>
+          <span style="font-size: 0.75rem; color: #00f2fe;">${u.role || 'user'}</span>
+        `;
+        item.onclick = () => {
+          selectedUserForPerms = u;
+          document.getElementById('adm-selected-user-name').textContent = `Seçilen: ${u.username} (${u.email})`;
+          loadUserPerms(u.id);
+        };
+        list.appendChild(item);
+      });
+    }
+
+    async function loadUserPerms(userId) {
+      const container = document.getElementById('adm-event-checks');
+      container.innerHTML = '';
+      const [{ data: events }, { data: access }] = await Promise.all([
+        supabase.from('events').select('*'),
+        supabase.from('event_access').select('event_id').eq('user_id', userId)
+      ]);
+
+      const allowedIds = (access || []).map(a => a.event_id);
+      (events || []).forEach(evt => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; gap: 8px; align-items: center;';
+        row.innerHTML = `
+          <input type="checkbox" id="perm-${evt.id}" data-id="${evt.id}" ${allowedIds.includes(evt.id) ? 'checked' : ''}>
+          <label for="perm-${evt.id}">${evt.title}</label>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('btn-adm-save-perms').disabled = false;
+    }
+
+    document.getElementById('btn-adm-save-perms').onclick = async () => {
+      if (!selectedUserForPerms) return;
+      const checkedBoxes = Array.from(document.querySelectorAll('#adm-event-checks input[type="checkbox"]:checked'));
+      const eventIds = checkedBoxes.map(cb => parseInt(cb.dataset.id));
+
+      await supabase.from('event_access').delete().eq('user_id', selectedUserForPerms.id);
+      if (eventIds.length > 0) {
+        const records = eventIds.map(eId => ({
+          user_id: selectedUserForPerms.id,
+          event_id: eId,
+          granted_at: new Date().toISOString()
+        }));
+        await supabase.from('event_access').insert(records);
+      }
+      alert('İzinler başarıyla güncellendi!');
+    };
+  </script>
+</body>
+</html>

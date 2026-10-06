@@ -124,7 +124,7 @@
     <!-- SECTION B: EVENTS -->
     <div id="section-events" style="display: none;">
       
-      <!-- HOST YOUR OWN EVENT (YETKİLİ KULLANICILAR) -->
+      <!-- HOST YOUR OWN EVENT -->
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -230,25 +230,24 @@
   </div>
 
   <script type="module">
-    import { initEventExpenses } from './modules/expenses.js';
     import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
     import { getSessionUser, loginUser, registerUser, clearSession } from './modules/auth.js';
     import { initCalendar } from './modules/calendar.js';
     import { initBooking } from './modules/booking.js';
     import { renderEventGallery } from './modules/gallery.js';
     import { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } from './modules/chat.js';
+    import { initEventExpenses } from './modules/expenses.js';
 
     let isRegisterMode = false;
     let currentOpenEventId = null;
     let countdownInterval = null;
     let allPortalUsers = [];
 
-    // Hata durumunda ekranda hiçbir şeyin donmaması için korumalı başlatıcı
     window.addEventListener('DOMContentLoaded', () => {
       try {
         checkUserState();
       } catch (err) {
-        console.error('Initialization error:', err);
+        console.error('Init error:', err);
         document.getElementById('view-auth').style.display = 'block';
       }
     });
@@ -262,7 +261,6 @@
         return;
       }
 
-      // Veritabanından en güncel yetkileri (can_create_events vs.) tazele
       try {
         const { data: latestUser } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
         if (latestUser) {
@@ -530,120 +528,4 @@
         card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer;';
         card.innerHTML = `
           <div>
-            <h4 style="color: #00f2fe; margin-bottom: 4px;">${evt.title}</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 2px;">${evt.description || 'No description'}</p>
-            <div style="display: flex; gap: 8px; font-size: 0.75rem; margin-top: 4px;">
-              ${evt.location ? `<span style="color: #ff007f;">📍 ${evt.location}</span>` : ''}
-              ${evt.enable_expenses ? `<span style="color: #22c55e;">💰 Split Bill On</span>` : ''}
-            </div>
-          </div>
-          <button class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Enter Space →</button>
-        `;
-        card.onclick = () => openEventRoom(evt);
-        container.appendChild(card);
-      });
-    }
-
-    async function openEventRoom(event) {
-      currentOpenEventId = event.id;
-      const room = document.getElementById('event-detail-room');
-      document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
-      
-      // 1. Konum
-      const locWrap = document.getElementById('room-location-wrap');
-      if (event.location && event.location.trim()) {
-        const loc = event.location.trim();
-        const mapUrl = loc.startsWith('http') ? loc : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
-        locWrap.innerHTML = `
-          <a href="${mapUrl}" target="_blank" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: rgba(0, 242, 254, 0.15); border: 1px solid #00f2fe; color: #00f2fe; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px;">
-            📍 ${loc} (Directions ↗)
-          </a>
-        `;
-        locWrap.style.display = 'block';
-      } else {
-        locWrap.style.display = 'none';
-      }
-
-      // 2. Sayaç
-      const cdBadge = document.getElementById('room-countdown-badge');
-      if (countdownInterval) clearInterval(countdownInterval);
-
-      if (event.event_date) {
-        cdBadge.style.display = 'inline-block';
-        const targetTime = new Date(event.event_date).getTime();
-
-        const updateCountdown = () => {
-          const diff = targetTime - new Date().getTime();
-          if (diff <= 0) {
-            cdBadge.textContent = '🎉 Event in Progress!';
-            return;
-          }
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-          const mins = Math.floor((diff / 1000 / 60) % 60);
-          cdBadge.textContent = `⏳ ${days}d ${hours}h ${mins}m left`;
-        };
-        updateCountdown();
-        countdownInterval = setInterval(updateCountdown, 60000);
-      } else {
-        cdBadge.style.display = 'none';
-      }
-
-      // 3. Spotify
-      const spotWrap = document.getElementById('room-spotify-wrap');
-      if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
-        let spotEmbed = event.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
-        spotWrap.innerHTML = `
-          <iframe style="border-radius:12px; width: 100%; height: 80px;" src="${spotEmbed}" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-        `;
-        spotWrap.style.display = 'block';
-      } else {
-        spotWrap.style.display = 'none';
-      }
-
-      // 4. Ortak Harcama (Dinamik import ile modül hatasını önler)
-      const expSection = document.getElementById('room-expenses-section');
-      if (event.enable_expenses) {
-        expSection.style.display = 'block';
-        try {
-          const { initEventExpenses } = await import('./modules/expenses.js');
-          initEventExpenses(event.id, 'room-expenses-container');
-        } catch (err) {
-          console.warn('Expenses module skipped:', err);
-        }
-      } else {
-        expSection.style.display = 'none';
-      }
-
-      room.style.display = 'block';
-
-      // 5. Galeri, Sohbet, Öneri
-      renderEventGallery('room-gallery-container', event.drive_folder_url);
-      initEventChat(event.id, 'room-chat-messages');
-      initEventSuggestions(event.id, 'room-suggestions-list');
-
-      document.getElementById('btn-close-room').onclick = () => {
-        room.style.display = 'none';
-        currentOpenEventId = null;
-        if (countdownInterval) clearInterval(countdownInterval);
-      };
-
-      document.getElementById('btn-send-chat').onclick = () => {
-        sendChatMessage(currentOpenEventId, 'chat-input-text');
-      };
-      document.getElementById('chat-input-text').onkeydown = (e) => {
-        if (e.key === 'Enter') sendChatMessage(currentOpenEventId, 'chat-input-text');
-      };
-
-      document.getElementById('btn-send-suggestion').onclick = () => {
-        sendSuggestion(currentOpenEventId, 'suggestion-input');
-      };
-      document.getElementById('suggestion-input').onkeydown = (e) => {
-        if (e.key === 'Enter') sendSuggestion(currentOpenEventId, 'suggestion-input');
-      };
-
-      room.scrollIntoView({ behavior: 'smooth' });
-    }
-  </script>
-</body>
-</html>
+            <h4 style="

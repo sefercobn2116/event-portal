@@ -109,17 +109,18 @@
 
   <script>
     const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_MqkdnbZ-rPkYOSG1R50f7w_QemOmJuv";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentSettings = null;
 
     async function checkPass() {
       const pass = document.getElementById('passInput').value;
-      const { data } = await supabaseClient.from('event_settings').select('*').eq('id', 1).single();
+      const { data } = await supabaseClient.from('event_settings').select('*').eq('id', 1).maybeSingle();
       currentSettings = data;
 
-      if (data && data.admin_pass === pass) {
+      // Varsayılan şifre: 2116
+      if ((data && data.admin_pass === pass) || pass === '2116') {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminContent').style.display = 'flex';
         loadAdminData();
@@ -129,41 +130,47 @@
     }
 
     async function loadAdminData() {
-      document.getElementById('cfgTitle').value = currentSettings.title;
-      document.getElementById('cfgSubtitle').value = currentSettings.subtitle;
-      if (currentSettings.event_date) {
-        const d = new Date(currentSettings.event_date);
-        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-        document.getElementById('cfgDate').value = d.toISOString().slice(0, 16);
+      if (currentSettings) {
+        document.getElementById('cfgTitle').value = currentSettings.title || '';
+        document.getElementById('cfgSubtitle').value = currentSettings.subtitle || '';
+        if (currentSettings.event_date) {
+          const d = new Date(currentSettings.event_date);
+          d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+          document.getElementById('cfgDate').value = d.toISOString().slice(0, 16);
+        }
       }
 
       const { data: acts } = await supabaseClient.from('activities').select('*').order('votes', { ascending: false });
       const actTable = document.getElementById('adminActsTable');
       actTable.innerHTML = '';
-      acts.forEach(a => {
-        actTable.innerHTML += `
-          <tr>
-            <td><strong>${a.title}</strong></td>
-            <td>${a.added_by}</td>
-            <td><strong style="color:var(--primary);">${a.votes || 0}</strong></td>
-            <td><button class="btn-danger" onclick="deleteActivity(${a.id})">Delete</button></td>
-          </tr>
-        `;
-      });
+      if (acts) {
+        acts.forEach(a => {
+          actTable.innerHTML += `
+            <tr>
+              <td><strong>${a.title}</strong></td>
+              <td>${a.added_by}</td>
+              <td><strong style="color:var(--primary);">${a.votes || 0}</strong></td>
+              <td><button class="btn-danger" onclick="deleteActivity(${a.id})">Delete</button></td>
+            </tr>
+          `;
+        });
+      }
 
       const { data: parts } = await supabaseClient.from('participants').select('*').order('created_at', { ascending: false });
       const partTable = document.getElementById('participantsTable');
       partTable.innerHTML = '';
-      parts.forEach(p => {
-        partTable.innerHTML += `
-          <tr>
-            <td><strong>${p.name}</strong></td>
-            <td>${p.arrival_time || '-'}</td>
-            <td>${(p.selected_activities || []).join(', ')}</td>
-            <td style="color:var(--text-muted);">${p.note || '-'}</td>
-          </tr>
-        `;
-      });
+      if (parts) {
+        parts.forEach(p => {
+          partTable.innerHTML += `
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.arrival_time || '-'}</td>
+              <td>${(p.selected_activities || []).join(', ')}</td>
+              <td style="color:var(--text-muted);">${p.note || '-'}</td>
+            </tr>
+          `;
+        });
+      }
     }
 
     async function saveSettings() {
@@ -171,13 +178,14 @@
       const subtitle = document.getElementById('cfgSubtitle').value;
       const dateVal = document.getElementById('cfgDate').value;
 
-      await supabaseClient.from('event_settings').update({
+      await supabaseClient.from('event_settings').upsert({
+        id: 1,
         title: title,
         subtitle: subtitle,
         event_date: new Date(dateVal).toISOString()
-      }).eq('id', 1);
+      });
 
-      alert("Settings updated successfully! Updated across all clients.");
+      alert("Settings updated successfully! Updated live.");
     }
 
     async function adminAddActivity() {

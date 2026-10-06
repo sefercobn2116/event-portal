@@ -34,14 +34,14 @@
     .hub-card:hover {
       transform: translateY(-6px);
       border-color: var(--neon-cyan);
-      box-shadow: 0 12px 30px rgba(6, 182, 212, 0.25);
+      box-shadow: 0 12px 30px rgba(0, 242, 254, 0.25);
     }
     .hub-card.pink:hover {
       border-color: var(--neon-pink);
-      box-shadow: 0 12px 30px rgba(244, 63, 94, 0.25);
+      box-shadow: 0 12px 30px rgba(255, 0, 127, 0.25);
     }
     .slot-pill {
-      background: rgba(6, 182, 212, 0.15);
+      background: rgba(0, 242, 254, 0.15);
       border: 1px solid var(--neon-cyan);
       color: #fff;
       padding: 8px 14px;
@@ -88,7 +88,7 @@
     }
     .msg-item.mine {
       align-self: flex-end;
-      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      background: linear-gradient(135deg, #00f2fe, #3b82f6);
       color: #fff;
     }
     .msg-item.theirs {
@@ -108,7 +108,7 @@
       padding: 10px 14px;
     }
     .btn-vote {
-      background: rgba(6, 182, 212, 0.2);
+      background: rgba(0, 242, 254, 0.2);
       border: 1px solid var(--neon-cyan);
       color: var(--neon-cyan);
       padding: 6px 12px;
@@ -132,10 +132,10 @@
 </head>
 <body>
 
-  <!-- Kesintisiz Müzik Çalar -->
+  <!-- Kesintisiz Arka Plan Müziği -->
   <audio id="bg-audio" preload="auto"></audio>
 
-  <!-- ================= 0. GÖRÜNÜM: ANA SEÇİM EKRANI (HUB) ================= -->
+  <!-- ================= 0. VIEW: ANA GİRİŞ / HUB ================= -->
   <div id="view-hub" class="container">
     <div class="nav-header">
       <h2 style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
@@ -157,7 +157,7 @@
       <div id="card-go-events" class="hub-card">
         <span style="font-size: 3rem;">🎉</span>
         <h2 style="color: var(--neon-cyan); margin: 0;">Event Portal</h2>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Access active events, live group chats, suggestions and 5 TB media gallery.</p>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Access active events, live group chats, suggestions, and 5 TB media gallery.</p>
         <span class="badge badge-open" style="margin-top: 10px;">Enter Events →</span>
       </div>
 
@@ -166,27 +166,27 @@
         <span style="font-size: 3rem;">📅</span>
         <h2 style="color: var(--neon-pink); margin: 0;">Book an Appointment</h2>
         <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">View my open calendar dates and pick an available time slot that fits your schedule.</p>
-        <span class="badge badge-open" style="margin-top: 10px; background: rgba(244,63,94,0.2); color: var(--neon-pink); border-color: var(--neon-pink);">Schedule Now →</span>
+        <span class="badge badge-open" style="margin-top: 10px; background: rgba(255,0,127,0.2); color: var(--neon-pink); border-color: var(--neon-pink);">Schedule Now →</span>
       </div>
     </div>
   </div>
 
-  <!-- ================= 1. GÖRÜNÜM: ETKİNLİK GİRİŞİ ================= -->
+  <!-- ================= 1. VIEW: ETKİNLİK GİRİŞİ ================= -->
   <div id="view-login" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 14px; font-size: 0.85rem;">← Back to Main Hub</button>
     </div>
-    <div class="glass-box login-wrap" style="margin-top: 30px;">
-      <h1>Portal Login</h1>
-      <p style="color: #94a3b8; font-size: 0.9rem;">Enter your username to access events</p>
+    <div class="glass-box login-wrap" style="margin-top: 30px; max-width: 440px; margin-left: auto; margin-right: auto; text-align: center;">
+      <h1 style="margin-bottom: 8px;">Portal Login</h1>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">Enter your username to access events</p>
       
       <input type="text" id="username-input" class="input-field" placeholder="e.g. sefer" autocomplete="off" />
-      <button id="btn-login" class="btn">Login & Continue</button>
+      <button id="btn-login" class="btn" style="width: 100%;">Login & Continue</button>
       <p id="login-err" style="color: #f43f5e; margin-top: 12px; font-size: 0.85rem; display: none;"></p>
     </div>
   </div>
 
-  <!-- ================= 2. GÖRÜNÜM: ETKİNLİK VİTRİNİ ================= -->
+  <!-- ================= 2. VIEW: ETKİNLİK VİTRİNİ ================= -->
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div>
@@ -195,14 +195,14 @@
       </div>
       <div style="display: flex; align-items: center; gap: 10px;">
         <button class="btn-to-hub" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Hub</button>
-        <a id="admin-link" href="admin.html" style="display: none;">Admin</a>
+        <a id="admin-link" href="admin.html" style="display: none; background: rgba(0,242,254,0.15); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem;">Admin</a>
         <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Logout</button>
       </div>
     </div>
     <div id="events-list" class="events-grid"></div>
   </div>
 
-  <!-- ================= 3. GÖRÜNÜM: ETKİNLİK ODASI ================= -->
+  <!-- ================= 3. VIEW: ETKİNLİK ODASI ================= -->
   <div id="view-event-detail" class="container" style="display: none;">
     <div class="nav-header">
       <button id="btn-back-dashboard" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Events</button>
@@ -263,7 +263,7 @@
     </div>
   </div>
 
-  <!-- ================= 4. GÖRÜNÜM: RANDEVU ALMA TAKVİMİ ================= -->
+  <!-- ================= 4. VIEW: RANDEVU ALMA TAKVİMİ ================= -->
   <div id="view-booking" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Main Hub</button>
@@ -276,13 +276,11 @@
         Pick an available date and time slot from the schedule below to book our meeting.
       </p>
 
-      <!-- Tarih Seçici -->
       <div style="margin-bottom: 20px;">
         <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 6px;">Select Date:</label>
         <select id="booking-date-select" class="input-field" style="max-width: 320px;"></select>
       </div>
 
-      <!-- Müsait Saatler -->
       <div style="margin-bottom: 24px;">
         <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 10px;">Available Time Slots:</label>
         <div id="booking-slots-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -290,7 +288,6 @@
         </div>
       </div>
 
-      <!-- Randevu Formu -->
       <div id="booking-form-wrap" style="display: none; border-top: 1px solid var(--glass-border); padding-top: 20px; max-width: 480px;">
         <h4 style="color: var(--neon-cyan); margin-bottom: 12px;">Confirm Booking Details</h4>
         <input type="text" id="book-name" class="input-field" placeholder="Your Name & Surname *">
@@ -301,10 +298,23 @@
     </div>
   </div>
 
+  <!-- ================= GÖRSEL ŞÖLEN: HER TIKLAMADA NEON DALGA SCRIPTİ ================= -->
+  <script>
+    window.addEventListener('click', (e) => {
+      const ripple = document.createElement('div');
+      ripple.className = 'click-ripple';
+      ripple.style.left = `${e.clientX}px`;
+      ripple.style.top = `${e.clientY}px`;
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    });
+  </script>
+
+  <!-- ================= ANA UYGULAMA MOTORU ================= -->
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    // MÜZİK ÇALAR
+    // MÜZİK ÇALMA LİSTESİ
     const playlist = [
       { title: "Lofi Chill Night", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" },
       { title: "Deep Atmosphere", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
@@ -353,7 +363,7 @@
 
     loadTrack(0);
 
-    // GÖRÜNÜM YÖNETİMİ
+    // GÖRÜNÜM GEÇİŞLERİ
     const viewHub = document.getElementById('view-hub');
     const viewLogin = document.getElementById('view-login');
     const viewDashboard = document.getElementById('view-dashboard');
@@ -375,7 +385,6 @@
 
     document.querySelectorAll('.btn-to-hub').forEach(btn => btn.addEventListener('click', showHub));
 
-    // Kart Tıklamaları
     document.getElementById('card-go-events').addEventListener('click', () => {
       playTrack();
       const user = JSON.parse(localStorage.getItem('portal_user'));
@@ -395,7 +404,7 @@
       loadAvailableDates();
     });
 
-    // ETKİNLİK SİSTEMİ (LOGIN / DASHBOARD / ROOM)
+    // ETKİNLİK SİSTEMİ
     let currentUser = null;
     let activeEventId = null;
     let activeFolderId = '';
@@ -550,7 +559,7 @@
       loadPolls();
     });
 
-    // 5 TB DRIVE UPLOAD & GALLERY
+    // 5 TB GOOGLE DRIVE YÜKLEME & GALERİ
     const fileInput = document.getElementById('media-file-input');
     const triggerBtn = document.getElementById('btn-trigger-upload');
     const uploadStatus = document.getElementById('upload-status');
@@ -610,7 +619,7 @@
       } catch (e) { galleryGrid.innerHTML = '<p style="color:#ef4444;">Error fetching photos.</p>'; }
     }
 
-    // ================= 5. RANDEVU (BOOKING) MOTORU =================
+    // RANDEVU ALMA MOTORU
     const bookingDateSelect = document.getElementById('booking-date-select');
     const bookingSlotsContainer = document.getElementById('booking-slots-container');
     const bookingFormWrap = document.getElementById('booking-form-wrap');
@@ -620,7 +629,6 @@
       bookingDateSelect.innerHTML = '<option value="">Select Date...</option>';
       const today = new Date().toISOString().split('T')[0];
 
-      // Sadece gelecekteki ve boş olan slotları çek
       const { data: slots } = await supabase
         .from('availability_slots')
         .select('slot_date')
@@ -689,7 +697,6 @@
         return;
       }
 
-      // 1. Randevuyu kaydet
       const { error: appErr } = await supabase.from('appointments').insert({
         slot_id: selectedSlotId,
         client_name: name,
@@ -699,7 +706,6 @@
 
       if (appErr) return alert("Booking error: " + appErr.message);
 
-      // 2. Slotu rezerve et
       await supabase.from('availability_slots').update({ is_booked: true }).eq('id', selectedSlotId);
 
       alert("🎉 Your appointment has been booked successfully!");

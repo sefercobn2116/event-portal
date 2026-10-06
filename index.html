@@ -1,28 +1,376 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Toplantı ve Eğlence Planları</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cumartesi Buluşma ve Eğlence Planı</title>
   <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(23, 32, 54, 0.7);
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #38bdf8;
+      --accent: #ec4899;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
+      background: radial-gradient(circle at top, #1e293b, var(--bg));
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 680px;
+      width: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
+      gap: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Geri Sayım */
+    .countdown-title {
+      text-align: center;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
       text-align: center;
     }
-    h1 { color: #38bdf8; margin-bottom: 8px; }
-    p { color: #94a3b8; font-size: 1.1rem; }
+
+    .time-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 6px;
+    }
+
+    .time-box .num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .time-box .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Etkinlik Detayı */
+    .event-info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      width: fit-content;
+    }
+
+    /* Anket / Seçenekler */
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .option-item:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .option-item.selected {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--primary);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    }
+
+    .option-item input {
+      display: none;
+    }
+
+    .option-icon {
+      font-size: 1.4rem;
+    }
+
+    /* Katılım Formu */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="time"], textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    button.btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+      transition: opacity 0.2s ease;
+    }
+
+    button.btn-submit:hover {
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
-  <h1>Toplantı ve Eğlence Planları</h1>
-  <p>Sitemiz çok yakında burada yayında olacak!</p>
+
+  <div class="container">
+    <header>
+      <h1>Hafta Sonu Buluşması</h1>
+      <p>Cumartesi günü alışveriş ve devamı için plan yapıyoruz!</p>
+    </header>
+
+    <!-- Geri Sayım -->
+    <div class="card">
+      <div class="countdown-title">⏳ Buluşmaya Kalan Süre</div>
+      <div class="countdown-grid">
+        <div class="time-box"><div class="num" id="days">00</div><div class="label">Gün</div></div>
+        <div class="time-box"><div class="num" id="hours">00</div><div class="label">Saat</div></div>
+        <div class="time-box"><div class="num" id="minutes">00</div><div class="label">Dakika</div></div>
+        <div class="time-box"><div class="num" id="seconds">00</div><div class="label">Saniye</div></div>
+      </div>
+    </div>
+
+    <!-- Ana Plan -->
+    <div class="card event-info">
+      <div class="info-badge">🛍️ 1. Aşama: Alışveriş</div>
+      <h3 style="font-size: 1.1rem;">Önce Alışveriş, Sonra Eğlence!</h3>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        İlk olarak alışveriş turumuzu tamamlayacağız. Ardından günün devamında ne yapmak istediğinizi aşağıdan seçebilirsiniz.
+      </p>
+    </div>
+
+    <!-- Aktivite Seçenekleri -->
+    <div class="card">
+      <h2>✨ Alışveriş Sonrası Ne Yapalım?</h2>
+      <div class="options-grid">
+        <label class="option-item">
+          <input type="checkbox" name="activity" value="Kahve & Sohbet">
+          <span class="option-icon">☕</span>
+          <div><strong>Kahve & Tatlı</strong><div style="font-size:0.8rem; color:var(--text-muted);">Sakin sohbet molası</div></div>
+        </label>
+
+        <label class="option-item">
+          <input type="checkbox" name="activity" value="Yemek & Kokteyl">
+          <span class="option-icon">🍕</span>
+          <div><strong>Güzel Bir Yemek</strong><div style="font-size:0.8rem; color:var(--text-muted);">Akşam yemeği & içecek</div></div>
+        </label>
+
+        <label class="option-item">
+          <input type="checkbox" name="activity" value="Oyun / Eğlence">
+          <span class="option-icon">🎳</span>
+          <div><strong>Bowling / Arcade / Oyun</strong><div style="font-size:0.8rem; color:var(--text-muted);">Eğlenceli rekabet</div></div>
+        </label>
+
+        <label class="option-item">
+          <input type="checkbox" name="activity" value="Sinema">
+          <span class="option-icon">🍿</span>
+          <div><strong>Sinema</strong><div style="font-size:0.8rem; color:var(--text-muted);">Vizyondaki filmler</div></div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Katılım ve Saat Belirtme Formu -->
+    <div class="card">
+      <h2>📝 Katılım Durumun & Saatin</h2>
+      <form id="rsvpForm">
+        <div class="form-group">
+          <label>İsmin:</label>
+          <input type="text" id="userName" placeholder="Adını yaz..." required />
+        </div>
+
+        <div class="form-group">
+          <label>Kaç gibi gelebilirsin?</label>
+          <input type="time" id="userTime" value="14:00" required />
+        </div>
+
+        <div class="form-group">
+          <label>Eklemek istediğin bir fikir / mekan var mı?</label>
+          <textarea id="userNote" rows="2" placeholder="Örn: 'Şu mekana gidebiliriz...'"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Seçimlerimi Gönder 🚀</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 1. GERİ SAYIM HESAPLAMA (Önümüzdeki Cumartesi Saat 13:00)
+    function getNextSaturday() {
+      const now = new Date();
+      const nextSat = new Date();
+      const day = now.getDay();
+      const diff = (6 - day + 7) % 7;
+      nextSat.setDate(now.getDate() + (diff === 0 ? 7 : diff));
+      nextSat.setHours(13, 0, 0, 0); // Varsayılan buluşma saati 13:00
+      return nextSat.getTime();
+    }
+
+    const targetDate = getNextSaturday();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        document.querySelector(".countdown-title").innerText = "🎉 Buluşma Başladı!";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("days").innerText = String(days).padStart(2, '0');
+      document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+      document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+      document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // 2. SEÇENEK KARTLARINI SEÇME EFEKTİ
+    document.querySelectorAll('.option-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        item.classList.toggle('selected', checkbox.checked);
+      });
+    });
+
+    // 3. SEÇİMLERİ GÖNDERME
+    document.getElementById('rsvpForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('userName').value.trim();
+      const time = document.getElementById('userTime').value;
+      const note = document.getElementById('userNote').value.trim();
+      
+      const selected = [];
+      document.querySelectorAll('input[name="activity"]:checked').forEach(cb => {
+        selected.push(cb.value);
+      });
+
+      const message = `Selam! Cumartesi buluşması için tercihlerim:%0A%0A` +
+        `👤 *İsim:* ${name}%0A` +
+        `⏰ *Gelebileceğim Saat:* ${time}%0A` +
+        `🎯 *İstediğim Aktiviteler:* ${selected.length > 0 ? selected.join(', ') : 'Fark etmez'}%0A` +
+        (note ? `💬 *Not/Fikir:* ${note}` : '');
+
+      // WhatsApp üzerinden mesaj taslağı oluşturur (numara girmeden de doğrudan WhatsApp'ta arkadaşına iletebilir)
+      window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
+    });
+  </script>
 </body>
 </html>

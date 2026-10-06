@@ -2,13 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Event & Booking Portal</title>
+  
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00f2fe">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Portal">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+
   <link rel="stylesheet" href="style.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration error:', err));
+      });
+    }
+  </script>
 </head>
 <body>
 
-  <!-- 1. AUTH SCREEN (LOGIN / REGISTER) -->
+  <!-- 1. AUTH SCREEN -->
   <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
     <div class="glass-box">
       <h2 id="auth-title" style="color: #00f2fe; text-align: center; margin-bottom: 20px;">Sign In</h2>
@@ -49,7 +65,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
       <div id="nav-btn-events" class="glass-box" style="cursor: pointer;">
         <h3 style="color: #00f2fe; margin-bottom: 8px;">🎉 My Events</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem;">Photo gallery, live suggestions, and group room chat.</p>
+        <p style="color: #94a3b8; font-size: 0.85rem;">Media gallery, live suggestions, locations, and room chat.</p>
       </div>
       <div id="nav-btn-booking" class="glass-box" style="cursor: pointer;">
         <h3 style="color: #ff007f; margin-bottom: 8px;">📅 Booking & Calendar</h3>
@@ -92,7 +108,7 @@
       </div>
     </div>
 
-    <!-- SECTION B: EVENTS (GALLERY + LIVE SUGGESTIONS + REALTIME CHAT) -->
+    <!-- SECTION B: EVENTS (GALLERY + LOCATION + SUGGESTIONS + REALTIME CHAT) -->
     <div id="section-events" style="display: none;">
       <div class="glass-box">
         <h3 style="color: #00f2fe; margin-bottom: 16px;">Available Events</h3>
@@ -100,14 +116,17 @@
       </div>
 
       <div id="event-detail-room" class="glass-box" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h3 id="room-title" style="color: #00f2fe; margin: 0;">Event Space</h3>
-          <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.8rem;">Close Room</button>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 id="room-title" style="color: #00f2fe; margin: 0 0 6px 0;">Event Space</h3>
+            <div id="room-location-wrap" style="display: none;"></div>
+          </div>
+          <button id="btn-close-room" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Close Room</button>
         </div>
 
-        <!-- 1. PHOTO GALLERY -->
+        <!-- 1. PHOTO/VIDEO GALLERY -->
         <div style="margin-bottom: 24px;">
-          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Shared Photo Gallery</h4>
+          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Shared Media Gallery</h4>
           <div id="room-gallery-container"></div>
         </div>
 
@@ -267,7 +286,8 @@
         card.innerHTML = `
           <div>
             <h4 style="color: #00f2fe; margin-bottom: 4px;">${evt.title}</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem;">${evt.description || 'No description provided'}</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 2px;">${evt.description || 'No description provided'}</p>
+            ${evt.location ? `<span style="font-size: 0.75rem; color: #ff007f;">📍 ${evt.location}</span>` : ''}
           </div>
           <button class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Enter Space →</button>
         `;
@@ -280,6 +300,22 @@
       currentOpenEventId = event.id;
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
+      
+      // Konum / Yol Tarifi Butonu
+      const locWrap = document.getElementById('room-location-wrap');
+      if (event.location && event.location.trim()) {
+        const loc = event.location.trim();
+        const mapUrl = loc.startsWith('http') ? loc : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
+        locWrap.innerHTML = `
+          <a href="${mapUrl}" target="_blank" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: rgba(0, 242, 254, 0.15); border: 1px solid #00f2fe; color: #00f2fe; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px;">
+            📍 ${loc} (Get Directions ↗)
+          </a>
+        `;
+        locWrap.style.display = 'block';
+      } else {
+        locWrap.style.display = 'none';
+      }
+
       room.style.display = 'block';
 
       renderEventGallery('room-gallery-container', event.drive_folder_url);

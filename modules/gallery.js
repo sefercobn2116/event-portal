@@ -1,4 +1,5 @@
 // modules/gallery.js
+import { EMAIL_WEBHOOK_URL } from '../config.js';
 
 let currentImages = [];
 let currentImageIndex = 0;
@@ -12,7 +13,7 @@ export function setupLightboxDOM() {
   lightbox.innerHTML = `
     <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
       <div style="position: absolute; top: -45px; right: 0; display: flex; gap: 12px; align-items: center;">
-        <a id="lb-download" href="#" target="_blank" download class="btn" style="padding: 6px 14px; font-size: 0.8rem; background: #00f2fe; color: #070913; text-decoration: none;">⬇ Download</a>
+        <a id="lb-download" href="#" target="_blank" download class="btn" style="padding: 6px 14px; font-size: 0.8rem; background: #00f2fe; color: #070913; text-decoration: none; font-weight: 700;">⬇ Download</a>
         <button id="lb-close" style="background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">✕</button>
       </div>
       <button id="lb-prev" style="position: absolute; left: -50px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">‹</button>
@@ -59,9 +60,9 @@ function updateLightboxView() {
   const dlBtn = document.getElementById('lb-download');
   if (!imgEl || !counterEl) return;
 
-  const url = currentImages[currentImageIndex];
-  imgEl.src = url;
-  if (dlBtn) dlBtn.href = url;
+  const item = currentImages[currentImageIndex];
+  imgEl.src = item.url;
+  if (dlBtn) dlBtn.href = item.download_url;
   counterEl.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
 }
 
@@ -75,6 +76,7 @@ function showNextImage() {
   updateLightboxView();
 }
 
+// Drive Klasöründen Fotoğrafları Dinamik Çeken Fonksiyon
 export async function renderEventGallery(containerId, driveFolderUrl) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -82,42 +84,46 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   setupLightboxDOM();
 
   if (!driveFolderUrl) {
-    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder linked for this event.</p>';
+    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder assigned for this event.</p>';
     return;
   }
 
+  // Folder ID'sini ayıkla
   let folderId = driveFolderUrl.trim();
   const match = folderId.match(/[-\w]{25,}/);
   if (match) folderId = match[0];
 
-  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.85rem;">Fetching Drive photos...</p>';
+  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.85rem;">Loading photos directly from Google Drive...</p>';
 
   try {
-    currentImages = [
-      `https://lh3.googleusercontent.com/d/${folderId}=w1600`,
-      `https://drive.google.com/uc?export=view&id=${folderId}`
-    ];
+    const fetchUrl = `${EMAIL_WEBHOOK_URL}?action=get_drive_photos&folder_id=${folderId}`;
+    const res = await fetch(fetchUrl);
+    const data = await res.json();
+
+    if (data.status !== 'success' || !data.photos || data.photos.length === 0) {
+      container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem;">No photos found in this Drive folder (Make sure folder is shared as Anyone with the link).</p>';
+      return;
+    }
+
+    currentImages = data.photos;
 
     container.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <span style="font-size: 0.8rem; color: #94a3b8;">Google Drive Connected</span>
-        <a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">📁 Open Drive Folder</a>
-      </div>
       <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;"></div>
     `;
 
     const grid = document.getElementById('drive-photos-grid');
-    currentImages.forEach((imgUrl, idx) => {
+    currentImages.forEach((imgObj, idx) => {
       const thumb = document.createElement('img');
-      thumb.src = imgUrl;
-      thumb.alt = `Drive Image ${idx + 1}`;
+      thumb.src = imgObj.url;
+      thumb.alt = imgObj.name;
       thumb.style.cssText = 'width: 100%; height: 95px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s;';
-      thumb.onerror = () => { thumb.style.display = 'none'; };
+      thumb.onmouseover = () => { thumb.style.transform = 'scale(1.03)'; thumb.style.borderColor = '#00f2fe'; };
+      thumb.onmouseout = () => { thumb.style.transform = 'scale(1)'; thumb.style.borderColor = 'rgba(255,255,255,0.12)'; };
       thumb.onclick = () => openLightbox(idx);
       grid.appendChild(thumb);
     });
 
   } catch (err) {
-    container.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Failed to load photos: ${err.message}</p>`;
+    container.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Error loading gallery: ${err.message}</p>`;
   }
 }

@@ -18,11 +18,9 @@ export function clearSession() {
   localStorage.removeItem('portal_user');
 }
 
-// BÜYÜK/KÜÇÜK HARFE DUYARSIZ (ILIKE) ARAMA
 export async function loginUser(usernameOrEmail, password) {
   const cleanInput = usernameOrEmail.trim();
 
-  // ilike ile Sefer, sefer veya SEFER yazılsa da bulur
   const { data, error } = await supabase
     .from('users')
     .select('*')
@@ -31,7 +29,7 @@ export async function loginUser(usernameOrEmail, password) {
     .maybeSingle();
 
   if (error || !data) {
-    throw new Error('Geçersiz kullanıcı adı veya şifre.');
+    throw new Error('Invalid username or password.');
   }
 
   setSessionUser(data);
@@ -49,7 +47,7 @@ export async function registerUser(username, email, password) {
     .maybeSingle();
 
   if (existing) {
-    throw new Error('Bu kullanıcı adı veya e-posta adresi zaten kullanımda.');
+    throw new Error('Username or email is already taken.');
   }
 
   const { data, error } = await supabase

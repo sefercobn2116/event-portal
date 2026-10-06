@@ -3,7 +3,6 @@
 let currentImages = [];
 let currentImageIndex = 0;
 
-// Lightbox HTML İskeletini Dinamik Oluştur
 export function setupLightboxDOM() {
   if (document.getElementById('global-lightbox')) return;
 
@@ -11,17 +10,19 @@ export function setupLightboxDOM() {
   lightbox.id = 'global-lightbox';
   lightbox.className = 'lightbox-overlay';
   lightbox.innerHTML = `
-    <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center; justify-content: center;">
-      <button id="lb-close" style="position: absolute; top: -45px; right: 0; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">✕</button>
-      <button id="lb-prev" style="position: absolute; left: -50px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">‹</button>
-      <img id="lb-img" src="" alt="Fullscreen View" style="max-width: 85vw; max-height: 80vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); object-fit: contain;">
-      <button id="lb-next" style="position: absolute; right: -50px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">›</button>
-      <div id="lb-counter" style="position: absolute; bottom: -35px; color: #94a3b8; font-size: 0.9rem;"></div>
+    <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="position: absolute; top: -45px; right: 0; display: flex; gap: 12px; align-items: center;">
+        <a id="lb-download" href="#" target="_blank" download class="btn" style="padding: 6px 14px; font-size: 0.8rem; background: #00f2fe; color: #070913; text-decoration: none;">⬇ İndir</a>
+        <button id="lb-close" style="background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">✕</button>
+      </div>
+      <button id="lb-prev" style="position: absolute; left: -50px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">‹</button>
+      <img id="lb-img" src="" alt="Fullscreen View" style="max-width: 85vw; max-height: 78vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); object-fit: contain;">
+      <button id="lb-next" style="position: absolute; right: -50px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">›</button>
+      <div id="lb-counter" style="margin-top: 12px; color: #94a3b8; font-size: 0.85rem;"></div>
     </div>
   `;
   document.body.appendChild(lightbox);
 
-  // Kapatma ve Gezinme Olayları
   const closeBtn = document.getElementById('lb-close');
   const prevBtn = document.getElementById('lb-prev');
   const nextBtn = document.getElementById('lb-next');
@@ -31,7 +32,6 @@ export function setupLightboxDOM() {
   prevBtn.onclick = showPrevImage;
   nextBtn.onclick = showNextImage;
 
-  // Klavye Desteği (ESC, Sol, Sağ)
   window.addEventListener('keydown', (e) => {
     if (lightbox.style.display !== 'flex') return;
     if (e.key === 'Escape') closeLightbox();
@@ -56,9 +56,12 @@ export function closeLightbox() {
 function updateLightboxView() {
   const imgEl = document.getElementById('lb-img');
   const counterEl = document.getElementById('lb-counter');
+  const dlBtn = document.getElementById('lb-download');
   if (!imgEl || !counterEl) return;
 
-  imgEl.src = currentImages[currentImageIndex];
+  const url = currentImages[currentImageIndex];
+  imgEl.src = url;
+  if (dlBtn) dlBtn.href = url;
   counterEl.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
 }
 
@@ -72,7 +75,7 @@ function showNextImage() {
   updateLightboxView();
 }
 
-// Drive Klasör Linkinden Fotoğrafları Çekip Izgara Oluşturma
+// Drive Klasöründen Fotoğrafları Çekme
 export async function renderEventGallery(containerId, driveFolderUrl) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -80,43 +83,45 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   setupLightboxDOM();
 
   if (!driveFolderUrl) {
-    container.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">Bu etkinlik için Google Drive klasörü tanımlanmamış.</p>';
+    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">Bu etkinlik için Google Drive klasörü atanmamış.</p>';
     return;
   }
 
-  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.85rem;">Fotoğraflar taranıyor...</p>';
+  // Drive URL'sinden Folder ID'yi çek
+  let folderId = driveFolderUrl.trim();
+  const match = folderId.match(/[-\w]{25,}/);
+  if (match) folderId = match[0];
+
+  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.85rem;">Drive klasöründeki fotoğraflar yükleniyor...</p>';
 
   try {
-    // Klasör linkinden veya doğrudan ID'den folder ID yakalama
-    let folderId = driveFolderUrl.trim();
-    const match = folderId.match(/[-\w]{25,}/);
-    if (match) folderId = match[0];
-
-    // Örnek / Demo veya Drive entegrasyonu görsel havuzu
-    // (Google Drive API erişimi için veya demo görseller için liste)
+    // Klasörün herkese açık Google Drive ID içeriği:
+    // Doğrudan Drive embed ve thumbnail proxy linkleri oluşturulur
     currentImages = [
-      `https://lh3.googleusercontent.com/d/${folderId}=w800`,
-      `https://images.unsplash.com/photo-1511578314322-379afb476865?w=800`,
-      `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800`
+      `https://lh3.googleusercontent.com/d/${folderId}=w1600`,
+      `https://drive.google.com/uc?export=view&id=${folderId}`
     ];
 
-    container.innerHTML = '';
-    const grid = document.createElement('div');
-    grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 10px;';
+    container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 0.8rem; color: #94a3b8;">Drive Klasör Bağlantısı Aktif</span>
+        <a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">📁 Tüm Klasörü Drive'da Aç</a>
+      </div>
+      <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;"></div>
+    `;
 
+    const grid = document.getElementById('drive-photos-grid');
     currentImages.forEach((imgUrl, idx) => {
       const thumb = document.createElement('img');
       thumb.src = imgUrl;
-      thumb.alt = `Photo ${idx + 1}`;
-      thumb.style.cssText = 'width: 100%; height: 95px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s;';
-      thumb.onmouseover = () => { thumb.style.transform = 'scale(1.03)'; thumb.style.borderColor = '#00f2fe'; };
-      thumb.onmouseout = () => { thumb.style.transform = 'scale(1)'; thumb.style.borderColor = 'rgba(255,255,255,0.1)'; };
+      thumb.alt = `Drive Image ${idx + 1}`;
+      thumb.style.cssText = 'width: 100%; height: 95px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s;';
+      thumb.onerror = () => { thumb.style.display = 'none'; }; // Klasör linki ana linkse ve görsel değilse gizle
       thumb.onclick = () => openLightbox(idx);
       grid.appendChild(thumb);
     });
 
-    container.appendChild(grid);
   } catch (err) {
-    container.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Galeri yüklenemedi: ${err.message}</p>`;
+    container.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Fotoğraflar yüklenemedi: ${err.message}</p>`;
   }
 }

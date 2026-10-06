@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title id="docTitle">Plan Zero | Member Portal</title>
+  <title>Plan Zero | Member Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -57,7 +57,6 @@
     .btn-logout {
       background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;
       padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
-      transition: all 0.2s;
     }
     .btn-logout:hover { background: var(--danger); color: #fff; }
 
@@ -87,7 +86,6 @@
     }
     .btn-back:hover { color: var(--primary); }
 
-    /* Suggestions */
     .sug-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
     .sug-item {
       background: rgba(2, 6, 23, 0.5); border: 1px solid var(--border);
@@ -96,7 +94,7 @@
     .sug-user { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
     .sug-text { font-size: 0.95rem; color: #fff; }
 
-    /* Media Vault */
+    /* Media Grid */
     .gallery-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 14px;
     }
@@ -126,7 +124,7 @@
     .btn-submit {
       width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s;
+      cursor: pointer;
     }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-secondary {
@@ -142,7 +140,6 @@
 </head>
 <body>
 
-  <!-- Gatekeeper -->
   <div id="gateModal">
     <h2>🔒 Access Gate</h2>
     <p>Enter your authorized name to view your events.</p>
@@ -153,14 +150,11 @@
     </div>
   </div>
 
-  <div id="remoteCustomContainer"></div>
-
-  <!-- Ana Portal -->
   <div class="container" id="mainPortal">
     <header>
       <div class="header-left">
         <div id="welcomeBadge" class="welcome-pill">Member Access</div>
-        <h1 id="appHeadline">Plan Zero</h1>
+        <h1>Plan Zero</h1>
       </div>
       <button class="btn-logout" onclick="logoutGuest()">Exit / Switch ➔</button>
     </header>
@@ -197,11 +191,11 @@
         </div>
       </div>
 
-      <!-- TOPLU FOTOĞRAF VE VİDEO YÜKLEME ALANI -->
+      <!-- TOPLU DOSYA YÜKLEME ALANI -->
       <div class="card">
         <h2>📸 Upload Memories (Batch Upload)</h2>
         <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
-          Select multiple photos/videos at once from your library.
+          Select multiple photos or videos from your library at once.
         </p>
         <input type="file" id="batchMediaInput" accept="image/*,video/*" multiple />
         <input type="text" id="batchCaptionInput" placeholder="Add a caption / note (optional)..." />
@@ -211,7 +205,7 @@
         <div id="uploadStatusText" class="upload-status"></div>
       </div>
 
-      <!-- FOTOĞRAF & VİDEO ARŞİVİ -->
+      <!-- ARŞİV -->
       <div class="card">
         <h2>🖼 Memory Vault</h2>
         <div class="gallery-grid" id="galleryContainer">
@@ -267,19 +261,17 @@
 
     if (currentGuest) openPortal();
 
+    // Kişiye Özel Etkinlik Filtreleme (Düz Metin Araması - Garanti Çalışır)
     async function loadAuthorizedEvents() {
       const { data: allEvents } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
       const container = document.getElementById('eventsContainer');
       container.innerHTML = '';
 
       const myEvents = (allEvents || []).filter(e => {
-        let allowed = e.allowed_guests;
-        if (!allowed) return false;
-        if (typeof allowed === 'string') {
-          try { allowed = JSON.parse(allowed); } catch(err) { allowed = [allowed]; }
-        }
-        if (!Array.isArray(allowed)) return false;
-        return allowed.some(g => g.toLowerCase() === currentGuest.toLowerCase());
+        if (!e.allowed_guests) return false;
+        // İsimler virgülle ayrılmış: "Sefer,Aleksandra"
+        const list = e.allowed_guests.toLowerCase().split(',').map(s => s.trim());
+        return list.includes(currentGuest.toLowerCase());
       });
 
       if (myEvents.length === 0) {
@@ -402,7 +394,7 @@
       }
     }
 
-    // Görselleri sıkıştırıp hafifletme
+    // Dosyaları optimize etme
     function processFile(file) {
       return new Promise((resolve) => {
         if (!file.type.startsWith('image/')) {
@@ -438,7 +430,7 @@
       });
     }
 
-    // Sıralı ve Güvenli Toplu Yükleme
+    // Sıralı Toplu Yükleme Motoru
     async function uploadBatchMedia() {
       const fileInput = document.getElementById('batchMediaInput');
       const capInput = document.getElementById('batchCaptionInput');
@@ -478,7 +470,7 @@
         }
       }
 
-      statusText.innerText = `✅ ${successCount} dosya başarıyla arşive eklendi!`;
+      statusText.innerText = `✅ ${successCount} dosya başarıyla yüklendi!`;
       fileInput.value = '';
       capInput.value = '';
       btn.disabled = false;

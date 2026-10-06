@@ -13,14 +13,10 @@
     <div class="glass-box">
       <h2 id="auth-title" style="color: #00f2fe; text-align: center; margin-bottom: 20px;">Portal Girişi</h2>
       
-      <!-- Kullanıcı Adı (Girişte ve Kayıtta Ortak) -->
       <input type="text" id="auth-username" class="input-field" placeholder="Kullanıcı Adı">
-
-      <!-- Sadece Kayıt Olurken Açılan E-posta -->
       <div id="auth-register-fields" style="display: none;">
         <input type="email" id="reg-email" class="input-field" placeholder="E-posta Adresi *">
       </div>
-
       <input type="password" id="auth-password" class="input-field" placeholder="Şifre">
       
       <button id="btn-auth-submit" class="btn" style="width: 100%; margin-top: 8px;">Giriş Yap</button>
@@ -49,19 +45,19 @@
       </div>
     </div>
 
-    <!-- Menü Seçenekleri -->
+    <!-- Menü Kartları -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
-      <div id="nav-btn-events" class="glass-box" style="cursor: pointer; transition: 0.2s;">
+      <div id="nav-btn-events" class="glass-box" style="cursor: pointer;">
         <h3 style="color: #00f2fe; margin-bottom: 8px;">🎉 Etkinliklerim</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem;">Katıldığınız etkinlikler, paylaşılan fotoğraflar ve oda sohbeti.</p>
+        <p style="color: #94a3b8; font-size: 0.85rem;">Fotoğraf galerisi, canlı öneri panosu ve anlık oda sohbeti.</p>
       </div>
-      <div id="nav-btn-booking" class="glass-box" style="cursor: pointer; transition: 0.2s;">
+      <div id="nav-btn-booking" class="glass-box" style="cursor: pointer;">
         <h3 style="color: #ff007f; margin-bottom: 8px;">📅 Randevu & Takvim</h3>
         <p style="color: #94a3b8; font-size: 0.85rem;">Müsait gün ve saatleri inceleyip doğrudan rezervasyon oluşturun.</p>
       </div>
     </div>
 
-    <!-- BÖLÜM A: TAKVİM & RANDEVU -->
+    <!-- TAKVİM & RANDEVU -->
     <div id="section-booking" style="display: none;">
       <div class="glass-box">
         <h3 style="color: #ff007f; margin-bottom: 16px;">📅 Müsaitlik Takvimi & Randevu Talebi</h3>
@@ -81,26 +77,22 @@
 
         <div class="cal-days-grid" id="calendar-days-grid"></div>
 
-        <!-- Seçilen Günün Saatleri -->
         <div id="selected-day-slots-wrap" style="display: none; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 18px;">
           <h4 id="selected-date-heading" style="color: #00f2fe; margin-bottom: 10px;">Available Hours</h4>
           <div id="hourly-slots-container" class="slot-matrix"></div>
         </div>
 
-        <!-- Sadeleştirilmiş Randevu Rezervasyon Formu -->
         <div id="booking-form-wrap" style="display: none; margin-top: 20px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 14px;">
           <h4 style="color: #00f2fe; margin-bottom: 8px;">Randevu Detayı</h4>
           <p id="booking-user-badge" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;"></p>
-          
           <input type="text" id="book-contact" class="input-field" placeholder="İletişim / Telegram / Telefon (İsteğe bağlı)">
-          <textarea id="book-plan" class="input-field" style="height: 80px; resize: none;" placeholder="Görüşme amacı / Notunuz / Planınız *"></textarea>
-          
+          <textarea id="book-plan" class="input-field" style="height: 80px; resize: none;" placeholder="Görüşme notunuz / planınız *"></textarea>
           <button id="btn-submit-booking" class="btn btn-pink" style="width: 100%;">Confirm Booking Now</button>
         </div>
       </div>
     </div>
 
-    <!-- BÖLÜM B: ETKİNLİKLER & GALERİ / CHAT -->
+    <!-- ETKİNLİKLER (GALERİ + CANLI ÖNERİ + CANLI CHAT) -->
     <div id="section-events" style="display: none;">
       <div class="glass-box">
         <h3 style="color: #00f2fe; margin-bottom: 16px;">Erişebildiğiniz Etkinlikler</h3>
@@ -108,21 +100,33 @@
       </div>
 
       <div id="event-detail-room" class="glass-box" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h3 id="room-title" style="color: #00f2fe; margin: 0;">Etkinlik Odası</h3>
           <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.8rem;">Odayı Kapat</button>
         </div>
 
+        <!-- 1. FOTOĞRAF GALERİSİ -->
         <div style="margin-bottom: 24px;">
-          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Fotoğraf Galerisi</h4>
+          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Fotoğraf Galerisi & İndirme</h4>
           <div id="room-gallery-container"></div>
         </div>
 
-        <div>
-          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Canlı Mesajlaşma</h4>
-          <div id="room-chat-messages" style="height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
+        <!-- 2. CANLI ETKİNLİK ÖNERİLERİ -->
+        <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+          <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">💡 Etkinlik İçin Öneri Paylaş (Canlı)</h4>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input type="text" id="suggestion-input" class="input-field" placeholder="Grup için bir fikir veya etkinlik önerisi yazın..." style="margin-bottom: 0;">
+            <button id="btn-send-suggestion" class="btn btn-pink" style="width: auto; padding: 0 18px; font-size: 0.85rem;">Öner</button>
+          </div>
+          <div id="room-suggestions-list" style="max-height: 180px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- 3. CANLI SOHBET (CHAT) -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Canlı Sohbet (Anlık)</h4>
+          <div id="room-chat-messages" style="height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
           <div style="display: flex; gap: 10px;">
-            <input type="text" id="chat-input-text" class="input-field" placeholder="Bir mesaj yazın..." style="margin-bottom: 0;">
+            <input type="text" id="chat-input-text" class="input-field" placeholder="Mesajınızı yazın..." style="margin-bottom: 0;">
             <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 24px;">Gönder</button>
           </div>
         </div>
@@ -130,21 +134,18 @@
     </div>
   </div>
 
-  <!-- BOOTLOADER -->
   <script type="module">
     import { supabase } from './config.js';
     import { getSessionUser, loginUser, registerUser, clearSession } from './modules/auth.js';
     import { initCalendar } from './modules/calendar.js';
     import { initBooking } from './modules/booking.js';
     import { renderEventGallery } from './modules/gallery.js';
-    import { initEventChat, sendChatMessage } from './modules/chat.js';
+    import { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } from './modules/chat.js';
 
     let isRegisterMode = false;
     let currentOpenEventId = null;
 
-    window.addEventListener('load', () => {
-      checkUserState();
-    });
+    window.addEventListener('load', () => checkUserState());
 
     function checkUserState() {
       const user = getSessionUser();
@@ -191,7 +192,7 @@
         try {
           if (isRegisterMode) {
             const email = document.getElementById('reg-email').value;
-            if (!username || !email || !pass) throw new Error('Tüm alanları doldurmanız gerekmektedir.');
+            if (!username || !email || !pass) throw new Error('Tüm alanları doldurunuz.');
             await registerUser(username, email, pass);
           } else {
             if (!username || !pass) throw new Error('Kullanıcı adı ve şifre zorunludur.');
@@ -252,8 +253,8 @@
         query = supabase.from('events').select('*').in('id', eventIds);
       }
 
-      const { data: events, error } = await query;
-      if (error || !events || events.length === 0) {
+      const { data: events } = await query;
+      if (!events || events.length === 0) {
         container.innerHTML = '<p style="color: #94a3b8;">Erişebileceğiniz aktif bir etkinlik bulunamadı.</p>';
         return;
       }
@@ -281,19 +282,34 @@
       document.getElementById('room-title').textContent = `Etkinlik Odası: ${event.title}`;
       room.style.display = 'block';
 
+      // 1. Galeri
       renderEventGallery('room-gallery-container', event.drive_folder_url);
+      
+      // 2. Canlı Mesajlaşma
       initEventChat(event.id, 'room-chat-messages');
+
+      // 3. Canlı Öneriler
+      initEventSuggestions(event.id, 'room-suggestions-list');
 
       document.getElementById('btn-close-room').onclick = () => {
         room.style.display = 'none';
         currentOpenEventId = null;
       };
 
+      // Mesaj Gönderme
       document.getElementById('btn-send-chat').onclick = () => {
         sendChatMessage(currentOpenEventId, 'chat-input-text');
       };
       document.getElementById('chat-input-text').onkeydown = (e) => {
         if (e.key === 'Enter') sendChatMessage(currentOpenEventId, 'chat-input-text');
+      };
+
+      // Öneri Gönderme
+      document.getElementById('btn-send-suggestion').onclick = () => {
+        sendSuggestion(currentOpenEventId, 'suggestion-input');
+      };
+      document.getElementById('suggestion-input').onkeydown = (e) => {
+        if (e.key === 'Enter') sendSuggestion(currentOpenEventId, 'suggestion-input');
       };
 
       room.scrollIntoView({ behavior: 'smooth' });

@@ -1,1 +1,353 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Etkinlik Odası</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    @media (max-width: 850px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    /* Sohbet Kutusu */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 480px;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.25);
+    }
+    .msg-item {
+      padding: 10px 14px;
+      border-radius: 14px;
+      max-width: 80%;
+      word-break: break-word;
+      font-size: 0.9rem;
+    }
+    .msg-item.mine {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: #fff;
+    }
+    .msg-item.theirs {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+    }
+    .msg-author {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-bottom: 3px;
+      font-weight: bold;
+    }
+    /* Oylama Listesi */
+    .poll-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 15px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .poll-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .btn-vote {
+      background: rgba(6, 182, 212, 0.2);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .btn-vote:hover {
+      background: var(--neon-cyan);
+      color: #000;
+    }
+    /* Drive Bölümü */
+    .drive-banner {
+      margin-top: 24px;
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), rgba(244, 63, 94, 0.15));
+      border: 1px dashed var(--neon-cyan);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
 
+  <div class="container">
+    <div class="nav-header">
+      <a href="index.html">← Etkinliklere Dön</a>
+      <span id="current-user-tag" style="font-size: 0.9rem; color: #94a3b8;"></span>
+    </div>
+
+    <!-- Etkinlik Başlığı -->
+    <div class="glass-box" style="margin-bottom: 20px;">
+      <h1 id="event-title" style="font-size: 1.8rem; margin-bottom: 6px;">Yükleniyor...</h1>
+      <p id="event-desc" style="color: #94a3b8; font-size: 0.95rem;"></p>
+    </div>
+
+    <!-- 1 TB Google Drive Medya Alanı -->
+    <div class="drive-banner" id="drive-box">
+      <h3 style="margin-bottom: 6px;">📸 Etkinlik Fotoğraf & Video Alanı (1 TB Drive)</h3>
+      <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 12px;">
+        Telefonundan ve bilgisayarından kayıpsız toplu fotoğraf yükleyebilir, dilediğin zaman orijinal kalitede indirebilirsin.
+      </p>
+      <a id="btn-drive-link" href="#" target="_blank" class="btn" style="display: inline-block; width: auto; padding: 10px 24px; text-decoration: none;">
+        📂 Google Drive Klasörünü Aç (Fotoğraf Yükle / İndir)
+      </a>
+    </div>
+
+    <div class="grid-layout">
+      <!-- 1. Canlı Mesajlaşma (Sohbet) -->
+      <div class="glass-box chat-container">
+        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Ortak Sohbet</h3>
+        <div class="chat-messages" id="chat-messages">
+          <!-- Mesajlar buraya düşecek -->
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <input type="text" id="chat-input" class="input-field" style="margin: 0;" placeholder="Mesajını yaz..." autocomplete="off">
+          <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 20px;">Gönder</button>
+        </div>
+      </div>
+
+      <!-- 2. Öneri ve Oylama Paneli -->
+      <div class="glass-box">
+        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 Gün İçinde Ne Yapalım? (Ortak Öneri & Oy)</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Fikrini öner, arkadaşların oylasın!</p>
+
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="Örn: Akşam bowlinge gidelim mi?">
+          <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Ekle</button>
+        </div>
+
+        <div class="poll-list" id="poll-list">
+          <!-- Oylamalar buraya listelenecek -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+
+    // Oturum kontrolü
+    const user = JSON.parse(localStorage.getItem('portal_user'));
+    if (!user) {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('current-user-tag').textContent = `Giriş: ${user.username}`;
+
+    // URL'den Etkinlik ID'sini al
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get('id');
+
+    if (!eventId) {
+      alert("Geçersiz etkinlik!");
+      window.location.href = 'index.html';
+    }
+
+    // Yetki Güvenlik Kontrolü
+    async function verifyAccess() {
+      if (user.is_admin) return true;
+
+      const { data, error } = await supabase
+        .from('event_access')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('event_id', eventId)
+        .maybeSingle();
+
+      if (error || !data) {
+        alert("Bu etkinliğe erişim yetkiniz bulunmamaktadır!");
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+
+    // Etkinlik Detayı Yükle
+    async function loadEventData() {
+      const { data: evt, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', eventId)
+        .single();
+
+      if (error || !evt) {
+        alert("Etkinlik bulunamadı.");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('event-title').textContent = evt.title;
+      document.getElementById('event-desc').textContent = evt.description || 'Detay girilmedi.';
+      
+      const driveLink = document.getElementById('btn-drive-link');
+      if (evt.drive_folder_url) {
+        driveLink.href = evt.drive_folder_url;
+      } else {
+        driveLink.textContent = 'Henüz Drive Klasörü Tanımlanmadı';
+        driveLink.style.pointerEvents = 'none';
+        driveLink.style.opacity = '0.5';
+      }
+    }
+
+    // --- SOHBET / MESAJLAŞMA BÖLÜMÜ ---
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const btnSendChat = document.getElementById('btn-send-chat');
+
+    async function loadMessages() {
+      const { data: msgs } = await supabase
+        .from('event_messages')
+        .select('*')
+        .eq('event_id', eventId)
+        .order('created_at', { ascending: true });
+
+      chatMessages.innerHTML = '';
+      (msgs || []).forEach(appendMessage);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function appendMessage(msg) {
+      const isMine = msg.username.toLowerCase() === user.username.toLowerCase();
+      const div = document.createElement('div');
+      div.className = `msg-item ${isMine ? 'mine' : 'theirs'}`;
+      div.innerHTML = `
+        <div class="msg-author">${msg.username}</div>
+        <div>${msg.message}</div>
+      `;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      chatInput.value = '';
+      await supabase.from('event_messages').insert({
+        event_id: eventId,
+        user_id: user.id,
+        username: user.username,
+        message: text
+      });
+    }
+
+    btnSendChat.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Realtime Mesaj Dinleyici (Canlı Akış)
+    supabase
+      .channel('chat-room-' + eventId)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'event_messages',
+        filter: `event_id=eq.${eventId}`
+      }, payload => {
+        appendMessage(payload.new);
+      })
+      .subscribe();
+
+    // --- ÖNERİ VE OYLAMA BÖLÜMÜ ---
+    const pollList = document.getElementById('poll-list');
+    const pollInput = document.getElementById('poll-input');
+    const btnAddPoll = document.getElementById('btn-add-poll');
+
+    async function loadPolls() {
+      const { data: polls } = await supabase
+        .from('event_suggestions')
+        .select('*')
+        .eq('event_id', eventId)
+        .order('votes', { ascending: false });
+
+      pollList.innerHTML = '';
+      if (!polls || polls.length === 0) {
+        pollList.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Henüz bir öneri yapılmadı. İlk fikri sen yaz!</p>';
+        return;
+      }
+
+      polls.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'poll-item';
+        div.innerHTML = `
+          <div>
+            <div style="font-size:0.95rem; font-weight:600;">${item.title}</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Ekleyen: ${item.suggested_by}</div>
+          </div>
+          <button class="btn-vote" data-id="${item.id}" data-votes="${item.votes}">
+            👍 ${item.votes} Oy
+          </button>
+        `;
+        div.querySelector('.btn-vote').addEventListener('click', () => voteSuggestion(item.id, item.votes));
+        pollList.appendChild(div);
+      });
+    }
+
+    async function addSuggestion() {
+      const title = pollInput.value.trim();
+      if (!title) return;
+
+      pollInput.value = '';
+      await supabase.from('event_suggestions').insert({
+        event_id: eventId,
+        suggested_by: user.username,
+        title: title,
+        votes: 1
+      });
+      loadPolls();
+    }
+
+    async function voteSuggestion(id, currentVotes) {
+      await supabase
+        .from('event_suggestions')
+        .update({ votes: currentVotes + 1 })
+        .eq('id', id);
+      loadPolls();
+    }
+
+    btnAddPoll.addEventListener('click', addSuggestion);
+
+    // Başlat
+    (async () => {
+      const allowed = await verifyAccess();
+      if (allowed) {
+        loadEventData();
+        loadMessages();
+        loadPolls();
+      }
+    })();
+  </script>
+</body>
+</html>

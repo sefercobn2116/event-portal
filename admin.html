@@ -93,7 +93,6 @@
       font-weight: 700;
       text-transform: uppercase;
     }
-
     .user-role-badge.admin {
       background: rgba(255, 0, 127, 0.2);
       color: #ff007f;
@@ -104,9 +103,7 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 16px;
       padding: 20px;
-      margin-top: 24px;
     }
-
     .assignment-controls h4 {
       color: #ff007f;
       margin-bottom: 16px;
@@ -132,13 +129,7 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
-    .checkbox-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-
+    .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
     .checkbox-item label { flex: 1; color: #fff; cursor: pointer; }
 
     .btn-assign {
@@ -173,6 +164,144 @@
       border: 1px solid rgba(244, 63, 94, 0.5);
       display: block;
     }
+
+    /* --- ADMIN TAKVİM VE 24 SAAT DİLİM STİLLERİ --- */
+    .admin-cal-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 24px;
+      margin-top: 15px;
+    }
+    @media (max-width: 900px) {
+      .admin-cal-wrapper { grid-template-columns: 1fr; }
+    }
+
+    .cal-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+    .cal-nav-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .cal-nav-btn:hover { background: #00f2fe; color: #000; }
+    .cal-dropdown {
+      background: rgba(10, 14, 28, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .cal-weekdays {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .cal-weekday-label {
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .cal-days-grid {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      gap: 6px;
+    }
+    .cal-day-cell {
+      height: 52px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cal-day-cell.empty { background: transparent; border: none; cursor: default; }
+    .cal-day-cell:hover:not(.empty) { border-color: #00f2fe; color: #fff; }
+    .cal-day-cell.has-slots {
+      background: rgba(0, 242, 254, 0.1);
+      border-color: #00f2fe;
+      color: #00f2fe;
+    }
+    .cal-day-cell.selected {
+      background: #ff007f !important;
+      color: #fff !important;
+      border-color: #ff007f !important;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
+    }
+    .cal-badge-hours {
+      font-size: 0.65rem;
+      font-weight: bold;
+      color: #00f2fe;
+      margin-top: 2px;
+    }
+    .cal-day-cell.selected .cal-badge-hours { color: #fff; }
+
+    /* 24 SAATLİK SLOT IZGARASI */
+    .slot-matrix {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+      margin: 14px 0;
+    }
+    .slot-btn {
+      padding: 10px 6px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .slot-btn:hover {
+      border-color: #00f2fe;
+      color: #fff;
+    }
+    .slot-btn.active {
+      background: #00f2fe;
+      color: #070913;
+      border-color: #00f2fe;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+    }
+    .slot-btn.booked {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: #f43f5e;
+      color: #f43f5e;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -189,16 +318,71 @@
       </div>
     </div>
 
-    <!-- TABS -->
+    <!-- SEKMELER -->
     <div class="admin-tabs">
-      <button class="admin-tab-btn active" data-tab="events-crud">🎉 Event Management</button>
+      <button class="admin-tab-btn active" data-tab="calendar">📅 Availability Calendar</button>
+      <button class="admin-tab-btn" data-tab="events-crud">🎉 Event Management</button>
       <button class="admin-tab-btn" data-tab="assignment">👥 User-Event Assignment</button>
-      <button class="admin-tab-btn" data-tab="calendar">📅 Availability Calendar</button>
       <button class="admin-tab-btn" data-tab="bookings">📋 Bookings</button>
     </div>
 
-    <!-- TAB 0: CREATE & MANAGE EVENTS -->
-    <div id="tab-events-crud" class="admin-tab-content">
+    <!-- TAB: TAKVİM & 24 SAAT SLOT YÖNETİMİ -->
+    <div id="tab-calendar" class="admin-tab-content">
+      <p style="color: #94a3b8; margin-bottom: 16px;">
+        Select a date from the calendar to open or close 24-hour slots (00:00 - 23:00) for appointments.
+      </p>
+
+      <div class="admin-cal-wrapper">
+        <!-- SOL: 7 SÜTUNLU AY TAKVİMİ -->
+        <div class="glass-box" style="padding: 20px;">
+          <div class="cal-top-bar">
+            <button id="cal-prev-month" class="cal-nav-btn">‹</button>
+            <div style="display: flex; gap: 6px;">
+              <select id="cal-month-select" class="cal-dropdown"></select>
+              <select id="cal-year-select" class="cal-dropdown"></select>
+            </div>
+            <button id="cal-next-month" class="cal-nav-btn">›</button>
+          </div>
+
+          <div class="cal-weekdays">
+            <div class="cal-weekday-label">Mon</div>
+            <div class="cal-weekday-label">Tue</div>
+            <div class="cal-weekday-label">Wed</div>
+            <div class="cal-weekday-label">Thu</div>
+            <div class="cal-weekday-label">Fri</div>
+            <div class="cal-weekday-label">Sat</div>
+            <div class="cal-weekday-label">Sun</div>
+          </div>
+
+          <div class="cal-days-grid" id="admin-calendar-days"></div>
+        </div>
+
+        <!-- SAĞ: 00:00 - 23:00 SAATLİK MATRİS -->
+        <div class="glass-box" style="padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <h3 id="slot-day-heading" style="color: #00f2fe; font-size: 1.1rem; margin: 0;">Select a Date</h3>
+            <div id="bulk-slot-actions" style="display: none; gap: 6px;">
+              <button id="btn-select-all-slots" class="btn" style="padding: 4px 10px; font-size: 0.75rem;">Select All</button>
+              <button id="btn-clear-all-slots" class="btn btn-pink" style="padding: 4px 10px; font-size: 0.75rem;">Clear All</button>
+            </div>
+          </div>
+
+          <p id="slot-instruction" style="color: #94a3b8; font-size: 0.8rem; margin-top: 6px;">
+            Click on a day in the calendar to view and toggle its 24-hour slots.
+          </p>
+
+          <div id="slot-matrix-container" class="slot-matrix" style="display: none;"></div>
+
+          <div id="slot-actions-bar" style="display: none; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px;">
+            <button id="btn-save-day-slots" class="btn" style="width: 100%;">💾 Save Slots for This Day</button>
+            <div id="slot-save-status" class="status-message"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: ETKİNLİK OLUŞTURMA & YÖNETİMİ -->
+    <div id="tab-events-crud" class="admin-tab-content" style="display: none;">
       <div class="glass-box" style="margin-bottom: 24px;">
         <h3 style="color: #00f2fe; margin-bottom: 12px;">Create New Event</h3>
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Add a new event and specify its Google Drive Folder ID/URL for photos.</p>
@@ -217,7 +401,7 @@
       </div>
     </div>
 
-    <!-- TAB 1: USER-EVENT ASSIGNMENT -->
+    <!-- TAB: KULLANICI ERİŞİM İZİNLERİ -->
     <div id="tab-assignment" class="admin-tab-content" style="display: none;">
       <p style="color: #94a3b8; margin-bottom: 20px;">Select a user and assign events they can access</p>
 
@@ -239,20 +423,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: AVAILABILITY CALENDAR -->
-    <div id="tab-calendar" class="admin-tab-content" style="display: none;">
-      <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 14px;">Add Availability Slots</h3>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <input type="date" id="slot-date-input" class="input-field" style="max-width: 200px;">
-          <input type="text" id="slot-hour-input" class="input-field" style="max-width: 220px;" placeholder="e.g. 14:00 - 15:00">
-          <button id="btn-add-slot" class="btn" style="height: 48px;">Add Slot</button>
-        </div>
-        <div id="slot-status" class="status-message"></div>
-      </div>
-    </div>
-
-    <!-- TAB 3: BOOKINGS -->
+    <!-- TAB: RANDEVU LİSTESİ -->
     <div id="tab-bookings" class="admin-tab-content" style="display: none;">
       <p style="color: #94a3b8; margin-bottom: 20px;">View and manage all appointment bookings</p>
       <div id="bookings-list" style="display: grid; gap: 16px;"></div>
@@ -265,6 +436,20 @@
     let currentAdmin = null;
     let selectedUser = null;
 
+    // 00:00'dan 23:00'a kadar 24 SAATLİK DİLİMLER
+    const FULL_DAY_HOURS = [];
+    for (let h = 0; h < 24; h++) {
+      const start = String(h).padStart(2, '0') + ':00';
+      const end = String((h + 1) % 24).padStart(2, '0') + ':00';
+      FULL_DAY_HOURS.push(`${start} - ${end}`);
+    }
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let currentAdminCalDate = new Date();
+    let selectedAdminDateStr = null;
+    let currentDayActiveSlots = new Set();
+    let currentDayBookedSlots = new Set();
+
     window.addEventListener('load', async () => {
       const user = JSON.parse(localStorage.getItem('portal_user'));
       if (!user || (!user.is_admin && user.role !== 'admin')) {
@@ -274,11 +459,12 @@
       currentAdmin = user;
       document.getElementById('admin-title').textContent = `Admin Dashboard - ${user.username}`;
       
+      initAdminCalendar();
       await loadAdminEvents();
       await loadUsers();
     });
 
-    // TAB SWITCHING
+    // SEKMELER
     document.querySelectorAll('.admin-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tabName = btn.dataset.tab;
@@ -293,10 +479,232 @@
         if (tabName === 'bookings') loadBookings();
         if (tabName === 'events-crud') loadAdminEvents();
         if (tabName === 'assignment') loadUsers();
+        if (tabName === 'calendar') renderAdminCalendar();
       });
     });
 
-    // --- ETKİNLİK OLUŞTURMA & YÖNETİMİ ---
+    // ==========================================
+    // 1. TAM TEŞEKKÜLLÜ 7 SÜTUNLU ADMIN TAKVİMİ
+    // ==========================================
+    function initAdminCalendar() {
+      const startYear = new Date().getFullYear();
+      const monthSelect = document.getElementById('cal-month-select');
+      const yearSelect = document.getElementById('cal-year-select');
+
+      monthSelect.innerHTML = '';
+      monthNames.forEach((m, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = m;
+        monthSelect.appendChild(opt);
+      });
+
+      yearSelect.innerHTML = '';
+      for (let y = startYear; y < startYear + 6; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
+      }
+
+      monthSelect.value = currentAdminCalDate.getMonth();
+      yearSelect.value = currentAdminCalDate.getFullYear();
+
+      monthSelect.addEventListener('change', () => {
+        currentAdminCalDate.setMonth(parseInt(monthSelect.value));
+        renderAdminCalendar();
+      });
+
+      yearSelect.addEventListener('change', () => {
+        currentAdminCalDate.setFullYear(parseInt(yearSelect.value));
+        renderAdminCalendar();
+      });
+
+      document.getElementById('cal-prev-month').addEventListener('click', () => {
+        currentAdminCalDate.setMonth(currentAdminCalDate.getMonth() - 1);
+        monthSelect.value = currentAdminCalDate.getMonth();
+        yearSelect.value = currentAdminCalDate.getFullYear();
+        renderAdminCalendar();
+      });
+
+      document.getElementById('cal-next-month').addEventListener('click', () => {
+        currentAdminCalDate.setMonth(currentAdminCalDate.getMonth() + 1);
+        monthSelect.value = currentAdminCalDate.getMonth();
+        yearSelect.value = currentAdminCalDate.getFullYear();
+        renderAdminCalendar();
+      });
+
+      renderAdminCalendar();
+    }
+
+    async function renderAdminCalendar() {
+      const grid = document.getElementById('admin-calendar-days');
+      grid.innerHTML = '';
+
+      const year = currentAdminCalDate.getFullYear();
+      const month = currentAdminCalDate.getMonth();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+
+      let startingDay = new Date(year, month, 1).getDay() - 1;
+      if (startingDay === -1) startingDay = 6;
+
+      const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+      const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`;
+
+      // Bu ay içerisindeki tüm slotları çek
+      const { data: slots } = await supabase
+        .from('availability_slots')
+        .select('*')
+        .gte('slot_date', startDateStr)
+        .lte('slot_date', endDateStr)
+        .eq('is_active', true);
+
+      const slotCountMap = {};
+      (slots || []).forEach(s => {
+        slotCountMap[s.slot_date] = (slotCountMap[s.slot_date] || 0) + 1;
+      });
+
+      for (let i = 0; i < startingDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-day-cell empty';
+        grid.appendChild(empty);
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const count = slotCountMap[dateStr] || 0;
+
+        const cell = document.createElement('div');
+        cell.className = `cal-day-cell ${count > 0 ? 'has-slots' : ''} ${selectedAdminDateStr === dateStr ? 'selected' : ''}`;
+        cell.innerHTML = `
+          <span>${day}</span>
+          ${count > 0 ? `<span class="cal-badge-hours">${count}h</span>` : ''}
+        `;
+
+        cell.addEventListener('click', () => {
+          document.querySelectorAll('#admin-calendar-days .cal-day-cell').forEach(c => c.classList.remove('selected'));
+          cell.classList.add('selected');
+          selectDayForSlots(dateStr);
+        });
+
+        grid.appendChild(cell);
+      }
+    }
+
+    // ==========================================
+    // 2. 00:00 - 23:00 SAATLİK SLOT YÖNETİMİ
+    // ==========================================
+    async function selectDayForSlots(dateStr) {
+      selectedAdminDateStr = dateStr;
+      currentDayActiveSlots.clear();
+      currentDayBookedSlots.clear();
+
+      document.getElementById('slot-day-heading').textContent = `📅 Manage Slots: ${dateStr}`;
+      document.getElementById('slot-instruction').textContent = 'Click time chips to toggle. Blue = Available for users. Red = Already booked.';
+      document.getElementById('bulk-slot-actions').style.display = 'flex';
+      document.getElementById('slot-matrix-container').style.display = 'grid';
+      document.getElementById('slot-actions-bar').style.display = 'block';
+      document.getElementById('slot-save-status').style.display = 'none';
+
+      // Seçilen günün veritabanındaki kayıtlarını çek
+      const { data: existingSlots } = await supabase
+        .from('availability_slots')
+        .select('*')
+        .eq('slot_date', dateStr);
+
+      (existingSlots || []).forEach(s => {
+        if (s.is_booked) {
+          currentDayBookedSlots.add(s.hour_slot);
+        } else if (s.is_active) {
+          currentDayActiveSlots.add(s.hour_slot);
+        }
+      });
+
+      renderSlotButtons();
+    }
+
+    function renderSlotButtons() {
+      const container = document.getElementById('slot-matrix-container');
+      container.innerHTML = '';
+
+      FULL_DAY_HOURS.forEach(slotText => {
+        const btn = document.createElement('div');
+        btn.className = 'slot-btn';
+        btn.textContent = slotText;
+
+        if (currentDayBookedSlots.has(slotText)) {
+          btn.classList.add('booked');
+          btn.title = 'This slot has already been booked by a client.';
+        } else {
+          if (currentDayActiveSlots.has(slotText)) {
+            btn.classList.add('active');
+          }
+          btn.addEventListener('click', () => {
+            if (currentDayActiveSlots.has(slotText)) {
+              currentDayActiveSlots.delete(slotText);
+              btn.classList.remove('active');
+            } else {
+              currentDayActiveSlots.add(slotText);
+              btn.classList.add('active');
+            }
+          });
+        }
+
+        container.appendChild(btn);
+      });
+    }
+
+    // Toplu Seç / Temizle Butonları
+    document.getElementById('btn-select-all-slots').addEventListener('click', () => {
+      FULL_DAY_HOURS.forEach(s => {
+        if (!currentDayBookedSlots.has(s)) currentDayActiveSlots.add(s);
+      });
+      renderSlotButtons();
+    });
+
+    document.getElementById('btn-clear-all-slots').addEventListener('click', () => {
+      currentDayActiveSlots.clear();
+      renderSlotButtons();
+    });
+
+    // Kaydetme İşlemi
+    document.getElementById('btn-save-day-slots').addEventListener('click', async () => {
+      if (!selectedAdminDateStr) return;
+      const statusEl = document.getElementById('slot-save-status');
+
+      try {
+        // Booked olmayan eski slotları temizle
+        await supabase
+          .from('availability_slots')
+          .delete()
+          .eq('slot_date', selectedAdminDateStr)
+          .eq('is_booked', false);
+
+        // Yeni seçili slotları ekle
+        if (currentDayActiveSlots.size > 0) {
+          const insertPayload = Array.from(currentDayActiveSlots).map(slotHour => ({
+            slot_date: selectedAdminDateStr,
+            hour_slot: slotHour,
+            is_active: true,
+            is_booked: false
+          }));
+
+          const { error } = await supabase.from('availability_slots').insert(insertPayload);
+          if (error) throw error;
+        }
+
+        statusEl.className = 'status-message success';
+        statusEl.textContent = `✓ Successfully saved ${currentDayActiveSlots.size} active slot(s) for ${selectedAdminDateStr}!`;
+        renderAdminCalendar();
+      } catch (err) {
+        statusEl.className = 'status-message error';
+        statusEl.textContent = `✗ Error saving slots: ${err.message}`;
+      }
+    });
+
+    // ==========================================
+    // 3. ETKİNLİK YÖNETİMİ
+    // ==========================================
     async function loadAdminEvents() {
       const list = document.getElementById('admin-events-list');
       list.innerHTML = '<p style="color: #94a3b8;">Loading events...</p>';
@@ -361,7 +769,9 @@
       loadAdminEvents();
     });
 
-    // --- KULLANICI LİSTESİ VE ERİŞİM ATAMA ---
+    // ==========================================
+    // 4. KULLANICI ERİŞİM ATAMA
+    // ==========================================
     async function loadUsers() {
       const { data: users } = await supabase.from('users').select('*').order('username');
       const usersList = document.getElementById('users-list');
@@ -447,31 +857,9 @@
       }
     });
 
-    // --- REZERVASYONLAR VE TAKVİM SLOTU EKLEME ---
-    document.getElementById('btn-add-slot').addEventListener('click', async () => {
-      const date = document.getElementById('slot-date-input').value;
-      const hour = document.getElementById('slot-hour-input').value.trim();
-      const statusEl = document.getElementById('slot-status');
-
-      if (!date || !hour) return alert('Date and Hour slot are required!');
-
-      const { error } = await supabase.from('availability_slots').insert([{
-        slot_date: date,
-        hour_slot: hour,
-        is_active: true,
-        is_booked: false
-      }]);
-
-      if (error) {
-        statusEl.className = 'status-message error';
-        statusEl.textContent = `✗ Error: ${error.message}`;
-        return;
-      }
-      statusEl.className = 'status-message success';
-      statusEl.textContent = `✓ Slot added for ${date} (${hour})`;
-      document.getElementById('slot-hour-input').value = '';
-    });
-
+    // ==========================================
+    // 5. REZERVASYONLAR LİSTESİ
+    // ==========================================
     async function loadBookings() {
       const { data: bookings } = await supabase.from('appointments').select('*').order('appointment_date', { ascending: false });
       const list = document.getElementById('bookings-list');

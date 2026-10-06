@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard & User-Event Management</title>
+  <title>Admin Dashboard & Management</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Admin Panel Styles */
     .admin-tabs {
       display: flex;
       gap: 10px;
       margin-bottom: 24px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.12);
       padding-bottom: 12px;
+      overflow-x: auto;
     }
     .admin-tab-btn {
       background: none;
@@ -24,13 +24,13 @@
       padding: 8px 16px;
       border-bottom: 3px solid transparent;
       transition: 0.2s;
+      white-space: nowrap;
     }
     .admin-tab-btn.active {
       color: #00f2fe;
       border-bottom-color: #00f2fe;
     }
 
-    /* User-Event Assignment Panel */
     .assignment-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -38,9 +38,7 @@
       margin-top: 20px;
     }
     @media (max-width: 1024px) {
-      .assignment-container {
-        grid-template-columns: 1fr;
-      }
+      .assignment-container { grid-template-columns: 1fr; }
     }
 
     .user-list-panel, .event-list-panel {
@@ -83,16 +81,8 @@
       box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
     }
 
-    .user-name {
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .user-email {
-      font-size: 0.8rem;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
+    .user-name { font-weight: 600; color: #fff; }
+    .user-email { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
 
     .user-role-badge {
       background: rgba(0, 242, 254, 0.2);
@@ -128,6 +118,8 @@
       grid-template-columns: 1fr;
       gap: 10px;
       margin-bottom: 16px;
+      max-height: 240px;
+      overflow-y: auto;
     }
 
     .checkbox-item {
@@ -139,25 +131,15 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 8px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .checkbox-item:hover {
-      border-color: #00f2fe;
-      background: rgba(0, 242, 254, 0.1);
     }
 
     .checkbox-item input[type="checkbox"] {
-      cursor: pointer;
       width: 18px;
       height: 18px;
+      cursor: pointer;
     }
 
-    .checkbox-item label {
-      flex: 1;
-      cursor: pointer;
-      color: #fff;
-    }
+    .checkbox-item label { flex: 1; color: #fff; cursor: pointer; }
 
     .btn-assign {
       background: linear-gradient(135deg, #00f2fe, #3b82f6);
@@ -170,16 +152,7 @@
       width: 100%;
       transition: all 0.2s;
     }
-
-    .btn-assign:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 242, 254, 0.4);
-    }
-
-    .btn-assign:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .btn-assign:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .status-message {
       padding: 12px;
@@ -188,94 +161,22 @@
       font-size: 0.9rem;
       display: none;
     }
-
     .status-message.success {
       background: rgba(34, 197, 94, 0.2);
       color: #22c55e;
       border: 1px solid rgba(34, 197, 94, 0.5);
       display: block;
     }
-
     .status-message.error {
       background: rgba(244, 63, 94, 0.2);
       color: #f43f5e;
       border: 1px solid rgba(244, 63, 94, 0.5);
       display: block;
     }
-
-    /* 7 SÜTUNLU TAKVİM MATRİSİ (ADMIN) */
-    .admin-cal-card {
-      background: rgba(18, 24, 43, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    .cal-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      gap: 10px;
-    }
-    .cal-nav-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    .cal-nav-btn:hover { background: #00f2fe; color: #000; }
-    .cal-weekdays {
-      display: grid !important;
-      grid-template-columns: repeat(7, 1fr) !important;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .cal-weekday-label {
-      color: #94a3b8;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .cal-days-grid {
-      display: grid !important;
-      grid-template-columns: repeat(7, 1fr) !important;
-      gap: 6px;
-    }
-    .cal-day-cell {
-      height: 48px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid transparent;
-      color: #64748b;
-    }
-    .cal-day-cell.available {
-      background: rgba(0, 242, 254, 0.12);
-      border-color: #00f2fe;
-      color: #00f2fe;
-      cursor: pointer;
-    }
-    .cal-day-cell.available:hover {
-      background: #00f2fe;
-      color: #070913;
-    }
   </style>
 </head>
 <body>
 
-  <!-- ================= ADMIN DASHBOARD ================= -->
   <div id="view-admin" class="container">
     <div class="nav-header">
       <div>
@@ -290,33 +191,46 @@
 
     <!-- TABS -->
     <div class="admin-tabs">
-      <button class="admin-tab-btn active" data-tab="assignment">👥 User-Event Assignment</button>
+      <button class="admin-tab-btn active" data-tab="events-crud">🎉 Event Management</button>
+      <button class="admin-tab-btn" data-tab="assignment">👥 User-Event Assignment</button>
       <button class="admin-tab-btn" data-tab="calendar">📅 Availability Calendar</button>
       <button class="admin-tab-btn" data-tab="bookings">📋 Bookings</button>
     </div>
 
+    <!-- TAB 0: CREATE & MANAGE EVENTS -->
+    <div id="tab-events-crud" class="admin-tab-content">
+      <div class="glass-box" style="margin-bottom: 24px;">
+        <h3 style="color: #00f2fe; margin-bottom: 12px;">Create New Event</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">Add a new event and specify its Google Drive Folder ID/URL for photos.</p>
+        
+        <input type="text" id="new-event-title" class="input-field" placeholder="Event Title (e.g. Belgrade Weekend Trip) *">
+        <textarea id="new-event-desc" class="input-field" style="height: 70px; resize: none;" placeholder="Event Description"></textarea>
+        <input type="text" id="new-event-drive" class="input-field" placeholder="Google Drive Folder URL or Folder ID (e.g. 1a2b3c4d5e...)">
+        
+        <button id="btn-create-event" class="btn btn-pink" style="width: 100%;">Create Event</button>
+        <div id="event-create-status" class="status-message"></div>
+      </div>
+
+      <div class="glass-box">
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">Existing Events</h3>
+        <div id="admin-events-list" style="display: grid; gap: 12px;"></div>
+      </div>
+    </div>
+
     <!-- TAB 1: USER-EVENT ASSIGNMENT -->
-    <div id="tab-assignment" class="admin-tab-content">
+    <div id="tab-assignment" class="admin-tab-content" style="display: none;">
       <p style="color: #94a3b8; margin-bottom: 20px;">Select a user and assign events they can access</p>
 
       <div class="assignment-container">
-        <!-- USER LIST -->
         <div class="user-list-panel">
           <h3>👥 Users</h3>
           <div id="users-list"></div>
         </div>
 
-        <!-- EVENTS CHECKBOXES -->
         <div>
-          <div class="event-list-panel">
-            <h3>🎉 Events</h3>
-            <div id="events-list-checkboxes"></div>
-          </div>
-
-          <!-- ASSIGNMENT CONTROLS -->
-          <div class="assignment-controls">
+          <div class="assignment-controls" style="margin-top: 0;">
             <h4>Assign Events to Selected User</h4>
-            <p id="selected-user-info" style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px;">Select a user first</p>
+            <p id="selected-user-info" style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px;">Select a user from the left</p>
             <div class="event-checkboxes" id="assignment-checkboxes"></div>
             <button id="btn-save-assignment" class="btn-assign" disabled>💾 Save Assignment</button>
             <div id="assignment-status" class="status-message"></div>
@@ -327,9 +241,15 @@
 
     <!-- TAB 2: AVAILABILITY CALENDAR -->
     <div id="tab-calendar" class="admin-tab-content" style="display: none;">
-      <p style="color: #94a3b8; margin-bottom: 20px;">Manage availability slots for appointments</p>
-      <!-- Calendar will be rendered here -->
-      <div id="calendar-container"></div>
+      <div class="glass-box">
+        <h3 style="color: #00f2fe; margin-bottom: 14px;">Add Availability Slots</h3>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <input type="date" id="slot-date-input" class="input-field" style="max-width: 200px;">
+          <input type="text" id="slot-hour-input" class="input-field" style="max-width: 220px;" placeholder="e.g. 14:00 - 15:00">
+          <button id="btn-add-slot" class="btn" style="height: 48px;">Add Slot</button>
+        </div>
+        <div id="slot-status" class="status-message"></div>
+      </div>
     </div>
 
     <!-- TAB 3: BOOKINGS -->
@@ -344,47 +264,104 @@
 
     let currentAdmin = null;
     let selectedUser = null;
-    let selectedEventIds = [];
 
-    // Check if user is logged in and is admin
     window.addEventListener('load', async () => {
       const user = JSON.parse(localStorage.getItem('portal_user'));
-      if (!user || !user.is_admin) {
+      if (!user || (!user.is_admin && user.role !== 'admin')) {
         window.location.href = 'index.html';
         return;
       }
       currentAdmin = user;
       document.getElementById('admin-title').textContent = `Admin Dashboard - ${user.username}`;
       
+      await loadAdminEvents();
       await loadUsers();
-      await loadEvents();
     });
 
     // TAB SWITCHING
     document.querySelectorAll('.admin-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tabName = btn.dataset.tab;
-        
-        // Update active button
         document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        // Update active content
         document.querySelectorAll('.admin-tab-content').forEach(content => {
           content.style.display = 'none';
         });
         document.getElementById(`tab-${tabName}`).style.display = 'block';
 
-        // Load tab-specific data
-        if (tabName === 'bookings') {
-          loadBookings();
-        } else if (tabName === 'calendar') {
-          loadAvailabilityCalendar();
-        }
+        if (tabName === 'bookings') loadBookings();
+        if (tabName === 'events-crud') loadAdminEvents();
+        if (tabName === 'assignment') loadUsers();
       });
     });
 
-    // LOAD USERS
+    // --- ETKİNLİK OLUŞTURMA & YÖNETİMİ ---
+    async function loadAdminEvents() {
+      const list = document.getElementById('admin-events-list');
+      list.innerHTML = '<p style="color: #94a3b8;">Loading events...</p>';
+
+      const { data: events, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      if (error) { list.innerHTML = `<p style="color:#f43f5e;">Error: ${error.message}</p>`; return; }
+
+      list.innerHTML = '';
+      if (!events || events.length === 0) {
+        list.innerHTML = '<p style="color: #94a3b8;">No events found.</p>';
+        return;
+      }
+
+      events.forEach(evt => {
+        const row = document.createElement('div');
+        row.className = 'event-item';
+        row.style.cursor = 'default';
+        row.innerHTML = `
+          <div>
+            <strong style="color: #00f2fe; font-size: 1.05rem;">${evt.title}</strong>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">${evt.description || 'No description'}</p>
+            <span style="font-size: 0.75rem; color: #64748b;">Drive: ${evt.drive_folder_url || 'None'}</span>
+          </div>
+          <div>
+            <button class="btn btn-pink btn-delete-evt" data-id="${evt.id}" style="padding: 6px 12px; font-size: 0.8rem;">Delete</button>
+          </div>
+        `;
+        row.querySelector('.btn-delete-evt').addEventListener('click', async () => {
+          if (!confirm(`Delete event "${evt.title}"?`)) return;
+          await supabase.from('events').delete().eq('id', evt.id);
+          loadAdminEvents();
+        });
+        list.appendChild(row);
+      });
+    }
+
+    document.getElementById('btn-create-event').addEventListener('click', async () => {
+      const title = document.getElementById('new-event-title').value.trim();
+      const desc = document.getElementById('new-event-desc').value.trim();
+      const drive = document.getElementById('new-event-drive').value.trim();
+      const statusEl = document.getElementById('event-create-status');
+
+      if (!title) return alert('Event Title is required!');
+
+      const { error } = await supabase.from('events').insert([{
+        title: title,
+        description: desc,
+        drive_folder_url: drive
+      }]);
+
+      if (error) {
+        statusEl.className = 'status-message error';
+        statusEl.textContent = `✗ Error: ${error.message}`;
+        return;
+      }
+
+      statusEl.className = 'status-message success';
+      statusEl.textContent = `✓ Event "${title}" created successfully!`;
+      document.getElementById('new-event-title').value = '';
+      document.getElementById('new-event-desc').value = '';
+      document.getElementById('new-event-drive').value = '';
+      loadAdminEvents();
+    });
+
+    // --- KULLANICI LİSTESİ VE ERİŞİM ATAMA ---
     async function loadUsers() {
       const { data: users } = await supabase.from('users').select('*').order('username');
       const usersList = document.getElementById('users-list');
@@ -398,8 +375,8 @@
             <div class="user-name">${user.username}</div>
             <div class="user-email">${user.email}</div>
           </div>
-          <div class="user-role-badge ${user.is_admin ? 'admin' : ''}">
-            ${user.is_admin ? 'Admin' : 'User'}
+          <div class="user-role-badge ${user.is_admin || user.role === 'admin' ? 'admin' : ''}">
+            ${user.is_admin || user.role === 'admin' ? 'Admin' : 'User'}
           </div>
         `;
 
@@ -414,113 +391,98 @@
       });
     }
 
-    // LOAD EVENTS
-    async function loadEvents() {
-      const { data: events } = await supabase.from('events').select('*').order('title');
-      const eventsList = document.getElementById('events-list-checkboxes');
-      eventsList.innerHTML = '';
-
-      (events || []).forEach(event => {
-        const item = document.createElement('div');
-        item.className = 'checkbox-item';
-        item.innerHTML = `
-          <input type="checkbox" id="event-${event.id}" data-event-id="${event.id}">
-          <label for="event-${event.id}">${event.title}</label>
-        `;
-        item.querySelector('input').addEventListener('change', updateSelectedEvents);
-        eventsList.appendChild(item);
-      });
-    }
-
-    // LOAD USER EVENT ASSIGNMENTS
     async function loadUserEventAssignments(userId) {
-      const { data: assignments } = await supabase
-        .from('event_access')
-        .select('event_id')
-        .eq('user_id', userId);
+      document.getElementById('selected-user-info').textContent = `Selected: ${selectedUser.username} (${selectedUser.email})`;
+      const statusEl = document.getElementById('assignment-status');
+      statusEl.style.display = 'none';
 
-      const assignedEventIds = (assignments || []).map(a => a.event_id);
+      const [{ data: events }, { data: assignments }] = await Promise.all([
+        supabase.from('events').select('*').order('title'),
+        supabase.from('event_access').select('event_id').eq('user_id', userId)
+      ]);
 
-      document.querySelectorAll('#events-list-checkboxes input[type="checkbox"]').forEach(checkbox => {
-        const eventId = parseInt(checkbox.dataset.eventId);
-        checkbox.checked = assignedEventIds.includes(eventId);
-      });
-
-      updateAssignmentCheckboxes(assignedEventIds);
-      document.getElementById('selected-user-info').textContent = `Selected: ${selectedUser.username}`;
-      document.getElementById('btn-save-assignment').disabled = false;
-    }
-
-    function updateAssignmentCheckboxes(assignedEventIds = []) {
-      const { data: events } = supabase.from('events').select('*');
+      const assignedIds = (assignments || []).map(a => a.event_id);
       const container = document.getElementById('assignment-checkboxes');
       container.innerHTML = '';
 
-      supabase.from('events').select('*').then(({ data: events }) => {
-        (events || []).forEach(event => {
-          const isAssigned = assignedEventIds.includes(event.id);
-          const item = document.createElement('div');
-          item.className = 'checkbox-item';
-          item.innerHTML = `
-            <input type="checkbox" id="assign-event-${event.id}" data-event-id="${event.id}" ${isAssigned ? 'checked' : ''}>
-            <label for="assign-event-${event.id}">${event.title}</label>
-          `;
-          item.querySelector('input').addEventListener('change', () => {
-            selectedEventIds = Array.from(document.querySelectorAll('#assignment-checkboxes input[type="checkbox"]:checked'))
-              .map(cb => parseInt(cb.dataset.eventId));
-          });
-          container.appendChild(item);
-        });
+      (events || []).forEach(evt => {
+        const isAssigned = assignedIds.includes(evt.id);
+        const item = document.createElement('div');
+        item.className = 'checkbox-item';
+        item.innerHTML = `
+          <input type="checkbox" id="chk-evt-${evt.id}" data-event-id="${evt.id}" ${isAssigned ? 'checked' : ''}>
+          <label for="chk-evt-${evt.id}">${evt.title}</label>
+        `;
+        container.appendChild(item);
       });
+
+      document.getElementById('btn-save-assignment').disabled = false;
     }
 
-    function updateSelectedEvents() {
-      selectedEventIds = Array.from(document.querySelectorAll('#events-list-checkboxes input[type="checkbox"]:checked'))
-        .map(cb => parseInt(cb.dataset.eventId));
-    }
-
-    // SAVE ASSIGNMENT
     document.getElementById('btn-save-assignment').addEventListener('click', async () => {
-      if (!selectedUser) {
-        alert('Please select a user first');
-        return;
-      }
+      if (!selectedUser) return alert('Please select a user first');
 
       const statusEl = document.getElementById('assignment-status');
-      const selectedCheckboxes = Array.from(document.querySelectorAll('#assignment-checkboxes input[type="checkbox"]:checked'))
-        .map(cb => parseInt(cb.dataset.eventId));
+      const checkedBoxes = Array.from(document.querySelectorAll('#assignment-checkboxes input[type="checkbox"]:checked'));
+      const selectedIds = checkedBoxes.map(cb => parseInt(cb.dataset.eventId));
 
       try {
-        // Remove old assignments
         await supabase.from('event_access').delete().eq('user_id', selectedUser.id);
 
-        // Add new assignments
-        if (selectedCheckboxes.length > 0) {
-          const records = selectedCheckboxes.map(eventId => ({
+        if (selectedIds.length > 0) {
+          const records = selectedIds.map(eventId => ({
             user_id: selectedUser.id,
             event_id: eventId,
             granted_by: currentAdmin.id,
             granted_at: new Date().toISOString()
           }));
-
           await supabase.from('event_access').insert(records);
         }
 
         statusEl.className = 'status-message success';
-        statusEl.textContent = `✓ ${selectedUser.username} assigned to ${selectedCheckboxes.length} event(s)`;
+        statusEl.textContent = `✓ Saved: Assigned ${selectedIds.length} event(s) to ${selectedUser.username}`;
       } catch (err) {
         statusEl.className = 'status-message error';
         statusEl.textContent = `✗ Error: ${err.message}`;
       }
     });
 
-    // LOAD BOOKINGS
+    // --- REZERVASYONLAR VE TAKVİM SLOTU EKLEME ---
+    document.getElementById('btn-add-slot').addEventListener('click', async () => {
+      const date = document.getElementById('slot-date-input').value;
+      const hour = document.getElementById('slot-hour-input').value.trim();
+      const statusEl = document.getElementById('slot-status');
+
+      if (!date || !hour) return alert('Date and Hour slot are required!');
+
+      const { error } = await supabase.from('availability_slots').insert([{
+        slot_date: date,
+        hour_slot: hour,
+        is_active: true,
+        is_booked: false
+      }]);
+
+      if (error) {
+        statusEl.className = 'status-message error';
+        statusEl.textContent = `✗ Error: ${error.message}`;
+        return;
+      }
+      statusEl.className = 'status-message success';
+      statusEl.textContent = `✓ Slot added for ${date} (${hour})`;
+      document.getElementById('slot-hour-input').value = '';
+    });
+
     async function loadBookings() {
       const { data: bookings } = await supabase.from('appointments').select('*').order('appointment_date', { ascending: false });
       const list = document.getElementById('bookings-list');
       list.innerHTML = '';
 
-      (bookings || []).forEach(booking => {
+      if (!bookings || bookings.length === 0) {
+        list.innerHTML = '<p style="color: #94a3b8;">No bookings found.</p>';
+        return;
+      }
+
+      bookings.forEach(booking => {
         const card = document.createElement('div');
         card.className = 'glass-box';
         card.innerHTML = `
@@ -535,14 +497,6 @@
       });
     }
 
-    // LOAD AVAILABILITY CALENDAR
-    async function loadAvailabilityCalendar() {
-      // This can be expanded later for slot management
-      const container = document.getElementById('calendar-container');
-      container.innerHTML = '<p style="color: #94a3b8; text-align: center;">Calendar management coming soon</p>';
-    }
-
-    // LOGOUT
     document.getElementById('btn-logout-admin').addEventListener('click', () => {
       localStorage.removeItem('portal_user');
       window.location.href = 'index.html';

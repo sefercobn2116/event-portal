@@ -284,11 +284,11 @@
     <div class="nav-header">
       <div>
         <h2 id="welcome-text">Welcome</h2>
-        <span style="font-size: 0.85rem; color: #94a3b8;">Events Dashboard</span>
+        <span style="font-size: 0.85rem; color: #94a3b8;" id="user-role-badge">Events Dashboard</span>
       </div>
       <div style="display: flex; align-items: center; gap: 10px;">
         <button class="btn-to-hub" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Hub</button>
-        <a id="admin-link" href="admin.html" style="display: none; background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 8px; text-decoration: none;">Admin</a>
+        <a id="admin-link" href="admin.html" style="display: none; background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem;">⚙️ Admin</a>
         <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Logout</button>
       </div>
     </div>
@@ -501,328 +501,325 @@
     const authErr = document.getElementById('auth-err');
 
     tabLogin.addEventListener('click', () => {
-      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
-      formLoginWrap.style.display = 'block'; formRegisterWrap.style.display = 'none'; authErr.style.display = 'none';
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      formLoginWrap.style.display = 'block';
+      formRegisterWrap.style.display = 'none';
+      authErr.style.display = 'none';
     });
 
     tabRegister.addEventListener('click', () => {
-      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
-      formRegisterWrap.style.display = 'block'; formLoginWrap.style.display = 'none'; authErr.style.display = 'none';
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      formLoginWrap.style.display = 'none';
+      formRegisterWrap.style.display = 'block';
+      authErr.style.display = 'none';
     });
 
     let currentUser = null;
 
     document.getElementById('btn-login').addEventListener('click', async () => {
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
-      authErr.style.display = 'none';
-      if (!email) { authErr.textContent = 'Please enter your email.'; authErr.style.display = 'block'; return; }
+      const email = document.getElementById('login-email').value.trim();
+      if (!email) return alert("Email required!");
 
-      const { data: user, error } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
-      if (error || !user) {
-        authErr.textContent = 'Account not found with this email. Please register!'; authErr.style.display = 'block'; return;
+      const { data: users } = await supabase.from('users').select('*').eq('email', email);
+      if (!users || users.length === 0) {
+        authErr.textContent = "Email not found. Please register.";
+        authErr.style.display = 'block';
+        return;
       }
-      if (!user.is_active) { authErr.textContent = 'Account is disabled.'; authErr.style.display = 'block'; return; }
 
-      currentUser = user;
-      localStorage.setItem('portal_user', JSON.stringify(user));
+      currentUser = users[0];
+      localStorage.setItem('portal_user', JSON.stringify(currentUser));
+      document.getElementById('login-email').value = '';
       showDashboard();
     });
 
     document.getElementById('btn-register').addEventListener('click', async () => {
       const name = document.getElementById('reg-name').value.trim();
-      const email = document.getElementById('reg-email').value.trim().toLowerCase();
-      authErr.style.display = 'none';
-      if (!name || !email) { authErr.textContent = 'Please fill in all fields.'; authErr.style.display = 'block'; return; }
+      const email = document.getElementById('reg-email').value.trim();
+      if (!name || !email) return alert("All fields required!");
 
-      const { data: existing } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
-      if (existing) { authErr.textContent = 'This email is already registered. Please sign in!'; authErr.style.display = 'block'; return; }
+      const { data: exists } = await supabase.from('users').select('id').eq('email', email);
+      if (exists && exists.length > 0) {
+        authErr.textContent = "Email already registered!";
+        authErr.style.display = 'block';
+        return;
+      }
 
-      const { data: newUser, error } = await supabase.from('users').insert({
-        username: name, email: email, is_active: true
-      }).select().single();
+      const { data: newUser } = await supabase.from('users').insert([
+        { username: name, email, is_active: true, role: 'user' }
+      ]).select();
 
-      if (error) { authErr.textContent = error.message; authErr.style.display = 'block'; return; }
-
-      currentUser = newUser;
-      localStorage.setItem('portal_user', JSON.stringify(newUser));
-      showDashboard();
+      if (newUser && newUser.length > 0) {
+        currentUser = newUser[0];
+        localStorage.setItem('portal_user', JSON.stringify(currentUser));
+        document.getElementById('reg-name').value = '';
+        document.getElementById('reg-email').value = '';
+        showDashboard();
+      }
     });
 
-    // DASHBOARD
-    const eventsList = document.getElementById('events-list');
-    const welcomeText = document.getElementById('welcome-text');
-    const adminLink = document.getElementById('admin-link');
-    const btnLogout = document.getElementById('btn-logout');
-
+    // DASHBOARD - ROLE-BASED ACCESS CONTROL
     async function showDashboard() {
+      if (!currentUser) return showHub();
+      
       hideAll();
       viewDashboard.style.display = 'block';
-      welcomeText.textContent = `Welcome, ${currentUser.username}`;
-      if (currentUser.is_admin) adminLink.style.display = 'inline';
+      document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.username}!`;
+      document.getElementById('user-role-badge').textContent = `Role: ${(currentUser.role || 'user').toUpperCase()}`;
+      
+      // Admin veya Manager ise admin linkini göster
+      const adminLink = document.getElementById('admin-link');
+      if (currentUser.is_admin || currentUser.role === 'admin') {
+        adminLink.style.display = 'inline-block';
+      } else {
+        adminLink.style.display = 'none';
+      }
+
+      await loadEventsDashboard();
+    }
+
+    async function loadEventsDashboard() {
+      const eventsList = document.getElementById('events-list');
+      eventsList.innerHTML = '<p style="color: #94a3b8; text-align: center;">Loading events...</p>';
 
       const { data: allEvents } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-      const { data: userAccess } = await supabase.from('event_access').select('event_id').eq('user_id', currentUser.id);
-      const allowedIds = new Set((userAccess || []).map(a => a.event_id));
 
+      if (!allEvents || allEvents.length === 0) {
+        eventsList.innerHTML = '<p style="color: #94a3b8; text-align: center;">No events available.</p>';
+        return;
+      }
+
+      // Admin users see all events
+      if (currentUser.is_admin || currentUser.role === 'admin') {
+        renderEventCards(allEvents);
+        return;
+      }
+
+      // Non-admin users: check event_access
+      const { data: accessRecords } = await supabase
+        .from('event_access')
+        .select('event_id')
+        .eq('user_id', currentUser.id);
+
+      const allowedEventIds = (accessRecords || []).map(r => r.event_id);
+
+      if (allowedEventIds.length === 0) {
+        eventsList.innerHTML = '<p style="color: #f43f5e; text-align: center;">No events assigned to you yet.</p>';
+        return;
+      }
+
+      const allowedEvents = allEvents.filter(e => allowedEventIds.includes(e.id));
+      renderEventCards(allowedEvents);
+    }
+
+    function renderEventCards(events) {
+      const eventsList = document.getElementById('events-list');
       eventsList.innerHTML = '';
-      (allEvents || []).forEach(evt => {
-        const canAccess = currentUser.is_admin || allowedIds.has(evt.id);
+
+      events.forEach(evt => {
         const card = document.createElement('div');
-        card.className = `event-card ${canAccess ? 'allowed' : 'locked'}`;
+        card.className = 'event-card allowed';
+        card.style.cursor = 'pointer';
         card.innerHTML = `
           <div>
-            <h3 style="font-size: 1.25rem; margin-bottom: 8px;">${evt.title}</h3>
-            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4;">${evt.description || 'No description.'}</p>
+            <h3 style="color: #00f2fe; margin-bottom: 8px;">${evt.title}</h3>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 12px;">${evt.description || 'No description'}</p>
           </div>
-          <div>${canAccess ? `<span class="badge badge-open">Enter Room →</span>` : `<span class="badge badge-lock">🔒 Locked</span>`}</div>
+          <div style="display: flex; gap: 8px;">
+            ${evt.drive_folder_url ? `<a href="${evt.drive_folder_url}" target="_blank" class="btn-vote" style="text-decoration: none; padding: 6px 12px;">📁 Gallery</a>` : ''}
+            <span class="badge badge-open">Enter →</span>
+          </div>
         `;
-        if (canAccess) card.addEventListener('click', () => openEventDetail(evt));
+        card.addEventListener('click', () => openEventDetail(evt));
         eventsList.appendChild(card);
       });
     }
 
-    btnLogout.addEventListener('click', () => { localStorage.removeItem('portal_user'); showHub(); });
-
-    // ETKİNLİK ODASI & CHAT & DRIVE
-    let activeEventId = null;
-    let activeFolderId = '';
-    let chatChannel = null;
+    let currentEventDetail = null;
 
     async function openEventDetail(evt) {
-      activeEventId = evt.id;
-      if (evt.drive_folder_url) {
-        const match = evt.drive_folder_url.match(/[-\w]{25,}/);
-        activeFolderId = match ? match[0] : evt.drive_folder_url;
-      } else { activeFolderId = ''; }
+      // SECURITY: Re-verify access
+      if (!currentUser.is_admin && currentUser.role !== 'admin') {
+        const { data: access } = await supabase
+          .from('event_access')
+          .select('id')
+          .eq('user_id', currentUser.id)
+          .eq('event_id', evt.id);
 
+        if (!access || access.length === 0) {
+          alert('You do not have access to this event.');
+          return;
+        }
+      }
+
+      currentEventDetail = evt;
       hideAll();
       viewEventDetail.style.display = 'block';
-      document.getElementById('current-user-tag').textContent = `User: ${currentUser.username}`;
       document.getElementById('event-title').textContent = evt.title;
-      document.getElementById('event-desc').textContent = evt.description || '';
+      document.getElementById('event-desc').textContent = evt.description || 'No description provided.';
+      document.getElementById('current-user-tag').textContent = `${currentUser.username} • ${evt.title}`;
 
-      loadMessages();
+      loadChatMessages();
       loadPolls();
-
-      if (chatChannel) supabase.removeChannel(chatChannel);
-      chatChannel = supabase.channel('chat-room-' + activeEventId).on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'event_messages', filter: `event_id=eq.${activeEventId}`
-      }, payload => {
-        if (payload.new.username.toLowerCase() !== currentUser.username.toLowerCase()) appendMessage(payload.new);
-      }).subscribe();
     }
 
     document.getElementById('btn-back-dashboard').addEventListener('click', showDashboard);
 
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInput = document.getElementById('chat-input');
-    const btnSendChat = document.getElementById('btn-send-chat');
-
-    async function loadMessages() {
-      const { data: msgs } = await supabase.from('event_messages').select('*').eq('event_id', activeEventId).order('created_at', { ascending: true });
+    // CHAT
+    async function loadChatMessages() {
+      const chatMessages = document.getElementById('chat-messages');
       chatMessages.innerHTML = '';
-      (msgs || []).forEach(appendMessage);
+
+      const { data: msgs } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('event_id', currentEventDetail.id)
+        .order('created_at', { ascending: true });
+
+      (msgs || []).forEach(msg => {
+        const isMine = msg.user_id === currentUser.id;
+        const item = document.createElement('div');
+        item.className = `msg-item ${isMine ? 'mine' : 'theirs'}`;
+        item.innerHTML = `${msg.message}<br><span style="font-size: 0.75rem; opacity: 0.7;">${msg.username}</span>`;
+        chatMessages.appendChild(item);
+      });
+
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function appendMessage(msg) {
-      const isMine = msg.username.toLowerCase() === currentUser.username.toLowerCase();
-      const div = document.createElement('div');
-      div.className = `msg-item ${isMine ? 'mine' : 'theirs'}`;
-      div.innerHTML = `<div style="font-size:0.75rem; font-weight:bold; margin-bottom:2px;">${msg.username}</div><div>${msg.message}</div>`;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+    document.getElementById('btn-send-chat').addEventListener('click', async () => {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message || !currentEventDetail) return;
 
-    async function sendMessage() {
-      const text = chatInput.value.trim();
-      if (!text) return;
-      chatInput.value = '';
-      appendMessage({ username: currentUser.username, message: text });
-      await supabase.from('event_messages').insert({ event_id: activeEventId, user_id: currentUser.id, username: currentUser.username, message: text });
-    }
+      await supabase.from('chat_messages').insert([{
+        event_id: currentEventDetail.id,
+        user_id: currentUser.id,
+        username: currentUser.username,
+        message
+      }]);
 
-    btnSendChat.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+      input.value = '';
+      loadChatMessages();
+    });
 
-    // OYLAMA
-    const pollList = document.getElementById('poll-list');
-    const pollInput = document.getElementById('poll-input');
-    const btnAddPoll = document.getElementById('btn-add-poll');
-
+    // POLLS
     async function loadPolls() {
-      const { data: polls } = await supabase.from('event_suggestions').select('*').eq('event_id', activeEventId).order('votes', { ascending: false });
+      const pollList = document.getElementById('poll-list');
       pollList.innerHTML = '';
-      (polls || []).forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'poll-item';
-        div.innerHTML = `<div><div style="font-weight:600;">${item.title}</div><div style="font-size:0.75rem; color:#94a3b8;">${item.suggested_by}</div></div><button class="btn-vote">👍 ${item.votes}</button>`;
-        div.querySelector('.btn-vote').addEventListener('click', async () => {
-          await supabase.from('event_suggestions').update({ votes: item.votes + 1 }).eq('id', item.id);
+
+      const { data: polls } = await supabase
+        .from('polls')
+        .select('*')
+        .eq('event_id', currentEventDetail.id)
+        .order('created_at', { ascending: false });
+
+      (polls || []).forEach(poll => {
+        const item = document.createElement('div');
+        item.className = 'poll-item';
+        item.innerHTML = `
+          <span style="flex: 1;">${poll.suggestion}</span>
+          <div style="display: flex; gap: 8px;">
+            <span style="color: #00f2fe; font-weight: bold; min-width: 30px;">${poll.votes || 0}</span>
+            <button class="btn-vote btn-vote-poll" data-id="${poll.id}" style="padding: 4px 10px; font-size: 0.8rem;">👍 Vote</button>
+          </div>
+        `;
+        item.querySelector('.btn-vote-poll').addEventListener('click', async () => {
+          await supabase.from('polls').update({ votes: (poll.votes || 0) + 1 }).eq('id', poll.id);
           loadPolls();
         });
-        pollList.appendChild(div);
+        pollList.appendChild(item);
       });
     }
 
-    btnAddPoll.addEventListener('click', async () => {
-      const title = pollInput.value.trim();
-      if (!title) return;
-      pollInput.value = '';
-      await supabase.from('event_suggestions').insert({ event_id: activeEventId, suggested_by: currentUser.username, title, votes: 1 });
+    document.getElementById('btn-add-poll').addEventListener('click', async () => {
+      const input = document.getElementById('poll-input');
+      const suggestion = input.value.trim();
+      if (!suggestion || !currentEventDetail) return;
+
+      await supabase.from('polls').insert([{
+        event_id: currentEventDetail.id,
+        suggestion,
+        votes: 0
+      }]);
+
+      input.value = '';
       loadPolls();
     });
 
-    // 5 TB GOOGLE DRIVE MEDYA
-    const fileInput = document.getElementById('media-file-input');
-    const triggerBtn = document.getElementById('btn-trigger-upload');
-    const uploadStatus = document.getElementById('upload-status');
-    const statusText = document.getElementById('upload-status-text');
-    const progressBar = document.getElementById('upload-progress-bar');
-
-    triggerBtn.addEventListener('click', () => { if (!activeFolderId) return alert("No Drive folder!"); fileInput.click(); });
-    fileInput.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files);
-      if (!files.length) return;
-      uploadStatus.style.display = 'block';
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        statusText.textContent = `Uploading (${i + 1}/${files.length}): ${file.name}`;
-        progressBar.style.width = `${Math.round((i / files.length) * 100)}%`;
-        const base64Data = await new Promise((res, rej) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => res(r.result); r.onerror = rej; });
-        await fetch(UPLOAD_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ folderId: activeFolderId, fileName: file.name, mimeType: file.type || 'image/jpeg', fileData: base64Data.split(',')[1] })
-        });
-      }
-      progressBar.style.width = '100%';
-      statusText.textContent = "✅ Upload completed!";
-      fileInput.value = '';
-      setTimeout(() => uploadStatus.style.display = 'none', 3000);
-      if (document.getElementById('gallery-container').style.display === 'block') fetchDriveFiles();
+    // MEDIA UPLOAD
+    document.getElementById('btn-trigger-upload').addEventListener('click', () => {
+      document.getElementById('media-file-input').click();
     });
 
-    const btnToggleGallery = document.getElementById('btn-toggle-gallery');
-    const galleryContainer = document.getElementById('gallery-container');
-    const galleryGrid = document.getElementById('gallery-grid');
-    btnToggleGallery.addEventListener('click', () => {
-      if (galleryContainer.style.display === 'block') { galleryContainer.style.display = 'none'; btnToggleGallery.textContent = '🖼️ View Photos'; }
-      else { galleryContainer.style.display = 'block'; btnToggleGallery.textContent = 'Close ✕'; fetchDriveFiles(); }
-    });
-
-    async function fetchDriveFiles() {
-      galleryGrid.innerHTML = '<p style="color:#94a3b8;">Scanning Google Drive...</p>';
-      const cleanId = activeFolderId.includes('folders/') ? activeFolderId.split('folders/')[1].split('?')[0] : activeFolderId;
-      const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${cleanId}' in parents and trashed = false`)}&fields=files(id,name,mimeType,thumbnailLink)&key=${GOOGLE_API_KEY}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (!data.files || data.files.length === 0) { galleryGrid.innerHTML = '<p style="color:#94a3b8;">No photos yet.</p>'; return; }
-        galleryGrid.innerHTML = '';
-        data.files.forEach(f => {
-          const card = document.createElement('div');
-          card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;";
-          card.innerHTML = `
-            <img src="${f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s500') : ''}" style="height: 140px; width: 100%; object-fit: cover;">
-            <div style="padding: 8px;"><a href="https://drive.google.com/uc?export=download&id=${f.id}" target="_blank" class="btn" style="padding: 4px; font-size: 0.75rem; text-align: center; text-decoration: none; display: block;">Download</a></div>
-          `;
-          galleryGrid.appendChild(card);
-        });
-      } catch (e) { galleryGrid.innerHTML = '<p style="color:#ef4444;">Error fetching photos.</p>'; }
-    }
-
-    // ================= GERÇEK 7 SÜTUNLU TAKVİM MOTORU =================
+    // CALENDAR
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    const calMonthSelect = document.getElementById('cal-month-select');
-    const calYearSelect = document.getElementById('cal-year-select');
-    const calPrevMonth = document.getElementById('cal-prev-month');
-    const calNextMonth = document.getElementById('cal-next-month');
-    const calendarDaysGrid = document.getElementById('calendar-days-grid');
-
-    const selectedDaySlotsWrap = document.getElementById('selected-day-slots-wrap');
-    const selectedDateHeading = document.getElementById('selected-date-heading');
-    const hourlySlotsContainer = document.getElementById('hourly-slots-container');
-    const bookingFormWrap = document.getElementById('booking-form-wrap');
+    const standardHours = [
+      "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00",
+      "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00",
+      "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00",
+      "21:00 - 22:00", "22:00 - 23:00"
+    ];
 
     let currentCalDate = new Date();
-    let selectedDateStr = '';
-    let selectedSlotIds = new Set();
-    let availableSlotsCache = [];
-    let calendarInitialized = false;
-
-    function formatLocalDate(dateStr) {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    }
+    let selectedSlots = [];
 
     function initCalendar() {
       const startYear = new Date().getFullYear();
+      const monthSelect = document.getElementById('cal-month-select');
+      const yearSelect = document.getElementById('cal-year-select');
 
-      if (!calendarInitialized) {
-        calYearSelect.innerHTML = '';
-        for (let y = startYear; y < startYear + 6; y++) {
-          const opt = document.createElement('option');
-          opt.value = y;
-          opt.textContent = y;
-          calYearSelect.appendChild(opt);
-        }
+      monthSelect.innerHTML = '';
+      monthNames.forEach((m, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = m;
+        monthSelect.appendChild(opt);
+      });
 
-        calMonthSelect.innerHTML = '';
-        monthNames.forEach((m, idx) => {
-          const opt = document.createElement('option');
-          opt.value = idx;
-          opt.textContent = m;
-          calMonthSelect.appendChild(opt);
-        });
-
-        calMonthSelect.addEventListener('change', () => {
-          currentCalDate = new Date(currentCalDate.getFullYear(), Number(calMonthSelect.value), 1);
-          renderCalendar();
-        });
-
-        calYearSelect.addEventListener('change', () => {
-          currentCalDate = new Date(Number(calYearSelect.value), currentCalDate.getMonth(), 1);
-          renderCalendar();
-        });
-
-        calPrevMonth.addEventListener('click', () => {
-          currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() - 1, 1);
-          syncCalendarControls();
-          renderCalendar();
-        });
-
-        calNextMonth.addEventListener('click', () => {
-          currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() + 1, 1);
-          syncCalendarControls();
-          renderCalendar();
-        });
-
-        calendarInitialized = true;
+      yearSelect.innerHTML = '';
+      for (let y = startYear; y < startYear + 6; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
       }
 
-      currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth(), 1);
-      syncCalendarControls();
+      monthSelect.value = currentCalDate.getMonth();
+      yearSelect.value = currentCalDate.getFullYear();
+
+      monthSelect.addEventListener('change', () => {
+        currentCalDate.setMonth(parseInt(monthSelect.value));
+        renderCalendar();
+      });
+
+      yearSelect.addEventListener('change', () => {
+        currentCalDate.setFullYear(parseInt(yearSelect.value));
+        renderCalendar();
+      });
+
+      document.getElementById('cal-prev-month').addEventListener('click', () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() - 1);
+        monthSelect.value = currentCalDate.getMonth();
+        yearSelect.value = currentCalDate.getFullYear();
+        renderCalendar();
+      });
+
+      document.getElementById('cal-next-month').addEventListener('click', () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() + 1);
+        monthSelect.value = currentCalDate.getMonth();
+        yearSelect.value = currentCalDate.getFullYear();
+        renderCalendar();
+      });
+
       renderCalendar();
     }
 
-    function syncCalendarControls() {
-      calMonthSelect.value = currentCalDate.getMonth();
-      calYearSelect.value = currentCalDate.getFullYear();
-    }
-
     async function renderCalendar() {
-      calendarDaysGrid.innerHTML = '';
-      selectedDaySlotsWrap.style.display = 'none';
-      bookingFormWrap.style.display = 'none';
-      selectedSlotIds.clear();
+      const grid = document.getElementById('calendar-days-grid');
+      grid.innerHTML = '';
 
       const year = currentCalDate.getFullYear();
       const month = currentCalDate.getMonth();
@@ -842,117 +839,131 @@
         .eq('is_active', true)
         .eq('is_booked', false);
 
-      availableSlotsCache = slots || [];
-
       const slotMap = {};
-      availableSlotsCache.forEach(s => {
+      (slots || []).forEach(s => {
         slotMap[s.slot_date] = (slotMap[s.slot_date] || 0) + 1;
       });
 
-      const cellsNeeded = Math.ceil((startingDay + totalDays) / 7) * 7;
-      for (let i = 0; i < cellsNeeded; i++) {
-        const dayNumber = i - startingDay + 1;
-        if (i < startingDay || dayNumber > totalDays) {
-          const emptyCell = document.createElement('div');
-          emptyCell.className = 'cal-day-cell empty';
-          calendarDaysGrid.appendChild(emptyCell);
-          continue;
-        }
+      for (let i = 0; i < startingDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-day-cell empty';
+        grid.appendChild(empty);
+      }
 
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
-        const openHoursCount = slotMap[dateStr] || 0;
-        const hasOpen = openHoursCount > 0;
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const openHours = slotMap[dateStr] || 0;
 
         const cell = document.createElement('div');
-        cell.className = `cal-day-cell ${hasOpen ? 'available' : ''}`;
+        cell.className = `cal-day-cell ${openHours > 0 ? 'available' : ''}`;
         cell.innerHTML = `
-          <span>${dayNumber}</span>
-          ${hasOpen ? `<span class="cal-badge-hours">● ${openHoursCount} hrs</span>` : ''}
+          <span>${day}</span>
+          ${openHours > 0 ? `<span class="cal-badge-hours">${openHours}h</span>` : ''}
         `;
 
-        if (hasOpen) {
+        if (openHours > 0) {
           cell.addEventListener('click', () => {
             document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
             cell.classList.add('selected');
-            selectedDateStr = dateStr;
-            showHourlySlotsForDate(dateStr);
+            showDayHours(dateStr);
           });
         }
 
-        calendarDaysGrid.appendChild(cell);
+        grid.appendChild(cell);
       }
     }
 
-    function showHourlySlotsForDate(dateStr) {
-      const daySlots = availableSlotsCache.filter(s => s.slot_date === dateStr).sort((a, b) => a.hour_slot.localeCompare(b.hour_slot));
-      selectedDaySlotsWrap.style.display = 'block';
-      bookingFormWrap.style.display = 'none';
-      selectedSlotIds.clear();
+    async function showDayHours(dateStr) {
+      selectedSlots = [];
+      const wrap = document.getElementById('selected-day-slots-wrap');
+      const container = document.getElementById('hourly-slots-container');
+      const heading = document.getElementById('selected-date-heading');
 
-      selectedDateHeading.textContent = `Open Hours on ${formatLocalDate(dateStr)}:`;
-      hourlySlotsContainer.innerHTML = '';
+      heading.textContent = `Available Hours: ${dateStr}`;
+      container.innerHTML = '';
 
-      if (currentUser) {
-        document.getElementById('book-name').value = currentUser.username;
-        document.getElementById('book-email').value = currentUser.email || '';
-      }
+      const { data: slots } = await supabase
+        .from('availability_slots')
+        .select('*')
+        .eq('slot_date', dateStr)
+        .eq('is_active', true)
+        .eq('is_booked', false);
 
-      if (!daySlots.length) {
-        hourlySlotsContainer.innerHTML = '<p style="color:#94a3b8; margin: 0;">No open hours for this date.</p>';
+      if (!slots || slots.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No available hours for this date.</p>';
+        wrap.style.display = 'block';
         return;
       }
 
-      daySlots.forEach(s => {
+      slots.forEach(slot => {
         const chip = document.createElement('div');
         chip.className = 'hour-chip';
-        chip.textContent = s.hour_slot;
+        chip.textContent = slot.hour_slot;
         chip.addEventListener('click', () => {
-          if (selectedSlotIds.has(s.id)) {
-            selectedSlotIds.delete(s.id);
-            chip.classList.remove('selected');
+          chip.classList.toggle('selected');
+          if (chip.classList.contains('selected')) {
+            selectedSlots.push(slot.hour_slot);
           } else {
-            selectedSlotIds.add(s.id);
-            chip.classList.add('selected');
+            selectedSlots = selectedSlots.filter(s => s !== slot.hour_slot);
           }
-
-          bookingFormWrap.style.display = selectedSlotIds.size > 0 ? 'block' : 'none';
         });
-        hourlySlotsContainer.appendChild(chip);
+        container.appendChild(chip);
+      });
+
+      wrap.style.display = 'block';
+
+      // Show booking form when any slot is selected
+      const observer = new MutationObserver(() => {
+        if (selectedSlots.length > 0) {
+          document.getElementById('booking-form-wrap').style.display = 'block';
+        } else {
+          document.getElementById('booking-form-wrap').style.display = 'none';
+        }
       });
     }
 
     document.getElementById('btn-submit-booking').addEventListener('click', async () => {
       const name = document.getElementById('book-name').value.trim();
-      const email = document.getElementById('book-email').value.trim().toLowerCase();
+      const email = document.getElementById('book-email').value.trim();
       const contact = document.getElementById('book-contact').value.trim();
       const plan = document.getElementById('book-plan').value.trim();
+      const dateStr = document.getElementById('selected-date-heading').textContent.split(': ')[1];
 
-      if (selectedSlotIds.size === 0 || !name || !email || !contact || !plan) {
-        alert("Please select at least one hour and fill in all required fields!");
-        return;
+      if (!name || !email || !contact || !plan || selectedSlots.length === 0) {
+        return alert("All fields required!");
       }
 
-      const slotArray = Array.from(selectedSlotIds);
-      const chosenHourNames = availableSlotsCache.filter(s => selectedSlotIds.has(s.id)).map(s => s.hour_slot);
-
-      const { error: appErr } = await supabase.from('appointments').insert({
-        user_id: currentUser ? currentUser.id : null,
+      await supabase.from('appointments').insert([{
+        appointment_date: dateStr,
+        selected_slots: selectedSlots,
         client_name: name,
         client_email: email,
         client_contact: contact,
-        activity_plan: plan,
-        appointment_date: selectedDateStr,
-        selected_slots: chosenHourNames
-      });
+        activity_plan: plan
+      }]);
 
-      if (appErr) return alert("Booking error: " + appErr.message);
+      // Mark slots as booked
+      await supabase
+        .from('availability_slots')
+        .update({ is_booked: true })
+        .eq('slot_date', dateStr)
+        .in('hour_slot', selectedSlots);
 
-      await supabase.from('availability_slots').update({ is_booked: true }).in('id', slotArray);
-
-      alert(`🎉 Appointment confirmed for ${chosenHourNames.join(', ')}! The hours are now reserved.`);
+      alert("Booking confirmed!");
+      document.getElementById('book-name').value = '';
+      document.getElementById('book-email').value = '';
+      document.getElementById('book-contact').value = '';
       document.getElementById('book-plan').value = '';
-      bookingFormWrap.style.display = 'none';
+      selectedSlots = [];
+      document.getElementById('selected-day-slots-wrap').style.display = 'none';
+      document.getElementById('booking-form-wrap').style.display = 'none';
       renderCalendar();
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      localStorage.removeItem('portal_user');
+      currentUser = null;
+      showHub();
     });
   </script>
 </body>

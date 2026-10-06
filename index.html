@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Event & Booking Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>NEXUS • Event & Hub</title>
   
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#00f2fe">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="alternate icon" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <meta name="theme-color" content="#070913">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Portal">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
+  <meta name="apple-mobile-web-app-title" content="NEXUS">
 
   <link rel="stylesheet" href="style.css">
   <script>
@@ -25,8 +27,12 @@
 
   <!-- 1. AUTH SCREEN -->
   <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
-    <div class="glass-box">
-      <h2 id="auth-title" style="color: #00f2fe; text-align: center; margin-bottom: 20px;">Sign In</h2>
+    <div class="glass-box" style="text-align: center;">
+      <!-- LOGO -->
+      <div style="margin-bottom: 16px;">
+        <img src="./icon.svg" alt="NEXUS" style="width: 76px; height: 76px; border-radius: 18px; box-shadow: 0 0 25px rgba(0, 242, 254, 0.45); display: inline-block;">
+      </div>
+      <h2 id="auth-title" style="color: #00f2fe; margin-bottom: 20px;">Sign In to NEXUS</h2>
       
       <input type="text" id="auth-username" class="input-field" placeholder="Username">
       <div id="auth-register-fields" style="display: none;">
@@ -49,10 +55,14 @@
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img id="user-nav-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00f2fe; background: #111;">
+        <!-- LOGO HEADER -->
+        <img src="./icon.svg" alt="NEXUS Logo" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); display: block;">
         <div>
-          <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.3rem;">Welcome</h2>
-          <span id="user-role-text" style="font-size: 0.85rem; color: #94a3b8;">Member Space</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.25rem;">Welcome</h2>
+            <img id="user-nav-avatar" src="" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ff007f; background: #111;" title="Your Avatar">
+          </div>
+          <span id="user-role-text" style="font-size: 0.8rem; color: #94a3b8;">NEXUS Member Space</span>
         </div>
       </div>
       <div style="display: flex; gap: 10px;">
@@ -124,7 +134,7 @@
     <!-- SECTION B: EVENTS -->
     <div id="section-events" style="display: none;">
       
-      <!-- HOST YOUR OWN EVENT (YETKİLİ KULLANICILAR İÇİN) -->
+      <!-- HOST YOUR OWN EVENT (YETKİLİ KULLANICILAR) -->
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -252,7 +262,6 @@
       }
     });
 
-    // Oturumu Supabase'den her açılışta anlık tazeleyen güvenli fonksiyon
     async function checkUserState() {
       let user = getSessionUser();
       if (!user) {
@@ -262,7 +271,6 @@
         return;
       }
 
-      // Veritabanından yetkileri çek ve localStorage'ı güncelle
       try {
         const { data: latestUser } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
         if (latestUser) {
@@ -360,7 +368,6 @@
         loadUserEvents(user);
       };
 
-      // KULLANICI ETKİNLİK AÇMA YETKİ KONTROLÜ
       if (user.can_create_events || user.is_admin || user.role === 'admin') {
         document.getElementById('user-create-event-panel').style.display = 'block';
         setupUserEventCreation(user);
@@ -550,7 +557,7 @@
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
-      // 1. Konum / Yol Tarifi
+      // 1. Konum
       const locWrap = document.getElementById('room-location-wrap');
       if (event.location && event.location.trim()) {
         const loc = event.location.trim();
@@ -565,7 +572,7 @@
         locWrap.style.display = 'none';
       }
 
-      // 2. Canlı Geri Sayım
+      // 2. Canlı Sayaç
       const cdBadge = document.getElementById('room-countdown-badge');
       if (countdownInterval) clearInterval(countdownInterval);
 
@@ -602,7 +609,7 @@
         spotWrap.style.display = 'none';
       }
 
-      // 4. İsteğe Bağlı Ortak Hesap (Expenses)
+      // 4. İsteğe Bağlı Ortak Hesap
       const expSection = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSection.style.display = 'block';

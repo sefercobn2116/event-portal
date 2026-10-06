@@ -38,10 +38,23 @@
   .exit { background:transparent; border:1px solid #3a3a55; color:var(--muted); padding:8px 14px; border-radius:10px; cursor:pointer; font-size:.85rem; }
   .exit:hover { border-color:#ff6b81; color:#ff6b81; }
 
-  /* ETKİNLİK KARTLARI */
+  /* ETKİNLİK SEÇİM KARTLARI */
+  .select-hint { font-size:1.05rem; color:var(--accent2); margin-bottom:14px; font-weight:600; }
+  .event-select-card {
+    background:var(--card); border:1px solid #26263a; border-radius:16px; padding:18px 20px;
+    margin-bottom:12px; cursor:pointer; transition:.2s; display:flex; justify-content:space-between; align-items:center;
+  }
+  .event-select-card:hover { border-color:var(--accent); transform:translateY(-2px); background:#212130; }
+  .event-select-info h3 { font-size:1.15rem; color:#fff; margin-bottom:4px; }
+  .event-select-info p { color:var(--accent2); font-size:.88rem; font-weight:500; }
+  .btn-enter { background:rgba(124,92,255,0.18); border:1px solid var(--accent); color:var(--accent); padding:8px 16px; border-radius:10px; font-weight:600; font-size:.85rem; }
+
+  /* TEK ETKİNLİK DETAY ALANI */
+  .btn-back { background:transparent; border:none; color:var(--muted); font-size:.9rem; cursor:pointer; font-weight:600; margin-bottom:14px; display:inline-flex; align-items:center; gap:6px; }
+  .btn-back:hover { color:var(--accent); }
   .card { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:16px; }
-  .ev-title { font-size:1.25rem; font-weight:700; }
-  .ev-date { color:var(--accent2); font-weight:600; margin:6px 0; font-size:.95rem; }
+  .ev-title { font-size:1.35rem; font-weight:700; color:#fff; }
+  .ev-date { color:var(--accent2); font-weight:600; margin:6px 0 10px; font-size:.95rem; }
   .ev-desc { color:var(--muted); line-height:1.5; white-space:pre-wrap; }
   .empty { text-align:center; color:var(--muted); padding:50px 0; }
 
@@ -50,7 +63,7 @@
   .sug h3, .up h3 { font-size:1rem; margin-bottom:10px; color:var(--accent2); }
   .sug-item { background:#12121c; border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:.92rem; }
   .sug-item b { color:var(--accent); }
-  .sug-item small { color:var(--muted); display:block; margin-top:2px; }
+  .sug-item small { color:var(--muted); display:block; margin-top:2px; font-size:.75rem; }
   .sug form { display:flex; gap:8px; margin-top:10px; }
   .sug input { flex:1; padding:10px 14px; border-radius:10px; border:1px solid #333; background:#12121c; color:var(--text); outline:none; }
   .sug input:focus { border-color:var(--accent); }
@@ -59,11 +72,11 @@
   .up { margin-top:18px; }
   .file-btn { display:inline-block; padding:12px 22px; background:#12121c; border:1px dashed #444; border-radius:12px; cursor:pointer; color:var(--muted); }
   .file-btn:hover { border-color:var(--accent2); color:var(--text); }
-  .prog { margin-top:10px; font-size:.88rem; color:var(--accent2); min-height:1.2em; }
+  .prog { margin-top:10px; font-size:.88rem; color:var(--accent2); min-height:1.2em; font-weight:600; }
   .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:14px; }
   .mem { position:relative; border-radius:12px; overflow:hidden; border:1px solid #26263a; background:#000; }
   .mem img, .mem video { width:100%; height:140px; object-fit:cover; display:block; }
-  .mem a { display:block; text-align:center; padding:7px; font-size:.8rem; background:#12121c; color:var(--accent2); text-decoration:none; }
+  .mem a { display:block; text-align:center; padding:7px; font-size:.8rem; background:#12121c; color:var(--accent2); text-decoration:none; font-weight:600; }
   .mem a:hover { background:#1c1c2c; }
   .cap { font-size:.72rem; color:var(--muted); text-align:center; padding:4px; background:#12121c; }
 </style>
@@ -71,7 +84,7 @@
 </head>
 <body>
 
-<!-- GİRİŞ KAPISI -->
+<!-- 1. GİRİŞ KAPISI -->
 <div id="gate" class="gate">
   <h1>Plan <span>Zero</span> ✦</h1>
   <p>Hoş geldin! Devam etmek için davetli ismini yaz.</p>
@@ -80,19 +93,31 @@
   <div class="err" id="gateErr"></div>
 </div>
 
-<!-- PORTAL -->
+<!-- 2. ANA PORTAL -->
 <div id="portal" class="wrap hidden">
   <header>
     <span class="badge" id="userBadge"></span>
     <span class="title">Plan <span>Zero</span></span>
     <button class="exit" onclick="logout()">Çıkış / Değiştir ➔</button>
   </header>
-  <div id="events"></div>
+
+  <!-- A) ETKİNLİK SEÇİM LİSTESİ -->
+  <div id="eventSelectionView">
+    <div class="select-hint">🎟️ Katılabileceğin Etkinlikler:</div>
+    <div id="eventsListContainer"></div>
+  </div>
+
+  <!-- B) SEÇİLEN ETKİNLİĞİN ODASI (İŞLEM ALANI) -->
+  <div id="eventDetailView" class="hidden">
+    <button class="btn-back" onclick="backToSelection()">← Tüm Etkinliklerime Dön</button>
+    <div id="activeEventCard"></div>
+  </div>
 </div>
 
 <script>
 const LS_KEY = "pz_user";
-const MAX_IMG = 1280; // piksel — büyük fotoğraflar otomatik küçültülür
+const MAX_IMG = 1280; // piksel
+let cachedUserEvents = [];
 
 // ---------- GİRİŞ / ÇIKIŞ ----------
 async function login() {
@@ -119,19 +144,61 @@ function openPortal(name) {
   document.getElementById("gate").classList.add("hidden");
   document.getElementById("portal").classList.remove("hidden");
   document.getElementById("userBadge").textContent = "👋 " + name;
-  loadEvents(name);
+  loadUserEvents(name);
 }
 
-// ---------- ETKİNLİKLER ----------
-async function loadEvents(userName) {
-  const box = document.getElementById("events");
-  box.innerHTML = "<div class='empty'>Etkinlikler yükleniyor...</div>";
-  const { data: events, error } = await sb.from("events").select("*").order("event_date");
-  if (error) { box.innerHTML = "<div class='empty'>Hata: " + error.message + "</div>"; return; }
-  const mine = (events || []).filter(e => (e.allowed_guests || "").split(",").map(s=>s.trim()).includes(userName));
-  if (mine.length === 0) { box.innerHTML = "<div class='empty'>Şu an için sana atanmış etkinlik yok.<br>Admin ekleyince burada görünecek.</div>"; return; }
-  box.innerHTML = "";
-  mine.forEach(ev => box.appendChild(renderEvent(ev, userName)));
+// ---------- ETKİNLİKLERİ ÇEK & LİSTELE ----------
+async function loadUserEvents(userName) {
+  const container = document.getElementById("eventsListContainer");
+  container.innerHTML = "<div class='empty'>Yetkili olduğun etkinlikler yükleniyor...</div>";
+
+  const { data: events, error } = await sb.from("events").select("*").order("event_date", { ascending: true });
+  if (error) { container.innerHTML = "<div class='empty'>Hata: " + error.message + "</div>"; return; }
+
+  // Yetkili olunan etkinlikleri filtrele
+  cachedUserEvents = (events || []).filter(e => {
+    const list = (e.allowed_guests || "").toLowerCase().split(",").map(s => s.trim());
+    return list.includes(userName.toLowerCase()) || list.includes("");
+  });
+
+  if (cachedUserEvents.length === 0) {
+    container.innerHTML = "<div class='empty'>Şu an için sana tanımlanmış bir etkinlik bulunmuyor.<br>Admin seni ekleyince burada görünecek.</div>";
+    return;
+  }
+
+  container.innerHTML = "";
+  cachedUserEvents.forEach(ev => {
+    const card = document.createElement("div");
+    card.className = "event-select-card";
+    card.innerHTML = `
+      <div class="event-select-info">
+        <h3>🎉 ${esc(ev.title)}</h3>
+        <p>📅 ${fmtDate(ev.event_date)}</p>
+      </div>
+      <div class="btn-enter">Etkinliğe Gir ➔</div>
+    `;
+    card.onclick = () => selectEvent(ev.id, userName);
+    container.appendChild(card);
+  });
+}
+
+// ---------- ETKİNLİK ODASINA GİRİŞ ----------
+function selectEvent(eventId, userName) {
+  const ev = cachedUserEvents.find(e => e.id === eventId);
+  if (!ev) return;
+
+  document.getElementById("eventSelectionView").classList.add("hidden");
+  const detailView = document.getElementById("eventDetailView");
+  detailView.classList.remove("hidden");
+
+  const cardBox = document.getElementById("activeEventCard");
+  cardBox.innerHTML = "";
+  cardBox.appendChild(renderEventRoom(ev, userName));
+}
+
+function backToSelection() {
+  document.getElementById("eventDetailView").classList.add("hidden");
+  document.getElementById("eventSelectionView").classList.remove("hidden");
 }
 
 function fmtDate(iso) {
@@ -140,30 +207,34 @@ function fmtDate(iso) {
          " · " + d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
 }
 
-function renderEvent(ev, userName) {
+// ---------- ETKİNLİK ODASINI ÇİZ ----------
+function renderEventRoom(ev, userName) {
   const card = document.createElement("div");
   card.className = "card";
   card.innerHTML = `
     <div class="ev-title">🎉 ${esc(ev.title)}</div>
     <div class="ev-date">📅 ${fmtDate(ev.event_date)}</div>
-    <div class="ev-desc">${esc(ev.description || "")}</div>
+    <div class="ev-desc">${esc(ev.description || "Açıklama girilmemiş.")}</div>
+    
     <div class="sug">
       <h3>💡 Fikir & Öneriler</h3>
       <div class="sug-list" id="sug-${ev.id}"><div class="sug-item">Yükleniyor...</div></div>
       <form onsubmit="return addSuggestion(event, ${ev.id}, '${esc(userName)}')">
-        <input type="text" placeholder="Bir fikrin mi var? Yaz bakalım..." required>
+        <input type="text" placeholder="Bir fikrin mi var? Mekan, rota, saat yaz..." required>
         <button class="btn" style="margin-top:0">Gönder</button>
       </form>
     </div>
+
     <div class="up">
       <h3>📸 Anı Yükle</h3>
-      <label class="file-btn">Fotoğraf / Video Seç (çoklu seçilebilir)
+      <label class="file-btn">Fotoğraf / Video Seç (Toplu seçilebilir)
         <input type="file" multiple accept="image/*,video/*" style="display:none"
                onchange="uploadFiles(this, ${ev.id}, '${esc(userName)}')">
       </label>
       <div class="prog" id="prog-${ev.id}"></div>
       <div class="gallery" id="gal-${ev.id}"></div>
     </div>`;
+
   loadSuggestions(ev.id);
   loadGallery(ev.id);
   return card;
@@ -174,7 +245,7 @@ async function loadSuggestions(evId) {
   const { data } = await sb.from("event_suggestions").select("*").eq("event_id", evId).order("created_at", {ascending:false});
   const list = document.getElementById("sug-" + evId);
   if (!list) return;
-  if (!data || data.length === 0) { list.innerHTML = "<div class='sug-item'>Henüz öneri yok — ilk sen yaz!</div>"; return; }
+  if (!data || data.length === 0) { list.innerHTML = "<div class='sug-item' style='color:var(--muted)'>Henüz öneri yok — ilk sen yaz!</div>"; return; }
   list.innerHTML = data.map(s => `<div class="sug-item"><b>${esc(s.suggested_by)}:</b> ${esc(s.text)}<small>${new Date(s.created_at).toLocaleString("tr-TR")}</small></div>`).join("");
 }
 
@@ -196,13 +267,13 @@ async function uploadFiles(input, evId, userName) {
   input.value = "";
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
-    prog.textContent = `Yükleniyor ${i+1}/${files.length}: ${f.name}...`;
+    prog.textContent = `Yükleniyor (${i+1}/${files.length}): ${f.name}...`;
     try {
       let dataUrl, caption = "";
       if (f.type.startsWith("image/")) {
         dataUrl = await resizeImage(f, MAX_IMG);
       } else if (f.type.startsWith("video/")) {
-        if (f.size > 40 * 1024 * 1024) { prog.textContent = `⚠️ "${f.name}" çok büyük (40MB+), atlandı.`; continue; }
+        if (f.size > 40 * 1024 * 1024) { prog.textContent = `⚠️️ "${f.name}" çok büyük (40MB+), atlandı.`; continue; }
         dataUrl = await readAsDataURL(f);
         caption = "[video]";
       } else continue;
@@ -250,7 +321,7 @@ function resizeImage(file, maxDim) {
   });
 }
 
-// ---------- GALERİ ----------
+// ---------- GALERİ & İNDİRME ----------
 async function loadGallery(evId) {
   const gal = document.getElementById("gal-" + evId);
   if (!gal) return;

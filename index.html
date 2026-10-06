@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plan Zero ✦ Buluşma Portalı</title>
+<title>Plan Zero | Canlı Portal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // ===== SUPABASE BAĞLANTI AYARLARI =====
   const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 </script>
 <style>
   :root { --bg:#0f0f14; --card:#1a1a24; --accent:#7c5cff; --accent2:#00e0a4; --text:#eaeaf0; --muted:#9a9ab0; }
@@ -18,336 +17,163 @@
   .wrap { max-width:720px; margin:0 auto; padding:24px 16px; }
   .hidden { display:none !important; }
 
-  /* GİRİŞ EKRANI */
   .gate { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:20px; }
-  .gate h1 { font-size:2.2rem; margin-bottom:8px; }
-  .gate h1 span { color:var(--accent); }
-  .gate p { color:var(--muted); margin-bottom:24px; }
   .gate input { padding:14px 18px; border-radius:12px; border:1px solid #333; background:var(--card); color:var(--text); font-size:1.05rem; width:min(320px,90vw); text-align:center; outline:none; }
-  .gate input:focus { border-color:var(--accent); }
-  .btn { margin-top:14px; padding:13px 34px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; transition:.2s; }
-  .btn:hover { filter:brightness(1.15); transform:translateY(-1px); }
-  .btn:disabled { opacity:.5; cursor:wait; }
-  .err { color:#ff6b81; margin-top:12px; min-height:1.2em; }
+  .btn { margin-top:14px; padding:13px 34px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
 
-  /* ÜST BAR */
-  header { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid #26263a; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid #26263a; margin-bottom:20px; }
   .badge { background:linear-gradient(135deg,var(--accent),#a48bff); padding:6px 14px; border-radius:999px; font-size:.85rem; font-weight:600; }
-  .title { font-size:1.3rem; font-weight:700; }
-  .title span { color:var(--accent2); }
-  .exit { background:transparent; border:1px solid #3a3a55; color:var(--muted); padding:8px 14px; border-radius:10px; cursor:pointer; font-size:.85rem; }
-  .exit:hover { border-color:#ff6b81; color:#ff6b81; }
+  .exit { background:transparent; border:1px solid #3a3a55; color:var(--muted); padding:8px 14px; border-radius:10px; cursor:pointer; }
 
-  /* ETKİNLİK SEÇİM KARTLARI */
-  .select-hint { font-size:1.05rem; color:var(--accent2); margin-bottom:14px; font-weight:600; }
-  .event-select-card {
-    background:var(--card); border:1px solid #26263a; border-radius:16px; padding:18px 20px;
-    margin-bottom:12px; cursor:pointer; transition:.2s; display:flex; justify-content:space-between; align-items:center;
-  }
-  .event-select-card:hover { border-color:var(--accent); transform:translateY(-2px); background:#212130; }
-  .event-select-info h3 { font-size:1.15rem; color:#fff; margin-bottom:4px; }
-  .event-select-info p { color:var(--accent2); font-size:.88rem; font-weight:500; }
-  .btn-enter { background:rgba(124,92,255,0.18); border:1px solid var(--accent); color:var(--accent); padding:8px 16px; border-radius:10px; font-weight:600; font-size:.85rem; }
-
-  /* TEK ETKİNLİK DETAY ALANI */
-  .btn-back { background:transparent; border:none; color:var(--muted); font-size:.9rem; cursor:pointer; font-weight:600; margin-bottom:14px; display:inline-flex; align-items:center; gap:6px; }
-  .btn-back:hover { color:var(--accent); }
+  .event-item { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+  .event-item:hover { border-color:var(--accent); }
   .card { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:16px; }
-  .ev-title { font-size:1.35rem; font-weight:700; color:#fff; }
-  .ev-date { color:var(--accent2); font-weight:600; margin:6px 0 10px; font-size:.95rem; }
-  .ev-desc { color:var(--muted); line-height:1.5; white-space:pre-wrap; }
-  .empty { text-align:center; color:var(--muted); padding:50px 0; }
-
-  /* ÖNERİLER */
-  .sug { border-top:1px solid #26263a; margin-top:18px; padding-top:14px; }
-  .sug h3, .up h3 { font-size:1rem; margin-bottom:10px; color:var(--accent2); }
-  .sug-item { background:#12121c; border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:.92rem; }
-  .sug-item b { color:var(--accent); }
-  .sug-item small { color:var(--muted); display:block; margin-top:2px; font-size:.75rem; }
-  .sug form { display:flex; gap:8px; margin-top:10px; }
-  .sug input { flex:1; padding:10px 14px; border-radius:10px; border:1px solid #333; background:#12121c; color:var(--text); outline:none; }
-  .sug input:focus { border-color:var(--accent); }
-
-  /* YÜKLEME + GALERİ */
-  .up { margin-top:18px; }
-  .file-btn { display:inline-block; padding:12px 22px; background:#12121c; border:1px dashed #444; border-radius:12px; cursor:pointer; color:var(--muted); }
-  .file-btn:hover { border-color:var(--accent2); color:var(--text); }
-  .prog { margin-top:10px; font-size:.88rem; color:var(--accent2); min-height:1.2em; font-weight:600; }
-  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:14px; }
-  .mem { position:relative; border-radius:12px; overflow:hidden; border:1px solid #26263a; background:#000; }
-  .mem img, .mem video { width:100%; height:140px; object-fit:cover; display:block; }
-  .mem a { display:block; text-align:center; padding:7px; font-size:.8rem; background:#12121c; color:var(--accent2); text-decoration:none; font-weight:600; }
-  .mem a:hover { background:#1c1c2c; }
-  .cap { font-size:.72rem; color:var(--muted); text-align:center; padding:4px; background:#12121c; }
+  .file-btn { display:inline-block; padding:12px 22px; background:#12121c; border:1px dashed #444; border-radius:12px; cursor:pointer; color:var(--muted); margin-top:10px; }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-top:14px; }
+  .mem { border-radius:12px; overflow:hidden; border:1px solid #26263a; }
+  .mem img { width:100%; height:130px; object-fit:cover; display:block; }
 </style>
-<base target="_blank">
 </head>
 <body>
 
-<!-- 1. GİRİŞ KAPISI -->
 <div id="gate" class="gate">
-  <h1>Plan <span>Zero</span> ✦</h1>
-  <p>Hoş geldin! Devam etmek için davetli ismini yaz.</p>
-  <input id="nameInput" type="text" placeholder="Adın (örn: Sefer)" autocomplete="off">
-  <button class="btn" id="loginBtn" onclick="login()">Giriş Yap →</button>
-  <div class="err" id="gateErr"></div>
+  <h1 id="appTitle">Plan Zero ✦</h1>
+  <p style="color:var(--muted); margin: 8px 0 20px;">Giriş yapmak için adını yaz.</p>
+  <input id="nameInput" type="text" placeholder="Adın (örn: Sefer)">
+  <button class="btn" onclick="login()">Giriş Yap →</button>
+  <div id="gateErr" style="color:#ff6b81; margin-top:12px;"></div>
 </div>
 
-<!-- 2. ANA PORTAL -->
 <div id="portal" class="wrap hidden">
   <header>
     <span class="badge" id="userBadge"></span>
-    <span class="title">Plan <span>Zero</span></span>
-    <button class="exit" onclick="logout()">Çıkış / Değiştir ➔</button>
+    <button class="exit" onclick="logout()">Çıkış ➔</button>
   </header>
 
-  <!-- A) ETKİNLİK SEÇİM LİSTESİ -->
-  <div id="eventSelectionView">
-    <div class="select-hint">🎟️ Katılabileceğin Etkinlikler:</div>
-    <div id="eventsListContainer"></div>
+  <div id="viewSelection">
+    <h2 style="font-size:1.1rem; color:var(--accent2); margin-bottom:14px;">🎟️ Katılabileceğin Etkinlikler:</h2>
+    <div id="eventsContainer"></div>
   </div>
 
-  <!-- B) SEÇİLEN ETKİNLİĞİN ODASI (İŞLEM ALANI) -->
-  <div id="eventDetailView" class="hidden">
-    <button class="btn-back" onclick="backToSelection()">← Tüm Etkinliklerime Dön</button>
-    <div id="activeEventCard"></div>
+  <div id="viewRoom" class="hidden">
+    <button onclick="backToList()" style="background:none;border:none;color:var(--muted);cursor:pointer;margin-bottom:14px;">← Geri Dön</button>
+    <div id="roomCard"></div>
   </div>
 </div>
 
 <script>
-const LS_KEY = "pz_user";
-const MAX_IMG = 1280; // piksel
-let cachedUserEvents = [];
+let appData = { guests: [], events: [] };
+let currentUser = localStorage.getItem("pz_user");
 
-// ---------- GİRİŞ / ÇIKIŞ ----------
-async function login() {
+async function initEngine() {
+  const { data } = await sb.from("remote_config").select("payload").eq("id", 1).maybeSingle();
+  if (data && data.payload) {
+    try {
+      appData = JSON.parse(data.payload);
+      if (appData.project_title) document.getElementById("appTitle").innerText = appData.project_title;
+    } catch(e) { console.error("JSON parse hatası", e); }
+  }
+  if (currentUser) openPortal();
+}
+
+function login() {
   const name = document.getElementById("nameInput").value.trim();
   const err = document.getElementById("gateErr");
-  const btn = document.getElementById("loginBtn");
-  if (!name) { err.textContent = "Önce ismini yazmalısın."; return; }
-  btn.disabled = true; btn.textContent = "Kontrol ediliyor...";
-  const { data, error } = await sb.from("guests").select("name").ilike("name", name);
-  btn.disabled = false; btn.textContent = "Giriş Yap →";
-  if (error) { err.textContent = "Bağlantı hatası: " + error.message; return; }
-  if (!data || data.length === 0) { err.textContent = "Bu isim davetli listesinde yok 😕"; return; }
-  const realName = data[0].name;
-  localStorage.setItem(LS_KEY, realName);
-  openPortal(realName);
+  if (!name) return;
+
+  const valid = appData.guests.some(g => g.toLowerCase() === name.toLowerCase());
+  if (valid) {
+    currentUser = name;
+    localStorage.setItem("pz_user", name);
+    openPortal();
+  } else {
+    err.innerText = "Bu isim izinli listede yok.";
+  }
 }
 
 function logout() {
-  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem("pz_user");
   location.reload();
 }
 
-function openPortal(name) {
+function openPortal() {
   document.getElementById("gate").classList.add("hidden");
   document.getElementById("portal").classList.remove("hidden");
-  document.getElementById("userBadge").textContent = "👋 " + name;
-  loadUserEvents(name);
-}
+  document.getElementById("userBadge").innerText = "👋 " + currentUser;
 
-// ---------- ETKİNLİKLERİ ÇEK & LİSTELE ----------
-async function loadUserEvents(userName) {
-  const container = document.getElementById("eventsListContainer");
-  container.innerHTML = "<div class='empty'>Yetkili olduğun etkinlikler yükleniyor...</div>";
+  const container = document.getElementById("eventsContainer");
+  container.innerHTML = "";
 
-  const { data: events, error } = await sb.from("events").select("*").order("event_date", { ascending: true });
-  if (error) { container.innerHTML = "<div class='empty'>Hata: " + error.message + "</div>"; return; }
+  const myEvents = appData.events.filter(e => 
+    e.allowed_guests.some(ag => ag.toLowerCase() === currentUser.toLowerCase())
+  );
 
-  // Yetkili olunan etkinlikleri filtrele
-  cachedUserEvents = (events || []).filter(e => {
-    const list = (e.allowed_guests || "").toLowerCase().split(",").map(s => s.trim());
-    return list.includes(userName.toLowerCase()) || list.includes("");
-  });
-
-  if (cachedUserEvents.length === 0) {
-    container.innerHTML = "<div class='empty'>Şu an için sana tanımlanmış bir etkinlik bulunmuyor.<br>Admin seni ekleyince burada görünecek.</div>";
+  if (myEvents.length === 0) {
+    container.innerHTML = "<p style='color:var(--muted)'>Sana atanmış bir etkinlik yok.</p>";
     return;
   }
 
-  container.innerHTML = "";
-  cachedUserEvents.forEach(ev => {
-    const card = document.createElement("div");
-    card.className = "event-select-card";
-    card.innerHTML = `
-      <div class="event-select-info">
-        <h3>🎉 ${esc(ev.title)}</h3>
-        <p>📅 ${fmtDate(ev.event_date)}</p>
-      </div>
-      <div class="btn-enter">Etkinliğe Gir ➔</div>
-    `;
-    card.onclick = () => selectEvent(ev.id, userName);
-    container.appendChild(card);
+  myEvents.forEach(ev => {
+    const item = document.createElement("div");
+    item.className = "event-item";
+    item.innerHTML = `<div><h3>🎉 ${ev.title}</h3><p style="color:var(--accent2); font-size:.85rem;">📅 ${ev.date}</p></div><div>Giriş ➔</div>`;
+    item.onclick = () => openRoom(ev);
+    container.appendChild(item);
   });
 }
 
-// ---------- ETKİNLİK ODASINA GİRİŞ ----------
-function selectEvent(eventId, userName) {
-  const ev = cachedUserEvents.find(e => e.id === eventId);
-  if (!ev) return;
+function openRoom(ev) {
+  document.getElementById("viewSelection").classList.add("hidden");
+  document.getElementById("viewRoom").classList.remove("hidden");
 
-  document.getElementById("eventSelectionView").classList.add("hidden");
-  const detailView = document.getElementById("eventDetailView");
-  detailView.classList.remove("hidden");
-
-  const cardBox = document.getElementById("activeEventCard");
-  cardBox.innerHTML = "";
-  cardBox.appendChild(renderEventRoom(ev, userName));
-}
-
-function backToSelection() {
-  document.getElementById("eventDetailView").classList.add("hidden");
-  document.getElementById("eventSelectionView").classList.remove("hidden");
-}
-
-function fmtDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) +
-         " · " + d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-}
-
-// ---------- ETKİNLİK ODASINI ÇİZ ----------
-function renderEventRoom(ev, userName) {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.innerHTML = `
-    <div class="ev-title">🎉 ${esc(ev.title)}</div>
-    <div class="ev-date">📅 ${fmtDate(ev.event_date)}</div>
-    <div class="ev-desc">${esc(ev.description || "Açıklama girilmemiş.")}</div>
-    
-    <div class="sug">
-      <h3>💡 Fikir & Öneriler</h3>
-      <div class="sug-list" id="sug-${ev.id}"><div class="sug-item">Yükleniyor...</div></div>
-      <form onsubmit="return addSuggestion(event, ${ev.id}, '${esc(userName)}')">
-        <input type="text" placeholder="Bir fikrin mi var? Mekan, rota, saat yaz..." required>
-        <button class="btn" style="margin-top:0">Gönder</button>
-      </form>
-    </div>
-
-    <div class="up">
-      <h3>📸 Anı Yükle</h3>
-      <label class="file-btn">Fotoğraf / Video Seç (Toplu seçilebilir)
-        <input type="file" multiple accept="image/*,video/*" style="display:none"
-               onchange="uploadFiles(this, ${ev.id}, '${esc(userName)}')">
+  document.getElementById("roomCard").innerHTML = `
+    <div class="card">
+      <h2>🎉 ${ev.title}</h2>
+      <p style="color:var(--muted); margin: 8px 0;">${ev.description}</p>
+      <label class="file-btn">Fotoğraf Yükle
+        <input type="file" multiple accept="image/*" style="display:none" onchange="uploadMemories(this, ${ev.id})">
       </label>
-      <div class="prog" id="prog-${ev.id}"></div>
-      <div class="gallery" id="gal-${ev.id}"></div>
-    </div>`;
-
-  loadSuggestions(ev.id);
-  loadGallery(ev.id);
-  return card;
+      <div id="galStatus" style="color:var(--accent2); margin-top:8px;"></div>
+      <div class="gallery" id="roomGallery"></div>
+    </div>
+  `;
+  loadVault(ev.id);
 }
 
-// ---------- ÖNERİLER ----------
-async function loadSuggestions(evId) {
-  const { data } = await sb.from("event_suggestions").select("*").eq("event_id", evId).order("created_at", {ascending:false});
-  const list = document.getElementById("sug-" + evId);
-  if (!list) return;
-  if (!data || data.length === 0) { list.innerHTML = "<div class='sug-item' style='color:var(--muted)'>Henüz öneri yok — ilk sen yaz!</div>"; return; }
-  list.innerHTML = data.map(s => `<div class="sug-item"><b>${esc(s.suggested_by)}:</b> ${esc(s.text)}<small>${new Date(s.created_at).toLocaleString("tr-TR")}</small></div>`).join("");
+function backToList() {
+  document.getElementById("viewRoom").classList.add("hidden");
+  document.getElementById("viewSelection").classList.remove("hidden");
 }
 
-async function addSuggestion(e, evId, userName) {
-  e.preventDefault();
-  const input = e.target.querySelector("input");
-  const text = input.value.trim();
-  if (!text) return false;
-  await sb.from("event_suggestions").insert({ event_id: evId, suggested_by: userName, text });
-  input.value = "";
-  loadSuggestions(evId);
-  return false;
-}
-
-// ---------- MEDYA YÜKLEME ----------
-async function uploadFiles(input, evId, userName) {
-  const prog = document.getElementById("prog-" + evId);
+async function uploadMemories(input, eventId) {
   const files = Array.from(input.files);
-  input.value = "";
-  for (let i = 0; i < files.length; i++) {
-    const f = files[i];
-    prog.textContent = `Yükleniyor (${i+1}/${files.length}): ${f.name}...`;
-    try {
-      let dataUrl, caption = "";
-      if (f.type.startsWith("image/")) {
-        dataUrl = await resizeImage(f, MAX_IMG);
-      } else if (f.type.startsWith("video/")) {
-        if (f.size > 40 * 1024 * 1024) { prog.textContent = `⚠️️ "${f.name}" çok büyük (40MB+), atlandı.`; continue; }
-        dataUrl = await readAsDataURL(f);
-        caption = "[video]";
-      } else continue;
+  const status = document.getElementById("galStatus");
+  status.innerText = "Yükleniyor...";
 
-      const { error } = await sb.from("event_memories").insert({
-        event_id: evId, image_data: dataUrl, caption, uploaded_by: userName
-      });
-      if (error) throw new Error(error.message);
-    } catch (err) {
-      prog.textContent = `❌ "${f.name}" yüklenemedi: ${err.message}`;
-    }
-  }
-  prog.textContent = "✅ Yükleme tamamlandı!";
-  setTimeout(() => prog.textContent = "", 4000);
-  loadGallery(evId);
-}
-
-function readAsDataURL(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
-
-function resizeImage(file, maxDim) {
-  return new Promise((res, rej) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      let { width: w, height: h } = img;
-      if (w > maxDim || h > maxDim) {
-        const ratio = Math.min(maxDim / w, maxDim / h);
-        w = Math.round(w * ratio); h = Math.round(h * ratio);
-      }
-      const canvas = document.createElement("canvas");
-      canvas.width = w; canvas.height = h;
-      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      res(canvas.toDataURL("image/jpeg", 0.75));
+  for (let file of files) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      await sb.from("event_memories").insert([{
+        event_id: eventId,
+        image_data: e.target.result,
+        uploaded_by: currentUser
+      }]);
+      loadVault(eventId);
     };
-    img.onerror = rej;
-    img.src = url;
-  });
+    reader.readAsDataURL(file);
+  }
+  status.innerText = "Yüklendi!";
+  setTimeout(() => status.innerText = "", 2000);
 }
 
-// ---------- GALERİ & İNDİRME ----------
-async function loadGallery(evId) {
-  const gal = document.getElementById("gal-" + evId);
+async function loadVault(eventId) {
+  const { data } = await sb.from("event_memories").select("*").eq("event_id", eventId).order("created_at", { ascending: false });
+  const gal = document.getElementById("roomGallery");
   if (!gal) return;
-  const { data } = await sb.from("event_memories").select("*").eq("event_id", evId).order("created_at", {ascending:false});
-  if (!data || data.length === 0) { gal.innerHTML = ""; return; }
-  gal.innerHTML = "";
-  data.forEach((m, idx) => {
-    const isVideo = m.caption && m.caption.includes("[video]");
-    const div = document.createElement("div");
-    div.className = "mem";
-    const inner = isVideo
-      ? `<video src="${m.image_data}" controls preload="metadata"></video>`
-      : `<img src="${m.image_data}" loading="lazy" alt="">`;
-    div.innerHTML = `${inner}
-      <div class="cap">${esc(m.uploaded_by || "Misafir")}</div>
-      <a href="${m.image_data}" download="ani-${evId}-${idx+1}${isVideo ? ".mp4" : ".jpg"}">⬇️ İndir</a>`;
-    gal.appendChild(div);
-  });
+  gal.innerHTML = (data || []).map(m => `<div class="mem"><img src="${m.image_data}"></div>`).join("");
 }
 
-function esc(s) { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
-
-// ---------- BAŞLAT ----------
-document.getElementById("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
-const saved = localStorage.getItem(LS_KEY);
-if (saved) openPortal(saved);
+initEngine();
 </script>
 </body>
 </html>

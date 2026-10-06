@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Plan Zero ✦ Tanı Testi</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+  body { font-family:'Segoe UI',system-ui,sans-serif; background:#0f0f14; color:#eaeaf0; padding:30px; max-width:700px; margin:0 auto; }
+  h1 { font-size:1.4rem; margin-bottom:20px; }
+  h1 span { color:#7c5cff; }
+  .item { background:#1a1a24; border:1px solid #26263a; border-radius:12px; padding:14px 18px; margin-bottom:10px; }
+  .ok { border-left:4px solid #00e0a4; }
+  .bad { border-left:4px solid #ff6b81; }
+  .item b { display:block; margin-bottom:4px; }
+  .ok b { color:#00e0a4; } .bad b { color:#ff6b81; }
+  small { color:#9a9ab0; word-break:break-all; }
+  #done { margin-top:20px; padding:16px; border-radius:12px; text-align:center; font-weight:600; display:none; }
+</style>
+<base target="_blank">
+</head>
+<body>
+<h1>Plan <span>Zero</span> — Tanı Testi 🩺</h1>
+<div id="results"><div class="item">Testler çalışıyor, birkaç saniye bekle...</div></div>
+<div id="done"></div>
+
+<script>
+const results = document.getElementById("results");
+const done = document.getElementById("done");
+
+function report(ok, title, detail) {
+  const d = document.createElement("div");
+  d.className = "item " + (ok ? "ok" : "bad");
+  d.innerHTML = "<b>" + (ok ? "✅ " : "❌ ") + title + "</b><small>" + (detail || "") + "</small>";
+  results.appendChild(d);
+}
+results.innerHTML = "";
+
+async function testReads() {
+  const g = await sb.from("guests").select("count", { count: "exact", head: true });
+  if (g.error) report(false, "Bağlantı / guests tablosu erişilemiyor", g.error.message + " — muhtemelen tablo yok veya SQL henüz çalıştırılmadı.");
+  else report(true, "Bağlantı OK, guests tablosuna erişim var", g.count + " davetli kayıtlı.");
+
+  for (const t of ["events", "event_memories", "event_suggestions"]) {
+    const r = await sb.from(t).select("count", { count: "exact", head: true });
+    if (r.error) report(false, t + " tablosu YOK veya erişilemiyor", r.error.message);
+    else report(true, t + " tablosu OK", r.count + " kayıt var.");
+  }
+}
+
+async function testWrites() {
+  const ts = "TEST_" + Date.now();
+  let ins = await sb.from("guests").insert({ name: ts });
+  if (ins.error) {
+    report(false, "guests tablosuna YAZILAMADI", ins.error.message + " — RLS kapatma SQL'i çalıştırılmamış olabilir.");
+  } else {
+    report(true, "guests tablosuna yazma OK", "Test satırı eklendi ve silindi.");
+    await sb.from("guests").delete().eq("name", ts);
+  }
+
+  ins = await sb.from("events").insert({ title: "TEST", event_date: new Date().toISOString(), allowed_guests: "x" });
+  if (ins.error) report(false, "events tablosuna YAZILAMADI", ins.error.message);
+  else {
+    report(true, "events tablosuna yazma OK", "Test etkinliği eklendi ve silindi.");
+    if (ins.data && ins.data[0]) await sb.from("events").delete().eq("id", ins.data[0].id);
+  }
+}
+
+(async () => {
+  await testReads();
+  await testWrites();
+  const fails = document.querySelectorAll(".bad").length;
+  done.style.display = "block";
+  if (fails === 0) {
+    done.style.background = "#00e0a422"; done.style.color = "#00e0a4";
+    done.textContent = "🎉 Her şey çalışıyor! Sorun dosyalarda olabilir — bana bunu yaz.";
+  } else {
+    done.style.background = "#ff6b8122"; done.style.color = "#ff6b81";
+    done.textContent = "⚠️ " + fails + " sorun bulundu — bu sayfadaki yazıları bana aynen gönder.";
+  }
+})();
+</script>
+</body>
+</html>

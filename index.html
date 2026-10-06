@@ -14,6 +14,7 @@
       --accent: #f43f5e;
       --text: #f8fafc;
       --text-muted: #94a3b8;
+      --danger: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body {
@@ -23,26 +24,49 @@
       padding: 24px 16px 60px;
       display: flex;
       justify-content: center;
+      align-items: center;
     }
-    .container { max-width: 650px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+    .container { max-width: 680px; width: 100%; display: none; flex-direction: column; gap: 20px; }
+    
+    /* Gatekeeper Modal */
+    #gateModal {
+      max-width: 420px; width: 100%; background: var(--card-bg); border: 1px solid var(--border);
+      backdrop-filter: blur(16px); border-radius: 16px; padding: 28px 24px; text-align: center;
+    }
+    #gateModal h2 { font-size: 1.5rem; margin-bottom: 8px; color: var(--primary); }
+    #gateModal p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 20px; }
+    .gate-error { color: var(--danger); font-size: 0.85rem; margin-top: 10px; display: none; }
+
+    /* Nav Bar */
+    .nav-bar {
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .nav-bar::-webkit-scrollbar { display: none; }
+    .nav-btn {
+      background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border);
+      color: var(--text-muted); padding: 8px 16px; border-radius: 20px;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;
+    }
+    .nav-btn:hover { border-color: var(--primary); color: #fff; }
+    .nav-btn.active {
+      background: var(--primary); color: #090d16; border-color: var(--primary);
+    }
+
     header { text-align: center; margin-bottom: 6px; }
     h1 {
-      font-size: 2.2rem;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
+      font-size: 2.2rem; background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; font-weight: 800;
     }
     header p { color: var(--text-muted); font-size: 1.05rem; }
     .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(12px);
+      border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+    .user-welcome-badge {
+      display: inline-block; font-size: 0.85rem; padding: 4px 12px; border-radius: 20px;
+      background: rgba(56, 189, 248, 0.1); color: var(--primary); margin-bottom: 12px;
     }
     .countdown-title { text-align: center; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary); margin-bottom: 12px; font-weight: 600; }
     .countdown-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
@@ -50,22 +74,15 @@
     .time-box .num { font-size: 1.8rem; font-weight: 700; color: #fff; }
     .time-box .label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; }
     
-    h2 { font-size: 1.25rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    h2 { font-size: 1.25rem; margin-bottom: 14px; }
     .activities-list { display: flex; flex-direction: column; gap: 10px; }
     .activity-card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--border);
-      padding: 14px 16px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border);
+      padding: 14px 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: all 0.2s ease;
     }
     .activity-card:hover { border-color: var(--primary); transform: translateY(-1px); }
     .activity-card.selected { background: rgba(56, 189, 248, 0.15); border-color: var(--primary); }
-    .act-left { display: flex; align-items: center; gap: 12px; }
     .act-badge { font-size: 0.8rem; background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 8px; color: var(--primary); font-weight: 600; }
 
     .form-group { margin-bottom: 14px; }
@@ -80,69 +97,83 @@
     .btn-submit {
       width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;
-      box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3); transition: opacity 0.2s ease;
     }
-    .btn-submit:hover { opacity: 0.9; }
     .toast { text-align: center; padding: 12px; border-radius: 8px; font-size: 0.9rem; margin-top: 10px; display: none; }
     .toast.success { display: block; background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+    
+    .tab-content { display: none; flex-direction: column; gap: 20px; }
+    .tab-content.active { display: flex; }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <!-- Gatekeeper -->
+  <div id="gateModal">
+    <h2>🔒 Guest Verification</h2>
+    <p>Please enter your authorized name to enter.</p>
+    <input type="text" id="gateNameInput" placeholder="Enter your name..." style="text-align:center; margin-bottom:12px;" />
+    <button type="button" class="btn-submit" onclick="verifyGuest()">Unlock Access</button>
+    <div id="gateError" class="gate-error">Access Denied: You are not on the guest list.</div>
+  </div>
+
+  <!-- Main App -->
+  <div class="container" id="mainApp">
     <header>
+      <div id="welcomeBadge" class="user-welcome-badge">Access Granted</div>
       <h1 id="eventTitle">Plan Zero</h1>
       <p id="eventSubtitle">Shaping the agenda, spots, and the night vibe.</p>
     </header>
 
-    <!-- Countdown -->
-    <div class="card">
-      <div class="countdown-title">⏳ Time Until Kickoff</div>
-      <div class="countdown-grid">
-        <div class="time-box"><div class="num" id="days">00</div><div class="label">Days</div></div>
-        <div class="time-box"><div class="num" id="hours">00</div><div class="label">Hours</div></div>
-        <div class="time-box"><div class="num" id="minutes">00</div><div class="label">Mins</div></div>
-        <div class="time-box"><div class="num" id="seconds">00</div><div class="label">Secs</div></div>
+    <!-- Dynamic Menu Bar -->
+    <div class="nav-bar" id="navBar">
+      <button class="nav-btn active" onclick="switchTab('main')">🎯 Agenda & RSVP</button>
+      <!-- Diğer sekmeler Supabase'den otomatik gelecek -->
+    </div>
+
+    <!-- TAB 1: Main Agenda & RSVP -->
+    <div id="tab-main" class="tab-content active">
+      <div class="card">
+        <div class="countdown-title">⏳ Time Until Kickoff</div>
+        <div class="countdown-grid">
+          <div class="time-box"><div class="num" id="days">00</div><div class="label">Days</div></div>
+          <div class="time-box"><div class="num" id="hours">00</div><div class="label">Hours</div></div>
+          <div class="time-box"><div class="num" id="minutes">00</div><div class="label">Mins</div></div>
+          <div class="time-box"><div class="num" id="seconds">00</div><div class="label">Secs</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🔥 What's the Move?</h2>
+        <div id="activitiesList" class="activities-list"></div>
+        <div class="add-custom-box">
+          <input type="text" id="customActivityInput" placeholder="Got another idea? (e.g. Go-Kart, Bar)" />
+          <button type="button" class="btn-secondary" onclick="addCustomActivity()">+ Add Idea</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>👤 Your Attendance & ETA</h2>
+        <form id="rsvpForm">
+          <div class="form-group">
+            <label>Your Name:</label>
+            <input type="text" id="userName" readonly style="opacity:0.8; cursor:not-allowed;" />
+          </div>
+          <div class="form-group">
+            <label>What time can you make it?</label>
+            <input type="time" id="userTime" value="14:00" required />
+          </div>
+          <div class="form-group">
+            <label>Any notes or venue requests?</label>
+            <textarea id="userNote" rows="2" placeholder="e.g. 'Down for anything after 3 PM'"></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="submitBtn">Confirm Choices 🚀</button>
+          <div id="toast" class="toast"></div>
+        </form>
       </div>
     </div>
 
-    <!-- Activities & Voting -->
-    <div class="card">
-      <h2>🔥 What's the Move? (Pick Your Vibe)</h2>
-      <div id="activitiesList" class="activities-list">
-        <p style="color:var(--text-muted); font-size:0.9rem;">Loading agenda...</p>
-      </div>
-
-      <!-- Add Custom Activity -->
-      <div class="add-custom-box">
-        <input type="text" id="customActivityInput" placeholder="Got another idea? (e.g. Go-Kart, Bar)" />
-        <button type="button" class="btn-secondary" onclick="addCustomActivity()">+ Add Idea</button>
-      </div>
-    </div>
-
-    <!-- RSVP & Time Form -->
-    <div class="card">
-      <h2>👤 Your Attendance & ETA</h2>
-      <form id="rsvpForm">
-        <div class="form-group">
-          <label>Your Name / Nickname:</label>
-          <input type="text" id="userName" placeholder="Enter your name..." required />
-        </div>
-
-        <div class="form-group">
-          <label>What time can you make it?</label>
-          <input type="time" id="userTime" value="14:00" required />
-        </div>
-
-        <div class="form-group">
-          <label>Any notes, venue requests or ideas?</label>
-          <textarea id="userNote" rows="2" placeholder="e.g. 'Down for anything after 3 PM'"></textarea>
-        </div>
-
-        <button type="submit" class="btn-submit" id="submitBtn">Confirm Choices 🚀</button>
-        <div id="toast" class="toast"></div>
-      </form>
-    </div>
+    <!-- Dinamik Sayfalar Container'ı -->
+    <div id="dynamicTabsContainer"></div>
   </div>
 
   <script>
@@ -150,52 +181,117 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let activeGuestName = localStorage.getItem("plan_zero_user");
     let targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + ((6 - targetDate.getDay() + 7) % 7 || 7));
-    targetDate.setHours(14, 0, 0, 0);
-
     let selectedActivities = [];
 
-    async function loadData() {
-      try {
-        const { data: settings } = await supabaseClient.from('event_settings').select('*').eq('id', 1).maybeSingle();
-        if (settings) {
-          if (settings.title) document.getElementById('eventTitle').innerText = settings.title;
-          if (settings.subtitle) document.getElementById('eventSubtitle').innerText = settings.subtitle;
-          if (settings.event_date) targetDate = new Date(settings.event_date);
-        }
+    async function verifyGuest() {
+      const inputName = document.getElementById('gateNameInput').value.trim();
+      const errBox = document.getElementById('gateError');
+      errBox.style.display = 'none';
+      if (!inputName) return;
 
-        const { data: acts } = await supabaseClient.from('activities').select('*').order('votes', { ascending: false });
-        const container = document.getElementById('activitiesList');
-        container.innerHTML = '';
+      const { data: guests } = await supabaseClient.from('allowed_guests').select('name');
+      const isAllowed = guests && guests.some(g => g.name.toLowerCase() === inputName.toLowerCase());
 
-        if (acts && acts.length > 0) {
-          acts.forEach(act => {
-            const div = document.createElement('div');
-            div.className = 'activity-card' + (selectedActivities.includes(act.title) ? ' selected' : '');
-            div.innerHTML = `
-              <div class="act-left">
-                <span>🎯</span>
-                <span><strong>${act.title}</strong> <small style="color:var(--text-muted); font-size:0.75rem;">(by ${act.added_by})</small></span>
-              </div>
-              <span class="act-badge">${act.votes || 0} Votes</span>
-            `;
-            div.onclick = () => toggleSelectActivity(act.id, act.title, div);
-            container.appendChild(div);
-          });
-        }
-      } catch (err) {
-        console.error("Fetch error:", err);
+      if (isAllowed) {
+        localStorage.setItem("plan_zero_user", inputName);
+        activeGuestName = inputName;
+        unlockSite();
+      } else {
+        errBox.style.display = 'block';
       }
     }
 
-    function toggleSelectActivity(id, title, elem) {
-      if (selectedActivities.includes(title)) {
-        selectedActivities = selectedActivities.filter(t => t !== title);
-        elem.classList.remove('selected');
-      } else {
-        selectedActivities.push(title);
-        elem.classList.add('selected');
+    function unlockSite() {
+      document.getElementById('gateModal').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'flex';
+      document.body.style.alignItems = 'flex-start';
+      document.getElementById('welcomeBadge').innerText = `Welcome, ${activeGuestName}`;
+      document.getElementById('userName').value = activeGuestName;
+      loadAll();
+    }
+
+    if (activeGuestName) unlockSite();
+
+    async function loadAll() {
+      loadSettingsAndActs();
+      loadNavigationTabs();
+    }
+
+    // Dinamik Menüleri Yükle
+    async function loadNavigationTabs() {
+      const { data: pages } = await supabaseClient.from('dynamic_pages').select('*').eq('is_active', true).order('display_order');
+      const navBar = document.getElementById('navBar');
+      const dynContainer = document.getElementById('dynamicTabsContainer');
+
+      // Main dışındakileri temizle
+      navBar.innerHTML = `<button class="nav-btn active" id="btn-tab-main" onclick="switchTab('main')">🎯 Agenda & RSVP</button>`;
+      dynContainer.innerHTML = '';
+
+      if (pages) {
+        pages.forEach(p => {
+          // Buton ekle
+          const btn = document.createElement('button');
+          btn.className = 'nav-btn';
+          btn.id = `btn-tab-${p.slug}`;
+          btn.innerHTML = `${p.icon || '📌'} ${p.nav_title}`;
+          btn.onclick = () => switchTab(p.slug);
+          navBar.appendChild(btn);
+
+          // Sayfa içeriği ekle
+          const tabDiv = document.createElement('div');
+          tabDiv.id = `tab-${p.slug}`;
+          tabDiv.className = 'tab-content';
+          tabDiv.innerHTML = p.html_content || '<div class="card"><p>No content added yet.</p></div>';
+          dynContainer.appendChild(tabDiv);
+        });
+      }
+    }
+
+    function switchTab(slug) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      const targetTab = document.getElementById(`tab-${slug}`);
+      const targetBtn = document.getElementById(`btn-tab-${slug}`);
+      if (targetTab) targetTab.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    async function loadSettingsAndActs() {
+      const { data: settings } = await supabaseClient.from('event_settings').select('*').eq('id', 1).maybeSingle();
+      if (settings) {
+        if (settings.title) document.getElementById('eventTitle').innerText = settings.title;
+        if (settings.subtitle) document.getElementById('eventSubtitle').innerText = settings.subtitle;
+        if (settings.event_date) targetDate = new Date(settings.event_date);
+      }
+
+      const { data: acts } = await supabaseClient.from('activities').select('*').order('votes', { ascending: false });
+      const container = document.getElementById('activitiesList');
+      container.innerHTML = '';
+      if (acts) {
+        acts.forEach(act => {
+          const div = document.createElement('div');
+          div.className = 'activity-card' + (selectedActivities.includes(act.title) ? ' selected' : '');
+          div.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span>🎯</span>
+              <span><strong>${act.title}</strong> <small style="color:var(--text-muted); font-size:0.75rem;">(by ${act.added_by})</small></span>
+            </div>
+            <span class="act-badge">${act.votes || 0} Votes</span>
+          `;
+          div.onclick = () => {
+            if (selectedActivities.includes(act.title)) {
+              selectedActivities = selectedActivities.filter(t => t !== act.title);
+              div.classList.remove('selected');
+            } else {
+              selectedActivities.push(act.title);
+              div.classList.add('selected');
+            }
+          };
+          container.appendChild(div);
+        });
       }
     }
 
@@ -203,12 +299,10 @@
       const input = document.getElementById('customActivityInput');
       const val = input.value.trim();
       if (!val) return;
-
-      const userName = document.getElementById('userName').value.trim() || 'Guest';
-      await supabaseClient.from('activities').insert([{ title: val, added_by: userName, votes: 1 }]);
+      await supabaseClient.from('activities').insert([{ title: val, added_by: activeGuestName, votes: 1 }]);
       selectedActivities.push(val);
       input.value = '';
-      loadData();
+      loadSettingsAndActs();
     }
 
     function updateCountdown() {
@@ -229,35 +323,24 @@
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
       btn.innerText = "Submitting...";
-      btn.disabled = true;
-
-      const name = document.getElementById('userName').value.trim();
-      const time = document.getElementById('userTime').value;
-      const note = document.getElementById('userNote').value.trim();
 
       for (const actTitle of selectedActivities) {
         const { data } = await supabaseClient.from('activities').select('id, votes').eq('title', actTitle).single();
-        if (data) {
-          await supabaseClient.from('activities').update({ votes: (data.votes || 0) + 1 }).eq('id', data.id);
-        }
+        if (data) await supabaseClient.from('activities').update({ votes: (data.votes || 0) + 1 }).eq('id', data.id);
       }
 
       await supabaseClient.from('participants').insert([{
-        name: name,
-        arrival_time: time,
+        name: activeGuestName,
+        arrival_time: document.getElementById('userTime').value,
         selected_activities: selectedActivities,
-        note: note
+        note: document.getElementById('userNote').value.trim()
       }]);
 
-      const toast = document.getElementById('toast');
-      toast.innerText = "Awesome! Your vote and ETA have been recorded.";
-      toast.className = "toast success";
+      document.getElementById('toast').innerText = "Confirmed ✅ Your choices are recorded.";
+      document.getElementById('toast').className = "toast success";
       btn.innerText = "Confirmed ✅";
-
-      setTimeout(() => { loadData(); }, 800);
+      setTimeout(loadSettingsAndActs, 800);
     });
-
-    loadData();
   </script>
 </body>
 </html>

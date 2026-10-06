@@ -230,6 +230,7 @@
   </div>
 
   <script type="module">
+    import { initEventExpenses } from './modules/expenses.js';
     import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
     import { getSessionUser, loginUser, registerUser, clearSession } from './modules/auth.js';
     import { initCalendar } from './modules/calendar.js';

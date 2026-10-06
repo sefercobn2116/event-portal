@@ -243,7 +243,7 @@
         Welcome to Portal
       </h2>
       <div class="music-bar">
-        <button id="btn-prev-music" class="btn-icon">⏮️</button>
+        <button id="btn-prev-music" class="btn-icon">⏮️️</button>
         <button id="btn-music-toggle" class="btn-icon">▶️</button>
         <button id="btn-next-music" class="btn-icon">⏭️</button>
         <span id="music-title" style="font-size: 0.8rem; color: #00f2fe; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Track 1</span>
@@ -444,12 +444,10 @@
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    // REALTIME KANALLARI (MEMORY LEAK ÖNLEMEK İÇİN SAKLANIR)
     let chatChannel = null;
     let pollChannel = null;
     let calendarChannel = null;
 
-    // MÜZİK ÇALAR
     const playlist = [
       { title: "Lofi Chill Night", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" },
       { title: "Deep Atmosphere", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
@@ -469,7 +467,7 @@
       if (musicTitle) musicTitle.textContent = playlist[currentTrackIndex].title;
     }
     function playTrack() {
-      audio.play().then(() => { btnMusicToggle.textContent = '⏸️'; }).catch(() => { btnMusicToggle.textContent = '▶️'; });
+      audio.play().then(() => { btnMusicToggle.textContent = '⏸️️'; }).catch(() => { btnMusicToggle.textContent = '▶️'; });
     }
 
     btnNextMusic.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
@@ -482,7 +480,6 @@
     });
     loadTrack(0);
 
-    // GÖRÜNÜM GEÇİŞLERİ
     const viewHub = document.getElementById('view-hub');
     const viewAuth = document.getElementById('view-auth');
     const viewDashboard = document.getElementById('view-dashboard');
@@ -669,7 +666,6 @@
       });
     }
 
-    // ETKİNLİK DETAY & REALTIME BAŞLATMA
     let currentEventDetail = null;
 
     async function openEventDetail(evt) {
@@ -704,41 +700,23 @@
 
     document.getElementById('btn-back-dashboard').addEventListener('click', showDashboard);
 
-    // ==========================================
-    // SUPABASE REALTIME SOHBET & ANKET MOTORU
-    // ==========================================
+    // REALTIME CHAT & POLLS
     function subscribeRealtime(eventId) {
-      // 1. Canlı Mesajlaşma Kanalı
       chatChannel = supabase
         .channel(`chat-event-${eventId}`)
         .on(
           'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'chat_messages',
-            filter: `event_id=eq.${eventId}`
-          },
-          (payload) => {
-            appendSingleChatMessage(payload.new);
-          }
+          { event: 'INSERT', schema: 'public', table: 'event_messages', filter: `event_id=eq.${eventId}` },
+          (payload) => appendSingleChatMessage(payload.new)
         )
         .subscribe();
 
-      // 2. Canlı Anket & Oy Kanalı
       pollChannel = supabase
         .channel(`polls-event-${eventId}`)
         .on(
           'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'polls',
-            filter: `event_id=eq.${eventId}`
-          },
-          () => {
-            loadPolls();
-          }
+          { event: '*', schema: 'public', table: 'event_suggestions', filter: `event_id=eq.${eventId}` },
+          () => loadPolls()
         )
         .subscribe();
     }
@@ -764,14 +742,12 @@
       chatMessages.innerHTML = '';
 
       const { data: msgs } = await supabase
-        .from('chat_messages')
+        .from('event_messages')
         .select('*')
         .eq('event_id', currentEventDetail.id)
         .order('created_at', { ascending: true });
 
-      (msgs || []).forEach(msg => {
-        appendSingleChatMessage(msg);
-      });
+      (msgs || []).forEach(msg => appendSingleChatMessage(msg));
     }
 
     document.getElementById('btn-send-chat').addEventListener('click', sendMessage);
@@ -785,7 +761,7 @@
       if (!message || !currentEventDetail) return;
 
       input.value = '';
-      await supabase.from('chat_messages').insert([{
+      await supabase.from('event_messages').insert([{
         event_id: currentEventDetail.id,
         user_id: currentUser.id,
         username: currentUser.username,
@@ -793,11 +769,10 @@
       }]);
     }
 
-    // ANKETLER
     async function loadPolls() {
       const pollList = document.getElementById('poll-list');
       const { data: polls } = await supabase
-        .from('polls')
+        .from('event_suggestions')
         .select('*')
         .eq('event_id', currentEventDetail.id)
         .order('created_at', { ascending: false });
@@ -814,7 +789,7 @@
           </div>
         `;
         item.querySelector('.btn-vote-poll').addEventListener('click', async () => {
-          await supabase.from('polls').update({ votes: (poll.votes || 0) + 1 }).eq('id', poll.id);
+          await supabase.from('event_suggestions').update({ votes: (poll.votes || 0) + 1 }).eq('id', poll.id);
         });
         pollList.appendChild(item);
       });
@@ -826,7 +801,7 @@
       if (!suggestion || !currentEventDetail) return;
 
       input.value = '';
-      await supabase.from('polls').insert([{
+      await supabase.from('event_suggestions').insert([{
         event_id: currentEventDetail.id,
         suggestion,
         votes: 0
@@ -883,6 +858,10 @@
           imgEl.src = imgUrl;
           imgEl.alt = file.name;
           imgEl.loading = 'lazy';
+          imgEl.dataset.fileId = file.id;
+          imgEl.dataset.fullUrl = imgUrl;
+          imgEl.dataset.fileName = file.name;
+
           imgEl.addEventListener('click', () => {
             window.open(imgUrl, '_blank');
           });
@@ -953,10 +932,7 @@
       });
     }
 
-    // ==========================================
-    // CANLI TAKVİM SENKRONİZASYONU
-    // ==========================================
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    // REALTIME CALENDAR & BOOKINGS
     let currentCalDate = new Date();
     let selectedSlots = [];
     let activeDateStr = null;
@@ -1169,6 +1145,68 @@
       currentUser = null;
       showHub();
     });
+
+    // ==========================================
+    // DİNAMİK MODÜL ORKESTRATÖRÜ (LAZY-LOADER)
+    // ==========================================
+    const loadedModules = new Map();
+
+    async function initModuleOrchestrator() {
+      const { data: modules, error } = await supabase
+        .from('app_modules')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error || !modules) return;
+
+      modules.forEach(mod => {
+        if (!mod.trigger_event || mod.trigger_event === 'auto') {
+          loadAndExecuteModule(mod);
+          return;
+        }
+
+        const [targetId, eventName] = mod.trigger_event.split(':');
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          const listener = async (event) => {
+            await loadAndExecuteModule(mod, event);
+          };
+          targetElement.addEventListener(eventName, listener);
+        }
+      });
+    }
+
+    async function loadAndExecuteModule(mod, triggerEventData = null) {
+      try {
+        if (loadedModules.has(mod.module_key)) {
+          const existing = loadedModules.get(mod.module_key);
+          if (typeof existing.onTrigger === 'function') {
+            existing.onTrigger({ supabase, currentUser, currentEventDetail, triggerEventData, config: mod.config_json });
+          }
+          return;
+        }
+
+        const moduleExports = await import(mod.file_path);
+        loadedModules.set(mod.module_key, moduleExports);
+
+        if (typeof moduleExports.init === 'function') {
+          moduleExports.init({
+            supabase,
+            currentUser,
+            currentEventDetail,
+            triggerEventData,
+            config: mod.config_json
+          });
+        }
+        console.log(`[Modül Yüklendi] ${mod.title} (${mod.file_path})`);
+      } catch (err) {
+        console.error(`Modül yüklenirken hata oluştu [${mod.module_key}]:`, err);
+      }
+    }
+
+    // Orkestratörü Başlat
+    initModuleOrchestrator();
   </script>
 </body>
 </html>

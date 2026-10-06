@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plan Zero | Mission Control</title>
+  <title>Plan Zero | Mission Control Studio</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -12,21 +12,22 @@
       --border: rgba(255, 255, 255, 0.12);
       --primary: #38bdf8;
       --danger: #ef4444;
+      --success: #22c55e;
       --text: #f8fafc;
       --text-muted: #94a3b8;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 24px 16px; display: flex; justify-content: center; }
-    .container { max-width: 800px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+    body { background: var(--bg); color: var(--text); padding: 24px 16px 80px; display: flex; justify-content: center; }
+    .container { max-width: 900px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
     h1 { font-size: 1.8rem; color: var(--primary); font-weight: 800; }
     h2 { font-size: 1.2rem; margin-bottom: 12px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
     label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
-    input, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; }
+    input, textarea, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #0f172a; color: #fff; }
     button { background: var(--primary); color: #0b1120; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
     .btn-danger { background: var(--danger); color: #fff; padding: 6px 12px; font-size: 0.8rem; }
+    .btn-success { background: var(--success); color: #fff; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
     th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
     th { color: var(--primary); }
@@ -36,21 +37,80 @@
 </head>
 <body>
 
-  <!-- Password Screen -->
+  <!-- Passcode -->
   <div id="loginScreen" class="card">
     <h2 style="margin-bottom:16px;">🔒 Mission Control Access</h2>
     <input type="password" id="passInput" placeholder="Enter Admin Password..." style="margin-bottom:12px; text-align:center;" />
     <button onclick="checkPass()" style="width:100%;">Authenticate</button>
   </div>
 
-  <!-- Admin Panel -->
   <div class="container" id="adminContent">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h1>⚙️ Mission Control</h1>
+      <h1>⚙️ Mission Control Studio</h1>
       <a href="index.html" target="_blank" style="color:var(--primary); font-size:0.9rem; text-decoration:none;">Open Live Site ↗</a>
     </div>
 
-    <!-- Update Event Settings -->
+    <!-- Dynamic Menu / Page Studio -->
+    <div class="card">
+      <h2>🚀 Dynamic Pages & Menu Studio</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
+        Add new tabs/pages instantly to the live site without touching GitHub.
+      </p>
+
+      <div class="form-row">
+        <div>
+          <label>Tab / Button Title</label>
+          <input type="text" id="newPageTitle" placeholder="e.g. Venues & Spots" />
+        </div>
+        <div>
+          <label>URL Slug / ID (unique)</label>
+          <input type="text" id="newPageSlug" placeholder="e.g. venues" />
+        </div>
+        <div>
+          <label>Emoji Icon</label>
+          <input type="text" id="newPageIcon" placeholder="e.g. 📍 or 🍸" style="max-width:80px;" value="📌" />
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label>Page Content (HTML supported - Cards, Links, Images, Text)</label>
+        <textarea id="newPageHtml" rows="5" placeholder='<div class="card"><h2>Our Stops</h2><p>1. Mall<br>2. Terrace Bar</p></div>'></textarea>
+      </div>
+
+      <button class="btn-success" onclick="createOrUpdatePage()">+ Publish New Tab to Live Site</button>
+
+      <table style="margin-top:20px;">
+        <thead>
+          <tr>
+            <th>Icon</th>
+            <th>Title</th>
+            <th>Slug</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="pagesTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Whitelist -->
+    <div class="card">
+      <h2>🛡️ Authorized Guest Whitelist</h2>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <input type="text" id="newGuestName" placeholder="Add guest name (e.g. Sefer)" />
+        <button onclick="addGuest()">Authorize Guest</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="guestsTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Event Briefing -->
     <div class="card">
       <h2>📌 Event Briefing</h2>
       <div class="form-row">
@@ -70,13 +130,9 @@
       <button onclick="saveSettings()">Save & Deploy Live</button>
     </div>
 
-    <!-- Activities & Votes -->
+    <!-- Polls & Feed -->
     <div class="card">
       <h2>📊 Live Activities & Polls</h2>
-      <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <input type="text" id="newActTitle" placeholder="Add official activity..." />
-        <button onclick="adminAddActivity()">Add</button>
-      </div>
       <table>
         <thead>
           <tr>
@@ -90,9 +146,8 @@
       </table>
     </div>
 
-    <!-- Participants Feed -->
     <div class="card">
-      <h2>👥 Guest List & Responses</h2>
+      <h2>👥 Guest Responses</h2>
       <table>
         <thead>
           <tr>
@@ -119,7 +174,6 @@
       const { data } = await supabaseClient.from('event_settings').select('*').eq('id', 1).maybeSingle();
       currentSettings = data;
 
-      // Varsayılan şifre: 2116
       if ((data && data.admin_pass === pass) || pass === '2116') {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('adminContent').style.display = 'flex';
@@ -130,6 +184,24 @@
     }
 
     async function loadAdminData() {
+      // Pages
+      const { data: pages } = await supabaseClient.from('dynamic_pages').select('*').order('display_order');
+      const pTable = document.getElementById('pagesTable');
+      pTable.innerHTML = '';
+      if (pages) {
+        pages.forEach(p => {
+          pTable.innerHTML += `
+            <tr>
+              <td>${p.icon}</td>
+              <td><strong>${p.nav_title}</strong></td>
+              <td><code>${p.slug}</code></td>
+              <td><button class="btn-danger" onclick="deletePage(${p.id})">Delete Tab</button></td>
+            </tr>
+          `;
+        });
+      }
+
+      // Settings
       if (currentSettings) {
         document.getElementById('cfgTitle').value = currentSettings.title || '';
         document.getElementById('cfgSubtitle').value = currentSettings.subtitle || '';
@@ -140,6 +212,22 @@
         }
       }
 
+      // Guests
+      const { data: guests } = await supabaseClient.from('allowed_guests').select('*').order('name');
+      const gTable = document.getElementById('guestsTable');
+      gTable.innerHTML = '';
+      if (guests) {
+        guests.forEach(g => {
+          gTable.innerHTML += `
+            <tr>
+              <td><strong>${g.name}</strong></td>
+              <td><button class="btn-danger" onclick="deleteGuest(${g.id})">Revoke</button></td>
+            </tr>
+          `;
+        });
+      }
+
+      // Activities
       const { data: acts } = await supabaseClient.from('activities').select('*').order('votes', { ascending: false });
       const actTable = document.getElementById('adminActsTable');
       actTable.innerHTML = '';
@@ -147,7 +235,7 @@
         acts.forEach(a => {
           actTable.innerHTML += `
             <tr>
-              <td><strong>${a.title}</strong></td>
+              <td>${a.title}</td>
               <td>${a.added_by}</td>
               <td><strong style="color:var(--primary);">${a.votes || 0}</strong></td>
               <td><button class="btn-danger" onclick="deleteActivity(${a.id})">Delete</button></td>
@@ -156,6 +244,7 @@
         });
       }
 
+      // Participants
       const { data: parts } = await supabaseClient.from('participants').select('*').order('created_at', { ascending: false });
       const partTable = document.getElementById('participantsTable');
       partTable.innerHTML = '';
@@ -173,31 +262,66 @@
       }
     }
 
-    async function saveSettings() {
-      const title = document.getElementById('cfgTitle').value;
-      const subtitle = document.getElementById('cfgSubtitle').value;
-      const dateVal = document.getElementById('cfgDate').value;
+    async function createOrUpdatePage() {
+      const title = document.getElementById('newPageTitle').value.trim();
+      const slug = document.getElementById('newPageSlug').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      const icon = document.getElementById('newPageIcon').value.trim() || '📌';
+      const html = document.getElementById('newPageHtml').value.trim();
 
-      await supabaseClient.from('event_settings').upsert({
-        id: 1,
-        title: title,
-        subtitle: subtitle,
-        event_date: new Date(dateVal).toISOString()
-      });
+      if (!title || !slug) {
+        alert("Please enter title and slug!");
+        return;
+      }
 
-      alert("Settings updated successfully! Updated live.");
-    }
+      await supabaseClient.from('dynamic_pages').upsert({
+        slug: slug,
+        nav_title: title,
+        icon: icon,
+        html_content: html,
+        is_active: true
+      }, { onConflict: 'slug' });
 
-    async function adminAddActivity() {
-      const val = document.getElementById('newActTitle').value.trim();
-      if (!val) return;
-      await supabaseClient.from('activities').insert([{ title: val, added_by: 'Admin', votes: 0 }]);
-      document.getElementById('newActTitle').value = '';
+      document.getElementById('newPageTitle').value = '';
+      document.getElementById('newPageSlug').value = '';
+      document.getElementById('newPageHtml').value = '';
+      alert("Page tab published live instantly!");
       loadAdminData();
     }
 
+    async function deletePage(id) {
+      if (confirm("Delete this tab from the site?")) {
+        await supabaseClient.from('dynamic_pages').delete().eq('id', id);
+        loadAdminData();
+      }
+    }
+
+    async function addGuest() {
+      const val = document.getElementById('newGuestName').value.trim();
+      if (!val) return;
+      await supabaseClient.from('allowed_guests').insert([{ name: val }]);
+      document.getElementById('newGuestName').value = '';
+      loadAdminData();
+    }
+
+    async function deleteGuest(id) {
+      if (confirm("Revoke access?")) {
+        await supabaseClient.from('allowed_guests').delete().eq('id', id);
+        loadAdminData();
+      }
+    }
+
+    async function saveSettings() {
+      await supabaseClient.from('event_settings').upsert({
+        id: 1,
+        title: document.getElementById('cfgTitle').value,
+        subtitle: document.getElementById('cfgSubtitle').value,
+        event_date: new Date(document.getElementById('cfgDate').value).toISOString()
+      });
+      alert("Settings updated live!");
+    }
+
     async function deleteActivity(id) {
-      if (confirm("Are you sure you want to remove this activity?")) {
+      if (confirm("Delete activity?")) {
         await supabaseClient.from('activities').delete().eq('id', id);
         loadAdminData();
       }

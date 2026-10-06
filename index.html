@@ -6,7 +6,6 @@
   <title>Portal & Booking System</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* --- MÜKEMMEL 7 SÜTUNLU TAKVİM MATRİSİ --- */
     .calendar-container-card {
       background: rgba(18, 24, 43, 0.7);
       backdrop-filter: blur(20px);
@@ -44,10 +43,7 @@
       color: #070913;
       box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
     }
-    .cal-selects {
-      display: flex;
-      gap: 8px;
-    }
+    .cal-selects { display: flex; gap: 8px; }
     .cal-dropdown {
       background: rgba(10, 14, 28, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -60,7 +56,6 @@
       cursor: pointer;
     }
 
-    /* 7 EŞİT SÜTUNLU TAKVİM TABLOSU */
     .cal-weekdays {
       display: grid !important;
       grid-template-columns: repeat(7, 1fr) !important;
@@ -98,10 +93,7 @@
       user-select: none;
       position: relative;
     }
-    .cal-day-cell.empty {
-      background: transparent;
-      border: none;
-    }
+    .cal-day-cell.empty { background: transparent; border: none; }
     .cal-day-cell.available {
       background: rgba(0, 242, 254, 0.12);
       border-color: #00f2fe;
@@ -128,11 +120,8 @@
       margin-top: 3px;
       font-weight: 700;
     }
-    .cal-day-cell.selected .cal-badge-hours {
-      color: #fff !important;
-    }
+    .cal-day-cell.selected .cal-badge-hours { color: #fff !important; }
 
-    /* SAATLİK DİLİMLER */
     .hourly-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -163,7 +152,6 @@
       font-weight: bold;
     }
 
-    /* HUB & KARTLAR */
     .hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 30px; }
     @media (max-width: 768px) { .hub-grid { grid-template-columns: 1fr; } }
     .hub-card {
@@ -212,14 +200,27 @@
       background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px;
     }
     .btn-vote { background: rgba(0, 242, 254, 0.2); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    
+    .gallery-thumb {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .gallery-thumb:hover {
+      transform: scale(1.03);
+      border-color: #00f2fe;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Kesintisiz Müzik Çalar -->
   <audio id="bg-audio" preload="auto"></audio>
 
-  <!-- ================= 0. VIEW: ANA GİRİŞ HUB ================= -->
+  <!-- 0. VIEW: ANA GİRİŞ HUB -->
   <div id="view-hub" class="container">
     <div class="nav-header">
       <h2 style="background: linear-gradient(135deg, #00f2fe, #ff007f); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
@@ -239,7 +240,7 @@
       <div id="card-go-events" class="hub-card">
         <span style="font-size: 3rem;">🎉</span>
         <h2 style="color: #00f2fe; margin: 0;">Event Portal</h2>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Group events, live chat, poll suggestions, and 5 TB Google Drive gallery.</p>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Exclusive events, in-app media gallery, live chat & polls.</p>
         <span class="badge badge-open" style="margin-top: 10px;">Enter Events →</span>
       </div>
 
@@ -252,7 +253,7 @@
     </div>
   </div>
 
-  <!-- ================= 1. VIEW: EMAIL KAYIT / GİRİŞ ================= -->
+  <!-- 1. VIEW: EMAIL KAYIT / GİRİŞ -->
   <div id="view-auth" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 14px; font-size: 0.85rem;">← Back to Main Hub</button>
@@ -279,7 +280,7 @@
     </div>
   </div>
 
-  <!-- ================= 2. VIEW: ETKİNLİK DASHBOARD ================= -->
+  <!-- 2. VIEW: ETKİNLİK DASHBOARD -->
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div>
@@ -295,7 +296,7 @@
     <div id="events-list" class="events-grid"></div>
   </div>
 
-  <!-- ================= 3. VIEW: ETKİNLİK ODASI ================= -->
+  <!-- 3. VIEW: ETKİNLİK ODASI & IN-APP GALERİ -->
   <div id="view-event-detail" class="container" style="display: none;">
     <div class="nav-header">
       <button id="btn-back-dashboard" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Events</button>
@@ -311,7 +312,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
           <h3 style="color: #00f2fe; margin-bottom: 4px;">📸 Event Media Gallery</h3>
-          <p style="color: #94a3b8; font-size: 0.85rem;">Upload full quality photos directly to Google Drive.</p>
+          <p style="color: #94a3b8; font-size: 0.85rem;">Upload photos directly or inspect event memories right here.</p>
         </div>
         <div style="display: flex; gap: 10px;">
           <input type="file" id="media-file-input" multiple accept="image/*,video/*" style="display: none;">
@@ -320,6 +321,7 @@
         </div>
       </div>
 
+      <!-- İlerleme Çubuğu -->
       <div id="upload-status" style="display: none; margin-top: 15px;">
         <div id="upload-status-text" style="font-size: 0.9rem; color: #00f2fe; margin-bottom: 6px;"></div>
         <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
@@ -327,7 +329,9 @@
         </div>
       </div>
 
+      <!-- Sayfa İçi Resim Vitrini -->
       <div id="gallery-container" style="display: none; margin-top: 20px;">
+        <div id="gallery-loading" style="display: none; color: #00f2fe; font-size: 0.9rem; text-align: center; margin-bottom: 12px;">Fetching photos...</div>
         <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;"></div>
       </div>
     </div>
@@ -354,7 +358,7 @@
     </div>
   </div>
 
-  <!-- ================= 4. VIEW: MUAZZAM 7 SÜTUNLU RANDEVU TAKVİMİ ================= -->
+  <!-- 4. VIEW: RANDEVU TAKVİMİ -->
   <div id="view-booking" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Main Hub</button>
@@ -367,7 +371,6 @@
         Glowing days have open availability. Click a date to inspect and pick hours!
       </p>
 
-      <!-- GERÇEK 7 SÜTUNLU TAKVİM KARTI -->
       <div class="calendar-container-card">
         <div class="calendar-top-bar">
           <button id="cal-prev-month" class="cal-nav-btn">‹</button>
@@ -391,14 +394,12 @@
         <div class="cal-days-grid" id="calendar-days-grid"></div>
       </div>
 
-      <!-- SEÇİLEN GÜNÜN SAATLERİ -->
       <div id="selected-day-slots-wrap" style="display: none; max-width: 540px; margin: 0 auto 24px auto;">
         <h4 id="selected-date-heading" style="color: #00f2fe; margin-bottom: 4px;">Available Hours:</h4>
         <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 12px;">Click to select multiple hours for our meetup.</p>
         <div id="hourly-slots-container" class="hourly-grid"></div>
       </div>
 
-      <!-- ONAY FORMU -->
       <div id="booking-form-wrap" style="display: none; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 24px; max-width: 540px; margin: 0 auto;">
         <h4 style="color: #ff007f; margin-bottom: 14px;">Confirm Your Appointment</h4>
         <input type="text" id="book-name" class="input-field" placeholder="Your Name *">
@@ -410,7 +411,6 @@
     </div>
   </div>
 
-  <!-- NEON TIKLAMA DALGASI SCRIPTİ -->
   <script>
     window.addEventListener('click', (e) => {
       const ripple = document.createElement('div');
@@ -422,11 +422,10 @@
     });
   </script>
 
-  <!-- MOTOR -->
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    // MÜZİK
+    // MÜZİK ÇALAR
     const playlist = [
       { title: "Lofi Chill Night", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" },
       { title: "Deep Atmosphere", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
@@ -445,7 +444,6 @@
       audio.src = playlist[currentTrackIndex].url;
       if (musicTitle) musicTitle.textContent = playlist[currentTrackIndex].title;
     }
-
     function playTrack() {
       audio.play().then(() => { btnMusicToggle.textContent = '⏸️'; }).catch(() => { btnMusicToggle.textContent = '▶️'; });
     }
@@ -458,7 +456,6 @@
       if (audio.paused) playTrack();
       else { audio.pause(); btnMusicToggle.textContent = '▶️'; }
     });
-
     loadTrack(0);
 
     // GÖRÜNÜM GEÇİŞLERİ
@@ -560,16 +557,15 @@
       }
     });
 
-    // DASHBOARD - ROLE-BASED ACCESS CONTROL
+    // DASHBOARD & EVENT ACCESS FILTERING
     async function showDashboard() {
       if (!currentUser) return showHub();
       
       hideAll();
       viewDashboard.style.display = 'block';
       document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.username}!`;
-      document.getElementById('user-role-badge').textContent = `Role: ${(currentUser.role || 'user').toUpperCase()}`;
+      document.getElementById('user-role-badge').textContent = `Role: ${(currentUser.role || (currentUser.is_admin ? 'admin' : 'user')).toUpperCase()}`;
       
-      // Admin veya Manager ise admin linkini göster
       const adminLink = document.getElementById('admin-link');
       if (currentUser.is_admin || currentUser.role === 'admin') {
         adminLink.style.display = 'inline-block';
@@ -591,13 +587,11 @@
         return;
       }
 
-      // Admin users see all events
       if (currentUser.is_admin || currentUser.role === 'admin') {
         renderEventCards(allEvents);
         return;
       }
 
-      // Non-admin users: check event_access
       const { data: accessRecords } = await supabase
         .from('event_access')
         .select('event_id')
@@ -621,26 +615,28 @@
       events.forEach(evt => {
         const card = document.createElement('div');
         card.className = 'event-card allowed';
-        card.style.cursor = 'pointer';
         card.innerHTML = `
           <div>
             <h3 style="color: #00f2fe; margin-bottom: 8px;">${evt.title}</h3>
             <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 12px;">${evt.description || 'No description'}</p>
           </div>
           <div style="display: flex; gap: 8px;">
-            ${evt.drive_folder_url ? `<a href="${evt.drive_folder_url}" target="_blank" class="btn-vote" style="text-decoration: none; padding: 6px 12px;">📁 Gallery</a>` : ''}
-            <span class="badge badge-open">Enter →</span>
+            <button class="btn-vote btn-open-room" style="flex:1;">Enter Event Room →</button>
           </div>
         `;
+        card.querySelector('.btn-open-room').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openEventDetail(evt);
+        });
         card.addEventListener('click', () => openEventDetail(evt));
         eventsList.appendChild(card);
       });
     }
 
+    // ETKİNLİK DETAY
     let currentEventDetail = null;
 
     async function openEventDetail(evt) {
-      // SECURITY: Re-verify access
       if (!currentUser.is_admin && currentUser.role !== 'admin') {
         const { data: access } = await supabase
           .from('event_access')
@@ -661,11 +657,137 @@
       document.getElementById('event-desc').textContent = evt.description || 'No description provided.';
       document.getElementById('current-user-tag').textContent = `${currentUser.username} • ${evt.title}`;
 
+      // Galeri alanını temizle ve gizle
+      document.getElementById('gallery-container').style.display = 'none';
+      document.getElementById('gallery-grid').innerHTML = '';
+
       loadChatMessages();
       loadPolls();
     }
 
     document.getElementById('btn-back-dashboard').addEventListener('click', showDashboard);
+
+    // GOOGLE DRIVE KLASÖR ID ÇIKARICI
+    function extractFolderId(urlOrId) {
+      if (!urlOrId) return null;
+      const match = urlOrId.match(/folders\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) return match[1];
+      if (/^[a-zA-Z0-9_-]{15,}$/.test(urlOrId)) return urlOrId;
+      return null;
+    }
+
+    // FOTOĞRAFLARI SAYFA İÇİNDE GÖSTERME (DRIVE YÖNLENDİRMESİ YERİNE)
+    document.getElementById('btn-toggle-gallery').addEventListener('click', async () => {
+      const container = document.getElementById('gallery-container');
+      const grid = document.getElementById('gallery-grid');
+      const loading = document.getElementById('gallery-loading');
+
+      if (container.style.display === 'block') {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      grid.innerHTML = '';
+      loading.style.display = 'block';
+
+      const folderId = extractFolderId(currentEventDetail.drive_folder_url);
+      if (!folderId) {
+        loading.style.display = 'none';
+        grid.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center;">No Google Drive folder associated with this event.</p>';
+        return;
+      }
+
+      try {
+        const query = encodeURIComponent(`'${folderId}' in parents and trashed = false and mimeType contains 'image/'`);
+        const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,thumbnailLink,webContentLink)&key=${GOOGLE_API_KEY}`;
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        loading.style.display = 'none';
+
+        if (!data.files || data.files.length === 0) {
+          grid.innerHTML = '<p style="color: #94a3b8; grid-column: 1/-1; text-align: center;">No images found in this event folder.</p>';
+          return;
+        }
+
+        data.files.forEach(file => {
+          const imgUrl = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s800') : `https://lh3.googleusercontent.com/u/0/d/${file.id}`;
+          const imgEl = document.createElement('img');
+          imgEl.className = 'gallery-thumb';
+          imgEl.src = imgUrl;
+          imgEl.alt = file.name;
+          imgEl.loading = 'lazy';
+          imgEl.addEventListener('click', () => {
+            window.open(imgUrl, '_blank');
+          });
+          grid.appendChild(imgEl);
+        });
+      } catch (err) {
+        loading.style.display = 'none';
+        grid.innerHTML = `<p style="color: #f43f5e; grid-column: 1/-1; text-align: center;">Error loading gallery: ${err.message}</p>`;
+      }
+    });
+
+    // DOSYA YÜKLEME (WEBHOOK / DRIVE ENTEGRASYONU)
+    document.getElementById('btn-trigger-upload').addEventListener('click', () => {
+      document.getElementById('media-file-input').click();
+    });
+
+    document.getElementById('media-file-input').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      const folderId = extractFolderId(currentEventDetail?.drive_folder_url);
+      const statusWrap = document.getElementById('upload-status');
+      const statusText = document.getElementById('upload-status-text');
+      const progressBar = document.getElementById('upload-progress-bar');
+
+      statusWrap.style.display = 'block';
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        statusText.textContent = `Uploading ${i + 1}/${files.length}: ${file.name}...`;
+        progressBar.style.width = `${Math.round(((i) / files.length) * 100)}%`;
+
+        const base64Data = await fileToBase64(file);
+
+        try {
+          await fetch(UPLOAD_WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: file.name,
+              mimeType: file.type,
+              fileData: base64Data.split(',')[1],
+              folderId: folderId || '',
+              eventId: currentEventDetail?.id,
+              uploadedBy: currentUser.username
+            })
+          });
+        } catch (uploadErr) {
+          console.error("Upload error:", uploadErr);
+        }
+      }
+
+      progressBar.style.width = '100%';
+      statusText.textContent = `✓ Successfully uploaded ${files.length} file(s)!`;
+      setTimeout(() => {
+        statusWrap.style.display = 'none';
+        progressBar.style.width = '0%';
+      }, 4000);
+      e.target.value = '';
+    });
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
 
     // CHAT
     async function loadChatMessages() {
@@ -749,20 +871,8 @@
       loadPolls();
     });
 
-    // MEDIA UPLOAD
-    document.getElementById('btn-trigger-upload').addEventListener('click', () => {
-      document.getElementById('media-file-input').click();
-    });
-
-    // CALENDAR
+    // RANDEVU TAKVİMİ & REZERVASYON FORMU
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const standardHours = [
-      "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00",
-      "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00",
-      "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00",
-      "21:00 - 22:00", "22:00 - 23:00"
-    ];
-
     let currentCalDate = new Date();
     let selectedSlots = [];
 
@@ -878,9 +988,11 @@
       const wrap = document.getElementById('selected-day-slots-wrap');
       const container = document.getElementById('hourly-slots-container');
       const heading = document.getElementById('selected-date-heading');
+      const formWrap = document.getElementById('booking-form-wrap');
 
       heading.textContent = `Available Hours: ${dateStr}`;
       container.innerHTML = '';
+      formWrap.style.display = 'none';
 
       const { data: slots } = await supabase
         .from('availability_slots')
@@ -906,20 +1018,13 @@
           } else {
             selectedSlots = selectedSlots.filter(s => s !== slot.hour_slot);
           }
+          // Saat seçildiğinde formu doğrudan görünür yap
+          formWrap.style.display = selectedSlots.length > 0 ? 'block' : 'none';
         });
         container.appendChild(chip);
       });
 
       wrap.style.display = 'block';
-
-      // Show booking form when any slot is selected
-      const observer = new MutationObserver(() => {
-        if (selectedSlots.length > 0) {
-          document.getElementById('booking-form-wrap').style.display = 'block';
-        } else {
-          document.getElementById('booking-form-wrap').style.display = 'none';
-        }
-      });
     }
 
     document.getElementById('btn-submit-booking').addEventListener('click', async () => {
@@ -930,7 +1035,7 @@
       const dateStr = document.getElementById('selected-date-heading').textContent.split(': ')[1];
 
       if (!name || !email || !contact || !plan || selectedSlots.length === 0) {
-        return alert("All fields required!");
+        return alert("All fields and at least one hour slot are required!");
       }
 
       await supabase.from('appointments').insert([{
@@ -942,14 +1047,13 @@
         activity_plan: plan
       }]);
 
-      // Mark slots as booked
       await supabase
         .from('availability_slots')
         .update({ is_booked: true })
         .eq('slot_date', dateStr)
         .in('hour_slot', selectedSlots);
 
-      alert("Booking confirmed!");
+      alert("Appointment booking confirmed successfully!");
       document.getElementById('book-name').value = '';
       document.getElementById('book-email').value = '';
       document.getElementById('book-contact').value = '';

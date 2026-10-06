@@ -31,7 +31,7 @@
       <button class="admin-tab-btn active" data-tab="calendar">📅 Manage Hours & Slots</button>
       <button class="admin-tab-btn" data-tab="bookings">📋 Bookings & Cancellation</button>
       <button class="admin-tab-btn" data-tab="events">🎉 Event Manager</button>
-      <button class="admin-tab-btn" data-tab="assignments">👥 User Access Permissions</button>
+      <button class="admin-tab-btn" data-tab="assignments">👥 User Permissions & Roles</button>
     </div>
 
     <!-- TAB 1: CALENDAR & SLOTS -->
@@ -75,15 +75,22 @@
       </div>
     </div>
 
-    <!-- TAB 3: EVENT MANAGER -->
+    <!-- TAB 3: EVENT MANAGER (ADMIN) -->
     <div id="tab-events" class="admin-tab-content" style="display: none;">
       <div class="glass-box" style="margin-bottom: 20px;">
-        <h3 style="color: #ff007f; margin-bottom: 12px;">Create New Event</h3>
-        <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title *">
+        <h3 style="color: #ff007f; margin-bottom: 12px;">Create New Event (Auto Drive Folder)</h3>
+        <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title * (Drive folder will be created automatically)">
         <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
-        <input type="text" id="new-evt-drive" class="input-field" placeholder="Google Drive Folder URL / Folder ID">
-        <input type="text" id="new-evt-loc" class="input-field" placeholder="Location Name or Google Maps Address Link (Optional)">
-        <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Create Event</button>
+        <input type="text" id="new-evt-loc" class="input-field" placeholder="Location / Maps link (Optional)">
+        <input type="datetime-local" id="new-evt-date" class="input-field" title="Event Date and Time">
+        <input type="text" id="new-evt-spotify" class="input-field" placeholder="Spotify Playlist URL (Optional)">
+        
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.85rem; color: #00f2fe; cursor: pointer;">
+          <input type="checkbox" id="new-evt-expenses"> Enable Shared Expenses (Split Bill) for this event
+        </label>
+
+        <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Create Event & Auto-Generate Drive</button>
+        <div id="adm-create-evt-status" style="margin-top: 8px; font-size: 0.85rem; text-align: center;"></div>
       </div>
       <div class="glass-box">
         <h3 style="color: #00f2fe; margin-bottom: 16px;">Active Events</h3>
@@ -91,17 +98,31 @@
       </div>
     </div>
 
-    <!-- TAB 4: ACCESS CONTROL -->
+    <!-- TAB 4: ACCESS CONTROL & USER PERMISSIONS -->
     <div id="tab-assignments" class="admin-tab-content" style="display: none;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="glass-box">
-          <h3 style="color: #00f2fe; margin-bottom: 14px;">Registered Users</h3>
-          <div id="adm-users-list"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="color: #00f2fe; margin: 0;">Registered Users</h3>
+          </div>
+          <!-- Canlı İsim Arama -->
+          <input type="text" id="search-user-input" class="input-field" placeholder="🔍 Search user by name or email..." style="margin-bottom: 12px;">
+          <div id="adm-users-list" style="max-height: 420px; overflow-y: auto;"></div>
         </div>
+
         <div class="glass-box">
-          <h3 style="color: #ff007f; margin-bottom: 14px;">Event Access Permissions</h3>
+          <h3 style="color: #ff007f; margin-bottom: 14px;">User Permissions & Visibility</h3>
           <p id="adm-selected-user-name" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Pick a user from the left panel</p>
-          <div id="adm-event-checks" style="display: grid; gap: 8px; margin-bottom: 16px;"></div>
+          
+          <div id="user-role-toggles" style="display: none; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #00f2fe; cursor: pointer;">
+              <input type="checkbox" id="perm-can-create-events">
+              <strong>Allow User to Create Events</strong>
+            </label>
+          </div>
+
+          <h4 style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 8px;">Allowed Events for this User:</h4>
+          <div id="adm-event-checks" style="display: grid; gap: 8px; margin-bottom: 16px; max-height: 220px; overflow-y: auto;"></div>
           <button id="btn-adm-save-perms" class="btn" style="width: 100%;" disabled>Save Permissions</button>
         </div>
       </div>
@@ -109,7 +130,7 @@
   </div>
 
   <script type="module">
-    import { supabase } from './config.js';
+    import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
     import { getSessionUser, clearSession } from './modules/auth.js';
     import { monthNames } from './modules/calendar.js';
 
@@ -118,6 +139,7 @@
     let activeSlots = new Set();
     let bookedSlots = new Set();
     let selectedUserForPerms = null;
+    let allUsersCache = [];
 
     const HOURS_24 = [];
     for (let h = 0; h < 24; h++) {
@@ -330,8 +352,8 @@
         row.innerHTML = `
           <div>
             <strong style="color: #00f2fe;">${evt.title}</strong>
-            <p style="color: #94a3b8; font-size: 0.8rem; margin: 2px 0;">📍 ${evt.location || 'No location set'}</p>
-            <p style="color: #64748b; font-size: 0.75rem;">Drive: ${evt.drive_folder_url || 'None'}</p>
+            <p style="color: #94a3b8; font-size: 0.8rem; margin: 2px 0;">📍 ${evt.location || 'No location'}</p>
+            <p style="color: #64748b; font-size: 0.75rem;">📁 Drive ID: ${evt.drive_folder_url || 'Auto'}</p>
           </div>
           <button class="btn btn-pink btn-del-evt" style="padding: 4px 10px; font-size: 0.75rem;">Delete</button>
         `;
@@ -344,26 +366,76 @@
       });
     }
 
+    // ETKİNLİK OLUŞTURMA & OTOMATİK DRIVE KLASÖRÜ
     document.getElementById('btn-adm-create-evt').onclick = async () => {
       const title = document.getElementById('new-evt-title').value.trim();
       const desc = document.getElementById('new-evt-desc').value.trim();
-      const drive = document.getElementById('new-evt-drive').value.trim();
       const loc = document.getElementById('new-evt-loc').value.trim();
+      const evtDate = document.getElementById('new-evt-date').value || null;
+      const spotify = document.getElementById('new-evt-spotify').value.trim();
+      const enableExpenses = document.getElementById('new-evt-expenses').checked;
+      const statusEl = document.getElementById('adm-create-evt-status');
+
       if (!title) return alert('Event title is required!');
 
-      await supabase.from('events').insert([{ title, description: desc, drive_folder_url: drive, location: loc }]);
+      statusEl.style.color = '#00f2fe';
+      statusEl.textContent = 'Auto-generating Google Drive folder...';
+
+      let autoDriveUrl = '';
+      try {
+        const res = await fetch(EMAIL_WEBHOOK_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'create_drive_folder', folderName: title })
+        });
+        const d = await res.json();
+        if (d.status === 'success') {
+          autoDriveUrl = d.folderId;
+        }
+      } catch (e) {
+        console.warn('Auto drive folder fallback:', e);
+      }
+
+      const user = getSessionUser();
+      await supabase.from('events').insert([{
+        title,
+        description: desc,
+        drive_folder_url: autoDriveUrl,
+        location: loc,
+        event_date: evtDate,
+        spotify_url: spotify,
+        enable_expenses: enableExpenses,
+        created_by: user.id
+      }]);
+
+      statusEl.style.color = '#22c55e';
+      statusEl.textContent = '✓ Event created with automated Google Drive folder!';
+      setTimeout(() => statusEl.textContent = '', 4000);
+
       document.getElementById('new-evt-title').value = '';
       document.getElementById('new-evt-desc').value = '';
-      document.getElementById('new-evt-drive').value = '';
       document.getElementById('new-evt-loc').value = '';
+      document.getElementById('new-evt-date').value = '';
+      document.getElementById('new-evt-spotify').value = '';
+      document.getElementById('new-evt-expenses').checked = false;
       loadEvents();
     };
 
+    // KULLANICI LİSTESİ VE CANLI ARAMA
     async function loadUsers() {
-      const list = document.getElementById('adm-users-list');
       const { data: users } = await supabase.from('users').select('*');
+      allUsersCache = users || [];
+      renderUserList(allUsersCache);
+    }
+
+    function renderUserList(users) {
+      const list = document.getElementById('adm-users-list');
       list.innerHTML = '';
-      (users || []).forEach(u => {
+      if (!users.length) {
+        list.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No matching users found.</p>';
+        return;
+      }
+
+      users.forEach(u => {
         const item = document.createElement('div');
         item.className = 'user-item';
         item.style.cursor = 'pointer';
@@ -372,16 +444,30 @@
             <strong>${u.username}</strong>
             <div style="font-size: 0.75rem; color: #94a3b8;">${u.email}</div>
           </div>
-          <span style="font-size: 0.75rem; color: #00f2fe;">${u.role || 'user'}</span>
+          <div style="text-align: right;">
+            <span style="font-size: 0.75rem; color: #00f2fe; display: block;">${u.role || 'user'}</span>
+            ${u.can_create_events ? '<span style="font-size: 0.7rem; color: #22c55e;">Creator</span>' : ''}
+          </div>
         `;
         item.onclick = () => {
           selectedUserForPerms = u;
           document.getElementById('adm-selected-user-name').textContent = `Target: ${u.username} (${u.email})`;
+          document.getElementById('user-role-toggles').style.display = 'block';
+          document.getElementById('perm-can-create-events').checked = !!u.can_create_events;
           loadUserPerms(u.id);
         };
         list.appendChild(item);
       });
     }
+
+    document.getElementById('search-user-input').oninput = (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = allUsersCache.filter(u => 
+        (u.username && u.username.toLowerCase().includes(q)) || 
+        (u.email && u.email.toLowerCase().includes(q))
+      );
+      renderUserList(filtered);
+    };
 
     async function loadUserPerms(userId) {
       const container = document.getElementById('adm-event-checks');
@@ -409,7 +495,12 @@
       if (!selectedUserForPerms) return;
       const checkedBoxes = Array.from(document.querySelectorAll('#adm-event-checks input[type="checkbox"]:checked'));
       const eventIds = checkedBoxes.map(cb => parseInt(cb.dataset.id));
+      const canCreate = document.getElementById('perm-can-create-events').checked;
 
+      // 1. Etkinlik Açma Yetkisini Güncelle
+      await supabase.from('users').update({ can_create_events: canCreate }).eq('id', selectedUserForPerms.id);
+
+      // 2. Görünürlük İzinlerini Güncelle
       await supabase.from('event_access').delete().eq('user_id', selectedUserForPerms.id);
       if (eventIds.length > 0) {
         const records = eventIds.map(eId => ({
@@ -419,7 +510,9 @@
         }));
         await supabase.from('event_access').insert(records);
       }
-      alert('Permissions saved successfully!');
+
+      alert(`Permissions updated for ${selectedUserForPerms.username}!`);
+      loadUsers();
     };
   </script>
 </body>

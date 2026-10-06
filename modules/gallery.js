@@ -89,10 +89,11 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   if (match) folderId = match[0];
   activeFolderId = folderId;
 
+  // Sabit Arayüz: Üst panel (Yükleme butonu) + Alt panel (Görseller alanı)
   container.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <label class="btn btn-pink" style="cursor: pointer; padding: 6px 14px; font-size: 0.8rem; margin: 0;">
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <label class="btn btn-pink" style="cursor: pointer; padding: 7px 16px; font-size: 0.85rem; margin: 0;">
           📤 Upload Photo to Drive
           <input type="file" id="drive-photo-input" accept="image/*" style="display: none;">
         </label>
@@ -100,25 +101,25 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
       </div>
       <a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 0.75rem; text-decoration: none;">📁 Open in Drive</a>
     </div>
-    <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;">
-      <p style="color: #94a3b8; font-size: 0.85rem;">Loading photos directly from Drive...</p>
+    <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; min-height: 80px;">
+      <p style="color: #94a3b8; font-size: 0.85rem; grid-column: 1 / -1;">Connecting to Drive folder...</p>
     </div>
   `;
 
-  // Fotoğraf Yükleme Dinleyicisi
+  // Fotoğraf Yükleme Olayı
   const fileInput = document.getElementById('drive-photo-input');
   const uploadStatus = document.getElementById('upload-status');
 
-  fileInput.onchange = async () => {
+  fileInput.onchange = () => {
     const file = fileInput.files[0];
     if (!file) return;
 
+    uploadStatus.style.color = '#00f2fe';
     uploadStatus.textContent = 'Uploading to Drive...';
 
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        // Eski çalışan formatınla birebir aynı payload:
         const payload = {
           folderId: activeFolderId,
           fileData: reader.result,
@@ -133,13 +134,16 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
         const result = await res.json();
 
         if (result.status === 'success') {
+          uploadStatus.style.color = '#22c55e';
           uploadStatus.textContent = '✓ Uploaded successfully!';
-          setTimeout(() => uploadStatus.textContent = '', 3000);
+          setTimeout(() => uploadStatus.textContent = '', 4000);
           loadPhotosFromDrive(activeFolderId);
         } else {
-          uploadStatus.textContent = 'Upload failed: ' + result.message;
+          uploadStatus.style.color = '#f43f5e';
+          uploadStatus.textContent = 'Upload failed: ' + (result.message || 'Error');
         }
       } catch (err) {
+        uploadStatus.style.color = '#f43f5e';
         uploadStatus.textContent = 'Error: ' + err.message;
       }
     };
@@ -149,7 +153,6 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   loadPhotosFromDrive(folderId);
 }
 
-// Drive Klasöründeki Fotoğrafları Getirme
 async function loadPhotosFromDrive(folderId) {
   const grid = document.getElementById('drive-photos-grid');
   if (!grid) return;
@@ -159,7 +162,7 @@ async function loadPhotosFromDrive(folderId) {
     const data = await res.json();
 
     if (data.status !== 'success' || !data.photos || data.photos.length === 0) {
-      grid.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; grid-column: span 4;">No photos in this folder yet. Click "Upload Photo" above to add the first one!</p>';
+      grid.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; grid-column: 1 / -1;">No photos in this folder yet. Click "Upload Photo to Drive" above to add the first picture!</p>';
       currentImages = [];
       return;
     }
@@ -179,6 +182,6 @@ async function loadPhotosFromDrive(folderId) {
     });
 
   } catch (err) {
-    grid.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Failed to fetch photos: ${err.message}</p>`;
+    grid.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem; grid-column: 1 / -1;">Failed to fetch photos: ${err.message}</p>`;
   }
 }

@@ -6,58 +6,134 @@
   <title>Portal & Booking System</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .hub-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-top: 30px;
+    /* --- MÜKEMMEL 7 SÜTUNLU TAKVİM MATRİSİ --- */
+    .calendar-container-card {
+      background: rgba(18, 24, 43, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 24px;
+      max-width: 540px;
+      margin: 0 auto 24px auto;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     }
-    @media (max-width: 768px) { .hub-grid { grid-template-columns: 1fr; } }
-    .hub-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 36px 24px;
-      text-align: center;
+    .calendar-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .cal-nav-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .cal-nav-btn:hover {
+      background: #00f2fe;
+      color: #070913;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+    }
+    .cal-selects {
+      display: flex;
+      gap: 8px;
+    }
+    .cal-dropdown {
+      background: rgba(10, 14, 28, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* 7 EŞİT SÜTUNLU TAKVİM TABLOSU */
+    .cal-weekdays {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .cal-weekday-label {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 0;
+    }
+
+    .cal-days-grid {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      gap: 8px !important;
+    }
+    .cal-day-cell {
+      height: 58px;
+      border-radius: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #64748b;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      transition: all 0.25s ease;
+      cursor: default;
+      user-select: none;
+      position: relative;
     }
-    .hub-card:hover {
-      transform: translateY(-6px);
-      border-color: var(--neon-cyan);
-      box-shadow: 0 12px 30px rgba(0, 242, 254, 0.25);
-    }
-    .hub-card.pink:hover {
-      border-color: var(--neon-pink);
-      box-shadow: 0 12px 30px rgba(255, 0, 127, 0.25);
-    }
-    .auth-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      justify-content: center;
-    }
-    .auth-tab-btn {
-      background: none;
+    .cal-day-cell.empty {
+      background: transparent;
       border: none;
-      color: var(--text-dim);
-      font-size: 1rem;
-      font-weight: 700;
+    }
+    .cal-day-cell.available {
+      background: rgba(0, 242, 254, 0.12);
+      border-color: #00f2fe;
+      color: #fff;
       cursor: pointer;
-      padding-bottom: 6px;
-      border-bottom: 2px solid transparent;
-      transition: 0.2s;
+      box-shadow: 0 0 14px rgba(0, 242, 254, 0.2);
     }
-    .auth-tab-btn.active {
-      color: var(--neon-cyan);
-      border-color: var(--neon-cyan);
+    .cal-day-cell.available:hover {
+      transform: translateY(-3px) scale(1.05);
+      background: #00f2fe;
+      color: #070913;
+      box-shadow: 0 0 22px rgba(0, 242, 254, 0.6);
     }
-    .hourly-slots-grid {
+    .cal-day-cell.selected {
+      background: #ff007f !important;
+      color: #fff !important;
+      border-color: #ff007f !important;
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.7) !important;
+      transform: scale(1.06);
+    }
+    .cal-badge-hours {
+      font-size: 0.65rem;
+      color: #00f2fe;
+      margin-top: 3px;
+      font-weight: 700;
+    }
+    .cal-day-cell.selected .cal-badge-hours {
+      color: #fff !important;
+    }
+
+    /* SAATLİK DİLİMLER */
+    .hourly-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
       gap: 10px;
@@ -65,58 +141,77 @@
     }
     .hour-chip {
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff;
-      padding: 10px;
-      border-radius: 12px;
+      padding: 12px 10px;
+      border-radius: 14px;
       text-align: center;
       cursor: pointer;
       font-size: 0.85rem;
-      transition: 0.2s;
-      user-select: none;
+      font-weight: 600;
+      transition: all 0.2s;
     }
     .hour-chip:hover {
-      border-color: var(--neon-cyan);
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.1);
     }
     .hour-chip.selected {
-      background: var(--neon-cyan);
+      background: #00f2fe;
       color: #070913;
-      font-weight: bold;
-      border-color: var(--neon-cyan);
+      border-color: #00f2fe;
       box-shadow: 0 0 16px rgba(0, 242, 254, 0.5);
+      font-weight: bold;
     }
+
+    /* HUB & KARTLAR */
+    .hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 30px; }
+    @media (max-width: 768px) { .hub-grid { grid-template-columns: 1fr; } }
+    .hub-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    }
+    .hub-card:hover {
+      transform: translateY(-6px);
+      border-color: #00f2fe;
+      box-shadow: 0 12px 30px rgba(0, 242, 254, 0.25);
+    }
+    .hub-card.pink:hover {
+      border-color: #ff007f;
+      box-shadow: 0 12px 30px rgba(255, 0, 127, 0.25);
+    }
+    .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+    .auth-tab-btn {
+      background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: 700;
+      cursor: pointer; padding-bottom: 6px; border-bottom: 2px solid transparent; transition: 0.2s;
+    }
+    .auth-tab-btn.active { color: #00f2fe; border-color: #00f2fe; }
     .music-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 6px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--glass-border);
+      display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.06);
+      padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12);
     }
     .btn-icon { background: none; border: none; color: #fff; cursor: pointer; font-size: 1rem; }
     .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
     @media (max-width: 850px) { .grid-layout { grid-template-columns: 1fr; } }
     .chat-container { display: flex; flex-direction: column; height: 480px; }
     .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.25);
+      flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column;
+      gap: 10px; border-radius: 12px; background: rgba(0, 0, 0, 0.25);
     }
     .msg-item { padding: 10px 14px; border-radius: 14px; max-width: 80%; font-size: 0.9rem; }
     .msg-item.mine { align-self: flex-end; background: linear-gradient(135deg, #00f2fe, #3b82f6); color: #fff; }
-    .msg-item.theirs { align-self: flex-start; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); }
+    .msg-item.theirs { align-self: flex-start; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); }
     .poll-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; max-height: 280px; overflow-y: auto; }
     .poll-item {
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px;
     }
-    .btn-vote { background: rgba(0, 242, 254, 0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .btn-vote { background: rgba(0, 242, 254, 0.2); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -127,14 +222,14 @@
   <!-- ================= 0. VIEW: ANA GİRİŞ HUB ================= -->
   <div id="view-hub" class="container">
     <div class="nav-header">
-      <h2 style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      <h2 style="background: linear-gradient(135deg, #00f2fe, #ff007f); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
         Welcome to Portal
       </h2>
       <div class="music-bar">
         <button id="btn-prev-music" class="btn-icon">⏮️</button>
         <button id="btn-music-toggle" class="btn-icon">▶️</button>
         <button id="btn-next-music" class="btn-icon">⏭️</button>
-        <span id="music-title" style="font-size: 0.8rem; color: var(--neon-cyan); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Track 1</span>
+        <span id="music-title" style="font-size: 0.8rem; color: #00f2fe; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Track 1</span>
       </div>
     </div>
 
@@ -143,21 +238,21 @@
     <div class="hub-grid">
       <div id="card-go-events" class="hub-card">
         <span style="font-size: 3rem;">🎉</span>
-        <h2 style="color: var(--neon-cyan); margin: 0;">Event Portal</h2>
+        <h2 style="color: #00f2fe; margin: 0;">Event Portal</h2>
         <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Group events, live chat, poll suggestions, and 5 TB Google Drive gallery.</p>
         <span class="badge badge-open" style="margin-top: 10px;">Enter Events →</span>
       </div>
 
       <div id="card-go-booking" class="hub-card pink">
         <span style="font-size: 3rem;">📅</span>
-        <h2 style="color: var(--neon-pink); margin: 0;">Book an Appointment</h2>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Check my real-time open slots, pick hours, and tell me what you want to do.</p>
-        <span class="badge badge-open" style="margin-top: 10px; background: rgba(255,0,127,0.2); color: var(--neon-pink); border-color: var(--neon-pink);">Pick a Time →</span>
+        <h2 style="color: #ff007f; margin: 0;">Book an Appointment</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Check my real-time open calendar, pick hours, and share your activity plan.</p>
+        <span class="badge badge-open" style="margin-top: 10px; background: rgba(255,0,127,0.2); color: #ff007f; border-color: #ff007f;">Pick a Time →</span>
       </div>
     </div>
   </div>
 
-  <!-- ================= 1. VIEW: EMAIL TABANLI KAYIT / GİRİŞ ================= -->
+  <!-- ================= 1. VIEW: EMAIL KAYIT / GİRİŞ ================= -->
   <div id="view-auth" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 14px; font-size: 0.85rem;">← Back to Main Hub</button>
@@ -169,13 +264,11 @@
         <button id="tab-register" class="auth-tab-btn">Create Account</button>
       </div>
 
-      <!-- Giriş Formu -->
       <div id="form-login-wrap">
         <input type="email" id="login-email" class="input-field" placeholder="Enter your email address" autocomplete="off" />
         <button id="btn-login" class="btn" style="width: 100%;">Sign In</button>
       </div>
 
-      <!-- Kayıt Formu -->
       <div id="form-register-wrap" style="display: none;">
         <input type="text" id="reg-name" class="input-field" placeholder="Your Name & Surname" autocomplete="off" />
         <input type="email" id="reg-email" class="input-field" placeholder="Your Unique Email" autocomplete="off" />
@@ -195,7 +288,7 @@
       </div>
       <div style="display: flex; align-items: center; gap: 10px;">
         <button class="btn-to-hub" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Hub</button>
-        <a id="admin-link" href="admin.html" style="display: none; background: rgba(0,242,254,0.15); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem;">Admin</a>
+        <a id="admin-link" href="admin.html" style="display: none; background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem;">Admin</a>
         <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Logout</button>
       </div>
     </div>
@@ -217,7 +310,7 @@
     <div class="glass-box" style="margin-top: 20px;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-          <h3 style="color: var(--neon-cyan); margin-bottom: 4px;">📸 Event Media Gallery</h3>
+          <h3 style="color: #00f2fe; margin-bottom: 4px;">📸 Event Media Gallery</h3>
           <p style="color: #94a3b8; font-size: 0.85rem;">Upload full quality photos directly to Google Drive.</p>
         </div>
         <div style="display: flex; gap: 10px;">
@@ -228,9 +321,9 @@
       </div>
 
       <div id="upload-status" style="display: none; margin-top: 15px;">
-        <div id="upload-status-text" style="font-size: 0.9rem; color: var(--neon-cyan); margin-bottom: 6px;"></div>
+        <div id="upload-status-text" style="font-size: 0.9rem; color: #00f2fe; margin-bottom: 6px;"></div>
         <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
-          <div id="upload-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)); transition: width 0.2s;"></div>
+          <div id="upload-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #00f2fe, #ff007f); transition: width 0.2s;"></div>
         </div>
       </div>
 
@@ -241,7 +334,7 @@
 
     <div class="grid-layout">
       <div class="glass-box chat-container">
-        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Group Chat</h3>
+        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: #00f2fe;">💬 Group Chat</h3>
         <div class="chat-messages" id="chat-messages"></div>
         <div style="display: flex; gap: 8px; margin-top: 12px;">
           <input type="text" id="chat-input" class="input-field" style="margin: 0;" placeholder="Type your message..." autocomplete="off">
@@ -250,7 +343,7 @@
       </div>
 
       <div class="glass-box">
-        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 What's the Plan Today?</h3>
+        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: #ff007f;">💡 What's the Plan Today?</h3>
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Suggest an activity and vote!</p>
         <div style="display: flex; gap: 8px;">
           <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="e.g. Dinner together?">
@@ -261,52 +354,63 @@
     </div>
   </div>
 
-  <!-- ================= 4. VIEW: SAATLİK TAKVİM RANDEVU ALMA ================= -->
+  <!-- ================= 4. VIEW: MUAZZAM 7 SÜTUNLU RANDEVU TAKVİMİ ================= -->
   <div id="view-booking" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Main Hub</button>
-      <span style="font-size: 0.9rem; color: #94a3b8;">Hourly Appointment Booking</span>
+      <span style="font-size: 0.9rem; color: #94a3b8;">Interactive Schedule</span>
     </div>
 
     <div class="glass-box" style="margin-top: 20px;">
-      <h2 style="color: var(--neon-pink); margin-bottom: 6px;">📅 Pick Your Date & Hourly Slots</h2>
-      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">
-        Click a glowing day on the calendar, choose your hours, and share your activity idea!
+      <h2 style="color: #ff007f; margin-bottom: 6px; text-align: center;">📅 Select Date & Hours</h2>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px; text-align: center;">
+        Glowing days have open availability. Click a date to inspect and pick hours!
       </p>
 
-      <!-- Takvim -->
-      <div class="calendar-wrapper">
-        <div class="calendar-header">
-          <button id="cal-prev-month" class="calendar-nav-btn">‹</button>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <select id="cal-month-select" class="input-field" style="margin: 0; padding: 6px 12px; width: auto; font-weight: bold;"></select>
-            <select id="cal-year-select" class="input-field" style="margin: 0; padding: 6px 12px; width: auto; font-weight: bold;"></select>
+      <!-- GERÇEK 7 SÜTUNLU TAKVİM KARTI -->
+      <div class="calendar-container-card">
+        <div class="calendar-top-bar">
+          <button id="cal-prev-month" class="cal-nav-btn">‹</button>
+          <div class="cal-selects">
+            <select id="cal-month-select" class="cal-dropdown"></select>
+            <select id="cal-year-select" class="cal-dropdown"></select>
           </div>
-          <button id="cal-next-month" class="calendar-nav-btn">›</button>
+          <button id="cal-next-month" class="cal-nav-btn">›</button>
         </div>
-        <div class="calendar-grid" id="calendar-days-grid"></div>
+
+        <div class="cal-weekdays">
+          <div class="cal-weekday-label">Mon</div>
+          <div class="cal-weekday-label">Tue</div>
+          <div class="cal-weekday-label">Wed</div>
+          <div class="cal-weekday-label">Thu</div>
+          <div class="cal-weekday-label">Fri</div>
+          <div class="cal-weekday-label">Sat</div>
+          <div class="cal-weekday-label">Sun</div>
+        </div>
+
+        <div class="cal-days-grid" id="calendar-days-grid"></div>
       </div>
 
-      <!-- Seçilen Günün Saatlik Slotları -->
-      <div id="selected-day-slots-wrap" style="display: none; margin-bottom: 24px;">
-        <h4 id="selected-date-heading" style="color: var(--neon-cyan); margin-bottom: 4px;">Available Hours:</h4>
-        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 12px;">You can select multiple hours by clicking on them.</p>
-        <div id="hourly-slots-container" class="hourly-slots-grid"></div>
+      <!-- SEÇİLEN GÜNÜN SAATLERİ -->
+      <div id="selected-day-slots-wrap" style="display: none; max-width: 540px; margin: 0 auto 24px auto;">
+        <h4 id="selected-date-heading" style="color: #00f2fe; margin-bottom: 4px;">Available Hours:</h4>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 12px;">Click to select multiple hours for our meetup.</p>
+        <div id="hourly-slots-container" class="hourly-grid"></div>
       </div>
 
-      <!-- Randevu Formu -->
-      <div id="booking-form-wrap" style="display: none; border-top: 1px solid var(--glass-border); padding-top: 20px; max-width: 520px;">
-        <h4 style="color: var(--neon-pink); margin-bottom: 14px;">Confirm Your Booking</h4>
+      <!-- ONAY FORMU -->
+      <div id="booking-form-wrap" style="display: none; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 24px; max-width: 540px; margin: 0 auto;">
+        <h4 style="color: #ff007f; margin-bottom: 14px;">Confirm Your Appointment</h4>
         <input type="text" id="book-name" class="input-field" placeholder="Your Name *">
         <input type="email" id="book-email" class="input-field" placeholder="Your Email Address *">
         <input type="text" id="book-contact" class="input-field" placeholder="Phone or Instagram / WhatsApp Handle *">
-        <textarea id="book-plan" class="input-field" style="height: 85px; resize: none;" placeholder="What would you like to do during these hours? (e.g., Coffee, sightseeing, dinner...) *"></textarea>
-        <button id="btn-submit-booking" class="btn" style="width: 100%;">Confirm Appointment</button>
+        <textarea id="book-plan" class="input-field" style="height: 85px; resize: none;" placeholder="What would you like to do? (e.g., Grab coffee, walk around, talk about projects...) *"></textarea>
+        <button id="btn-submit-booking" class="btn" style="width: 100%;">Confirm Booking Now</button>
       </div>
     </div>
   </div>
 
-  <!-- HER TIKLAMADA NEON DALGA SCRIPTİ -->
+  <!-- NEON TIKLAMA DALGASI SCRIPTİ -->
   <script>
     window.addEventListener('click', (e) => {
       const ripple = document.createElement('div');
@@ -318,7 +422,7 @@
     });
   </script>
 
-  <!-- ANA UYGULAMA MOTORU -->
+  <!-- MOTOR -->
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
@@ -343,7 +447,7 @@
     }
 
     function playTrack() {
-      audio.play().then(() => { btnMusicToggle.textContent = '⏸️'; }).catch(() => { btnMusicToggle.textContent = '▶️️'; });
+      audio.play().then(() => { btnMusicToggle.textContent = '⏸️'; }).catch(() => { btnMusicToggle.textContent = '▶️'; });
     }
 
     btnNextMusic.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
@@ -357,7 +461,7 @@
 
     loadTrack(0);
 
-    // GÖRÜNÜM YÖNETİMİ
+    // GÖRÜNÜM GEÇİŞLERİ
     const viewHub = document.getElementById('view-hub');
     const viewAuth = document.getElementById('view-auth');
     const viewDashboard = document.getElementById('view-dashboard');
@@ -372,23 +476,14 @@
       viewBooking.style.display = 'none';
     }
 
-    function showHub() {
-      hideAll();
-      viewHub.style.display = 'block';
-    }
-
+    function showHub() { hideAll(); viewHub.style.display = 'block'; }
     document.querySelectorAll('.btn-to-hub').forEach(b => b.addEventListener('click', showHub));
 
     document.getElementById('card-go-events').addEventListener('click', () => {
       playTrack();
       const user = JSON.parse(localStorage.getItem('portal_user'));
-      if (user) {
-        currentUser = user;
-        showDashboard();
-      } else {
-        hideAll();
-        viewAuth.style.display = 'block';
-      }
+      if (user) { currentUser = user; showDashboard(); }
+      else { hideAll(); viewAuth.style.display = 'block'; }
     });
 
     document.getElementById('card-go-booking').addEventListener('click', () => {
@@ -398,7 +493,7 @@
       initCalendar();
     });
 
-    // EMAIL TABANLI GİRİŞ VE KAYIT
+    // EMAIL AUTH
     const tabLogin = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
     const formLoginWrap = document.getElementById('form-login-wrap');
@@ -406,82 +501,47 @@
     const authErr = document.getElementById('auth-err');
 
     tabLogin.addEventListener('click', () => {
-      tabLogin.classList.add('active');
-      tabRegister.classList.remove('active');
-      formLoginWrap.style.display = 'block';
-      formRegisterWrap.style.display = 'none';
-      authErr.style.display = 'none';
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+      formLoginWrap.style.display = 'block'; formRegisterWrap.style.display = 'none'; authErr.style.display = 'none';
     });
 
     tabRegister.addEventListener('click', () => {
-      tabRegister.classList.add('active');
-      tabLogin.classList.remove('active');
-      formRegisterWrap.style.display = 'block';
-      formLoginWrap.style.display = 'none';
-      authErr.style.display = 'none';
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+      formRegisterWrap.style.display = 'block'; formLoginWrap.style.display = 'none'; authErr.style.display = 'none';
     });
 
     let currentUser = null;
 
-    // Giriş Yap (Email ile)
     document.getElementById('btn-login').addEventListener('click', async () => {
       const email = document.getElementById('login-email').value.trim().toLowerCase();
       authErr.style.display = 'none';
-
-      if (!email) {
-        authErr.textContent = 'Please enter your email.';
-        authErr.style.display = 'block';
-        return;
-      }
+      if (!email) { authErr.textContent = 'Please enter your email.'; authErr.style.display = 'block'; return; }
 
       const { data: user, error } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
       if (error || !user) {
-        authErr.textContent = 'Account not found with this email. Please register!';
-        authErr.style.display = 'block';
-        return;
+        authErr.textContent = 'Account not found with this email. Please register!'; authErr.style.display = 'block'; return;
       }
-
-      if (!user.is_active) {
-        authErr.textContent = 'Account is disabled by administrator.';
-        authErr.style.display = 'block';
-        return;
-      }
+      if (!user.is_active) { authErr.textContent = 'Account is disabled.'; authErr.style.display = 'block'; return; }
 
       currentUser = user;
       localStorage.setItem('portal_user', JSON.stringify(user));
       showDashboard();
     });
 
-    // Kayıt Ol (Benzersiz Email ile)
     document.getElementById('btn-register').addEventListener('click', async () => {
       const name = document.getElementById('reg-name').value.trim();
       const email = document.getElementById('reg-email').value.trim().toLowerCase();
       authErr.style.display = 'none';
-
-      if (!name || !email) {
-        authErr.textContent = 'Please fill in all fields.';
-        authErr.style.display = 'block';
-        return;
-      }
+      if (!name || !email) { authErr.textContent = 'Please fill in all fields.'; authErr.style.display = 'block'; return; }
 
       const { data: existing } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
-      if (existing) {
-        authErr.textContent = 'This email is already registered. Please sign in!';
-        authErr.style.display = 'block';
-        return;
-      }
+      if (existing) { authErr.textContent = 'This email is already registered. Please sign in!'; authErr.style.display = 'block'; return; }
 
       const { data: newUser, error } = await supabase.from('users').insert({
-        username: name,
-        email: email,
-        is_active: true
+        username: name, email: email, is_active: true
       }).select().single();
 
-      if (error) {
-        authErr.textContent = error.message;
-        authErr.style.display = 'block';
-        return;
-      }
+      if (error) { authErr.textContent = error.message; authErr.style.display = 'block'; return; }
 
       currentUser = newUser;
       localStorage.setItem('portal_user', JSON.stringify(newUser));
@@ -521,10 +581,7 @@
       });
     }
 
-    btnLogout.addEventListener('click', () => {
-      localStorage.removeItem('portal_user');
-      showHub();
-    });
+    btnLogout.addEventListener('click', () => { localStorage.removeItem('portal_user'); showHub(); });
 
     // ETKİNLİK ODASI & CHAT & DRIVE
     let activeEventId = null;
@@ -616,7 +673,7 @@
       loadPolls();
     });
 
-    // 5 TB DRIVE MEDYA
+    // 5 TB GOOGLE DRIVE MEDYA
     const fileInput = document.getElementById('media-file-input');
     const triggerBtn = document.getElementById('btn-trigger-upload');
     const uploadStatus = document.getElementById('upload-status');
@@ -666,7 +723,7 @@
         galleryGrid.innerHTML = '';
         data.files.forEach(f => {
           const card = document.createElement('div');
-          card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;";
+          card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;";
           card.innerHTML = `
             <img src="${f.thumbnailLink ? f.thumbnailLink.replace(/=s\d+/, '=s500') : ''}" style="height: 140px; width: 100%; object-fit: cover;">
             <div style="padding: 8px;"><a href="https://drive.google.com/uc?export=download&id=${f.id}" target="_blank" class="btn" style="padding: 4px; font-size: 0.75rem; text-align: center; text-decoration: none; display: block;">⬇️ Download</a></div>
@@ -676,15 +733,15 @@
       } catch (e) { galleryGrid.innerHTML = '<p style="color:#ef4444;">Error fetching photos.</p>'; }
     }
 
-    // ================= SAATLİK VE ÇOKLU SEÇİMLİ TAKVİM SİSTEMİ =================
+    // ================= GERÇEK 7 SÜTUNLU TAKVİM MOTORU =================
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     const calMonthSelect = document.getElementById('cal-month-select');
     const calYearSelect = document.getElementById('cal-year-select');
     const calPrevMonth = document.getElementById('cal-prev-month');
     const calNextMonth = document.getElementById('cal-next-month');
     const calendarDaysGrid = document.getElementById('calendar-days-grid');
+
     const selectedDaySlotsWrap = document.getElementById('selected-day-slots-wrap');
     const selectedDateHeading = document.getElementById('selected-date-heading');
     const hourlySlotsContainer = document.getElementById('hourly-slots-container');
@@ -742,24 +799,18 @@
       bookingFormWrap.style.display = 'none';
       selectedSlotIds.clear();
 
-      dayNames.forEach(d => {
-        const h = document.createElement('div');
-        h.className = 'calendar-day-header';
-        h.textContent = d;
-        calendarDaysGrid.appendChild(h);
-      });
-
       const year = currentCalDate.getFullYear();
       const month = currentCalDate.getMonth();
       const totalDays = new Date(year, month + 1, 0).getDate();
 
+      // Pazartesi başlangıçlı hizalama (Pazartesi=0, Pazar=6)
       let startingDay = new Date(year, month, 1).getDay() - 1;
       if (startingDay === -1) startingDay = 6;
 
       const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
       const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`;
 
-      // Aktif ve Rezerve edilmemiş slotları al
+      // Supabase'den bu ayın açık saatlerini çek
       const { data: slots } = await supabase
         .from('availability_slots')
         .select('*')
@@ -775,27 +826,29 @@
         slotMap[s.slot_date] = (slotMap[s.slot_date] || 0) + 1;
       });
 
+      // Ay başından önceki boş günler
       for (let i = 0; i < startingDay; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'calendar-cell';
-        empty.style.opacity = '0.1';
-        calendarDaysGrid.appendChild(empty);
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'cal-day-cell empty';
+        calendarDaysGrid.appendChild(emptyCell);
       }
 
+      // Ayın günleri (1'den son güne kadar)
       for (let day = 1; day <= totalDays; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const hasOpenSlots = slotMap[dateStr] && slotMap[dateStr] > 0;
+        const openHoursCount = slotMap[dateStr] || 0;
+        const hasOpen = openHoursCount > 0;
 
         const cell = document.createElement('div');
-        cell.className = `calendar-cell ${hasOpenSlots ? 'has-available' : ''}`;
+        cell.className = `cal-day-cell ${hasOpen ? 'available' : ''}`;
         cell.innerHTML = `
           <span>${day}</span>
-          ${hasOpenSlots ? `<span style="font-size:0.65rem; color:#00f2fe; margin-top:2px;">● ${slotMap[dateStr]} hrs</span>` : ''}
+          ${hasOpen ? `<span class="cal-badge-hours">● ${openHoursCount} hrs</span>` : ''}
         `;
 
-        if (hasOpenSlots) {
+        if (hasOpen) {
           cell.addEventListener('click', () => {
-            document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
             cell.classList.add('selected');
             selectedDateStr = dateStr;
             showHourlySlotsForDate(dateStr);
@@ -816,7 +869,6 @@
       selectedDateHeading.textContent = `Open Hours on ${formatted}:`;
       hourlySlotsContainer.innerHTML = '';
 
-      // Kullanıcı oturum açmışsa adını/emailini otomatik doldur
       if (currentUser) {
         document.getElementById('book-name').value = currentUser.username;
         document.getElementById('book-email').value = currentUser.email || '';
@@ -845,7 +897,6 @@
       });
     }
 
-    // Randevuyu Onayla ve Saatleri Kapat
     document.getElementById('btn-submit-booking').addEventListener('click', async () => {
       const name = document.getElementById('book-name').value.trim();
       const email = document.getElementById('book-email').value.trim().toLowerCase();
@@ -860,7 +911,6 @@
       const slotArray = Array.from(selectedSlotIds);
       const chosenHourNames = availableSlotsCache.filter(s => selectedSlotIds.has(s.id)).map(s => s.hour_slot);
 
-      // 1. Randevuyu Kaydet
       const { error: appErr } = await supabase.from('appointments').insert({
         user_id: currentUser ? currentUser.id : null,
         client_name: name,
@@ -873,7 +923,6 @@
 
       if (appErr) return alert("Booking error: " + appErr.message);
 
-      // 2. Seçilen Saat Slotlarını Rezerve Et (is_booked = true)
       await supabase.from('availability_slots').update({ is_booked: true }).in('id', slotArray);
 
       alert(`🎉 Appointment confirmed for ${chosenHourNames.join(', ')}! The hours are now reserved.`);

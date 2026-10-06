@@ -3,6 +3,7 @@ import { EMAIL_WEBHOOK_URL } from '../config.js';
 
 let currentImages = [];
 let currentImageIndex = 0;
+let activeFolderId = null;
 
 export function setupLightboxDOM() {
   if (document.getElementById('global-lightbox')) return;
@@ -24,14 +25,10 @@ export function setupLightboxDOM() {
   `;
   document.body.appendChild(lightbox);
 
-  const closeBtn = document.getElementById('lb-close');
-  const prevBtn = document.getElementById('lb-prev');
-  const nextBtn = document.getElementById('lb-next');
-
-  closeBtn.onclick = closeLightbox;
+  document.getElementById('lb-close').onclick = closeLightbox;
   lightbox.onclick = (e) => { if (e.target === lightbox) closeLightbox(); };
-  prevBtn.onclick = showPrevImage;
-  nextBtn.onclick = showNextImage;
+  document.getElementById('lb-prev').onclick = showPrevImage;
+  document.getElementById('lb-next').onclick = showNextImage;
 
   window.addEventListener('keydown', (e) => {
     if (lightbox.style.display !== 'flex') return;
@@ -62,7 +59,7 @@ function updateLightboxView() {
 
   const item = currentImages[currentImageIndex];
   imgEl.src = item.url;
-  if (dlBtn) dlBtn.href = item.download_url;
+  if (dlBtn) dlBtn.href = item.downloadUrl || item.download_url;
   counterEl.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
 }
 
@@ -76,7 +73,6 @@ function showNextImage() {
   updateLightboxView();
 }
 
-// Drive Klasöründen Fotoğrafları Dinamik Çeken Fonksiyon
 export async function renderEventGallery(containerId, driveFolderUrl) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -84,39 +80,98 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   setupLightboxDOM();
 
   if (!driveFolderUrl) {
-    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder assigned for this event.</p>';
+    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder linked for this event.</p>';
     return;
   }
 
-  // Folder ID'sini ayıkla
   let folderId = driveFolderUrl.trim();
   const match = folderId.match(/[-\w]{25,}/);
   if (match) folderId = match[0];
+  activeFolderId = folderId;
 
-  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.85rem;">Loading photos directly from Google Drive...</p>';
+  container.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <label class="btn btn-pink" style="cursor: pointer; padding: 6px 14px; font-size: 0.8rem; margin: 0;">
+          📤 Upload Photo to Drive
+          <input type="file" id="drive-photo-input" accept="image/*" style="display: none;">
+        </label>
+        <span id="upload-status" style="font-size: 0.8rem; color: #00f2fe;"></span>
+      </div>
+      <a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 0.75rem; text-decoration: none;">📁 Open in Drive</a>
+    </div>
+    <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;">
+      <p style="color: #94a3b8; font-size: 0.85rem;">Loading photos directly from Drive...</p>
+    </div>
+  `;
+
+  // Fotoğraf Yükleme Dinleyicisi
+  const fileInput = document.getElementById('drive-photo-input');
+  const uploadStatus = document.getElementById('upload-status');
+
+  fileInput.onchange = async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    uploadStatus.textContent = 'Uploading to Drive...';
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        // Eski çalışan formatınla birebir aynı payload:
+        const payload = {
+          folderId: activeFolderId,
+          fileData: reader.result,
+          fileName: file.name,
+          mimeType: file.type
+        };
+
+        const res = await fetch(EMAIL_WEBHOOK_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (result.status === 'success') {
+          uploadStatus.textContent = '✓ Uploaded successfully!';
+          setTimeout(() => uploadStatus.textContent = '', 3000);
+          loadPhotosFromDrive(activeFolderId);
+        } else {
+          uploadStatus.textContent = 'Upload failed: ' + result.message;
+        }
+      } catch (err) {
+        uploadStatus.textContent = 'Error: ' + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  loadPhotosFromDrive(folderId);
+}
+
+// Drive Klasöründeki Fotoğrafları Getirme
+async function loadPhotosFromDrive(folderId) {
+  const grid = document.getElementById('drive-photos-grid');
+  if (!grid) return;
 
   try {
-    const fetchUrl = `${EMAIL_WEBHOOK_URL}?action=get_drive_photos&folder_id=${folderId}`;
-    const res = await fetch(fetchUrl);
+    const res = await fetch(`${EMAIL_WEBHOOK_URL}?action=get_drive_photos&folderId=${folderId}`);
     const data = await res.json();
 
     if (data.status !== 'success' || !data.photos || data.photos.length === 0) {
-      container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem;">No photos found in this Drive folder (Make sure folder is shared as Anyone with the link).</p>';
+      grid.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; grid-column: span 4;">No photos in this folder yet. Click "Upload Photo" above to add the first one!</p>';
+      currentImages = [];
       return;
     }
 
     currentImages = data.photos;
+    grid.innerHTML = '';
 
-    container.innerHTML = `
-      <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;"></div>
-    `;
-
-    const grid = document.getElementById('drive-photos-grid');
     currentImages.forEach((imgObj, idx) => {
       const thumb = document.createElement('img');
       thumb.src = imgObj.url;
       thumb.alt = imgObj.name;
-      thumb.style.cssText = 'width: 100%; height: 95px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s;';
+      thumb.style.cssText = 'width: 100%; height: 100px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s;';
       thumb.onmouseover = () => { thumb.style.transform = 'scale(1.03)'; thumb.style.borderColor = '#00f2fe'; };
       thumb.onmouseout = () => { thumb.style.transform = 'scale(1)'; thumb.style.borderColor = 'rgba(255,255,255,0.12)'; };
       thumb.onclick = () => openLightbox(idx);
@@ -124,6 +179,6 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
     });
 
   } catch (err) {
-    container.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Error loading gallery: ${err.message}</p>`;
+    grid.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Failed to fetch photos: ${err.message}</p>`;
   }
 }

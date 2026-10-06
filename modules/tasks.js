@@ -53,7 +53,7 @@ async function renderTasksUI(eventId, containerId) {
   container.innerHTML = `
     <!-- Görev Ekleme Kutusu -->
     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-      <input type="text" id="task-title-input" class="input-field" placeholder="Add an item to bring or task (e.g. Bluetooth speaker, Ice)..." style="margin-bottom: 0;">
+      <input type="text" id="task-title-input" class="input-field" placeholder="Add task or item (e.g. Bluetooth speaker, Snacks)..." style="margin-bottom: 0;">
       <button id="btn-add-task" class="btn btn-pink" style="padding: 0 18px; font-size: 0.82rem; white-space: nowrap;">+ Add</button>
     </div>
 
@@ -69,22 +69,24 @@ async function renderTasksUI(eventId, containerId) {
     const row = document.createElement('div');
     row.style.cssText = `
       background: rgba(255, 255, 255, 0.04);
-      border: 1px solid ${t.is_completed ? 'rgba(34, 197, 94, 0.3)' : 'rgba(255, 255, 255, 0.08)'};
+      border: 1px solid ${t.is_completed ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.08)'};
       padding: 8px 12px;
       border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
+      transition: all 0.2s ease;
     `;
 
     const isAssigned = !!t.assigned_to_name;
-    const isMe = user && t.assigned_to_name === user.username;
+    const isMe = user && (t.assigned_to_name === user.username || String(t.assigned_to_id) === String(user.id));
+    const canDelete = isAdmin || isMe || !isAssigned;
 
     row.innerHTML = `
       <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-        <input type="checkbox" id="chk-task-${t.id}" ${t.is_completed ? 'checked' : ''} style="cursor: pointer; width: 16px; height: 16px;">
-        <span style="font-size: 0.85rem; color: ${t.is_completed ? '#94a3b8' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">
+        <input type="checkbox" id="chk-task-${t.id}" ${t.is_completed ? 'checked' : ''} style="cursor: pointer; width: 18px; height: 18px; accent-color: #22c55e;">
+        <span id="text-task-${t.id}" style="font-size: 0.85rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; transition: all 0.2s;">
           ${t.task_title}
         </span>
       </div>
@@ -92,27 +94,33 @@ async function renderTasksUI(eventId, containerId) {
       <div style="display: flex; align-items: center; gap: 8px;">
         <!-- Kim Üstlendi Rozeti -->
         ${isAssigned ? `
-          <span style="font-size: 0.72rem; background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.3); color: #00f2fe; padding: 2px 8px; border-radius: 6px;">
+          <span style="font-size: 0.72rem; background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.3); color: #00f2fe; padding: 3px 8px; border-radius: 6px;">
             👤 ${t.assigned_to_name}
           </span>
-          ${isMe ? `<button class="btn-unclaim-task" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.7rem;" title="Drop task">✕</button>` : ''}
+          ${isMe ? `<button class="btn-unclaim-task" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.75rem; padding: 2px;" title="Leave task">✕</button>` : ''}
         ` : `
           <button class="btn-claim-task btn" style="padding: 2px 10px; font-size: 0.72rem; min-height: 26px;">I'll bring it</button>
         `}
 
-        ${(isAdmin || (user && user.id === t.assigned_to_id)) ? `
-          <button class="btn-del-task" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.85rem; padding: 2px;" title="Delete">🗑️</button>
+        ${canDelete ? `
+          <button class="btn-del-task" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.9rem; padding: 4px;" title="Delete task">🗑️</button>
         ` : ''}
       </div>
     `;
 
-    // 1. Tamamlandı (Checkbox) Olayı
+    // 1. Checkbox: Anında üstünü çizme ve veritabanı güncellemesi
     const chk = row.querySelector(`#chk-task-${t.id}`);
+    const textSpan = row.querySelector(`#text-task-${t.id}`);
     chk.onchange = async () => {
-      await supabase.from('event_tasks').update({ is_completed: chk.checked }).eq('id', t.id);
+      const isChecked = chk.checked;
+      textSpan.style.textDecoration = isChecked ? 'line-through' : 'none';
+      textSpan.style.color = isChecked ? '#64748b' : '#f8fafc';
+      row.style.borderColor = isChecked ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.08)';
+
+      await supabase.from('event_tasks').update({ is_completed: isChecked }).eq('id', t.id);
     };
 
-    // 2. Görevi Üstlen (Claim) Butonu
+    // 2. Görevi Üstlenme Butonu
     const claimBtn = row.querySelector('.btn-claim-task');
     if (claimBtn) {
       claimBtn.onclick = async () => {
@@ -121,10 +129,11 @@ async function renderTasksUI(eventId, containerId) {
           assigned_to_name: user.username,
           assigned_to_id: user.id
         }).eq('id', t.id);
+        renderTasksUI(eventId, containerId);
       };
     }
 
-    // 3. Görevi Bırak (Unclaim) Butonu
+    // 3. Görevi Bırakma Butonu
     const unclaimBtn = row.querySelector('.btn-unclaim-task');
     if (unclaimBtn) {
       unclaimBtn.onclick = async () => {
@@ -132,22 +141,34 @@ async function renderTasksUI(eventId, containerId) {
           assigned_to_name: null,
           assigned_to_id: null
         }).eq('id', t.id);
+        renderTasksUI(eventId, containerId);
       };
     }
 
-    // 4. Silme Butonu
+    // 4. Kesin Silme Butonu
     const delBtn = row.querySelector('.btn-del-task');
     if (delBtn) {
-      delBtn.onclick = async () => {
+      delBtn.onclick = async (e) => {
+        e.stopPropagation();
         if (!confirm(`Delete task "${t.task_title}"?`)) return;
-        await supabase.from('event_tasks').delete().eq('id', t.id);
+        delBtn.disabled = true;
+        delBtn.textContent = '⏳';
+
+        const { error: delErr } = await supabase.from('event_tasks').delete().eq('id', t.id);
+        if (delErr) {
+          alert('Delete error: ' + delErr.message);
+          delBtn.disabled = false;
+          delBtn.textContent = '🗑️';
+        } else {
+          renderTasksUI(eventId, containerId);
+        }
       };
     }
 
     listEl.appendChild(row);
   });
 
-  // Görev Ekleme Butonu
+  // Görev Ekleme
   const addBtn = document.getElementById('btn-add-task');
   const inputEl = document.getElementById('task-title-input');
 

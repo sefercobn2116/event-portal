@@ -3,9 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard & Hourly Schedule</title>
+  <title>Admin Dashboard & User-Event Management</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* Admin Panel Styles */
+    .admin-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding-bottom: 12px;
+    }
+    .admin-tab-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-bottom: 3px solid transparent;
+      transition: 0.2s;
+    }
+    .admin-tab-btn.active {
+      color: #00f2fe;
+      border-bottom-color: #00f2fe;
+    }
+
+    /* User-Event Assignment Panel */
+    .assignment-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+    @media (max-width: 1024px) {
+      .assignment-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .user-list-panel, .event-list-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 20px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .user-list-panel h3, .event-list-panel h3 {
+      color: #00f2fe;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+    }
+
+    .user-item, .event-item {
+      background: rgba(18, 24, 43, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-item:hover, .event-item:hover {
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.1);
+      transform: translateX(4px);
+    }
+
+    .user-item.selected {
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.15);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .user-email {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    .user-role-badge {
+      background: rgba(0, 242, 254, 0.2);
+      color: #00f2fe;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .user-role-badge.admin {
+      background: rgba(255, 0, 127, 0.2);
+      color: #ff007f;
+    }
+
+    .assignment-controls {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+
+    .assignment-controls h4 {
+      color: #ff007f;
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+
+    .event-checkboxes {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(18, 24, 43, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .checkbox-item:hover {
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.1);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+    }
+
+    .checkbox-item label {
+      flex: 1;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .btn-assign {
+      background: linear-gradient(135deg, #00f2fe, #3b82f6);
+      border: none;
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .btn-assign:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 242, 254, 0.4);
+    }
+
+    .btn-assign:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      display: block;
+    }
+
+    .status-message.error {
+      background: rgba(244, 63, 94, 0.2);
+      color: #f43f5e;
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      display: block;
+    }
+
     /* 7 SÜTUNLU TAKVİM MATRİSİ (ADMIN) */
     .admin-cal-card {
       background: rgba(18, 24, 43, 0.7);
@@ -50,469 +247,310 @@
     .cal-days-grid {
       display: grid !important;
       grid-template-columns: repeat(7, 1fr) !important;
-      gap: 6px !important;
+      gap: 6px;
     }
-    .admin-day-cell {
+    .cal-day-cell {
       height: 48px;
-      border-radius: 10px;
+      border-radius: 8px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       font-size: 0.85rem;
-      color: #cbd5e1;
-      background: rgba(255, 255, 255, 0.03);
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid transparent;
+      color: #64748b;
+    }
+    .cal-day-cell.available {
+      background: rgba(0, 242, 254, 0.12);
+      border-color: #00f2fe;
+      color: #00f2fe;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .admin-day-cell:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.3);
+    .cal-day-cell.available:hover {
+      background: #00f2fe;
+      color: #070913;
     }
-    .admin-day-cell.empty { background: transparent; cursor: default; }
-    .admin-day-cell.has-open {
-      border-color: #10b981;
-      background: rgba(16, 185, 129, 0.15);
-      color: #fff;
-    }
-    .admin-day-cell.selected {
-      border-color: #ff007f !important;
-      background: #ff007f !important;
-      color: #fff !important;
-      box-shadow: 0 0 16px rgba(255,0,127,0.6);
-    }
-
-    /* SAAT AÇ / KAPA */
-    .hour-toggle-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .hour-toggle-btn {
-      padding: 8px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      border: 1px solid rgba(255,255,255,0.15);
-      cursor: pointer;
-      text-align: center;
-      transition: 0.2s;
-    }
-    .hour-toggle-btn.closed { background: rgba(255, 255, 255, 0.04); color: #64748b; }
-    .hour-toggle-btn.open { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981; }
-    .hour-toggle-btn.booked { background: rgba(244, 63, 94, 0.25); border-color: #f43f5e; color: #f43f5e; cursor: not-allowed; }
-
-    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
-    @media (max-width: 950px) { .admin-grid { grid-template-columns: 1fr; } }
-    .table-container { margin-top: 15px; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.12); vertical-align: middle; }
-    th { color: #00f2fe; }
-    .btn-action { background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
-    .btn-del { border-color: rgba(244,63,94,0.4); color: #f43f5e; }
-    .btn-del:hover { background: #f43f5e; color: #fff; }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <!-- ================= ADMIN DASHBOARD ================= -->
+  <div id="view-admin" class="container">
     <div class="nav-header">
-      <a href="index.html">← Back to Main Hub</a>
-      <h2 style="background: linear-gradient(135deg, #ff007f, #00f2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        Admin Hourly Schedule & Bookings
-      </h2>
+      <div>
+        <h2 id="admin-title">Admin Dashboard</h2>
+        <span style="font-size: 0.85rem; color: #94a3b8;" id="admin-role-badge">Administrator</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button id="btn-back-portal" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Portal</button>
+        <button id="btn-logout-admin" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">Logout</button>
+      </div>
     </div>
 
-    <div class="admin-grid">
-      <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 6px;">📅 Hourly Schedule Manager</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 14px;">
-          Click any date on the calendar to open or close its hourly slots.
-        </p>
+    <!-- TABS -->
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" data-tab="assignment">👥 User-Event Assignment</button>
+      <button class="admin-tab-btn" data-tab="calendar">📅 Availability Calendar</button>
+      <button class="admin-tab-btn" data-tab="bookings">📋 Bookings</button>
+    </div>
 
-        <div class="admin-cal-card">
-          <div class="cal-top-bar">
-            <button id="admin-cal-prev" class="cal-nav-btn">‹</button>
-            <div style="display: flex; gap: 8px;">
-              <select id="admin-cal-month" class="input-field" style="margin:0; padding:4px 8px; width:auto;"></select>
-              <select id="admin-cal-year" class="input-field" style="margin:0; padding:4px 8px; width:auto;"></select>
-            </div>
-            <button id="admin-cal-next" class="cal-nav-btn">›</button>
-          </div>
+    <!-- TAB 1: USER-EVENT ASSIGNMENT -->
+    <div id="tab-assignment" class="admin-tab-content">
+      <p style="color: #94a3b8; margin-bottom: 20px;">Select a user and assign events they can access</p>
 
-          <div class="cal-weekdays">
-            <div class="cal-weekday-label">Mon</div>
-            <div class="cal-weekday-label">Tue</div>
-            <div class="cal-weekday-label">Wed</div>
-            <div class="cal-weekday-label">Thu</div>
-            <div class="cal-weekday-label">Fri</div>
-            <div class="cal-weekday-label">Sat</div>
-            <div class="cal-weekday-label">Sun</div>
-          </div>
-
-          <div class="cal-days-grid" id="admin-calendar-grid"></div>
+      <div class="assignment-container">
+        <!-- USER LIST -->
+        <div class="user-list-panel">
+          <h3>👥 Users</h3>
+          <div id="users-list"></div>
         </div>
 
-        <div id="admin-hourly-manager" style="display: none; background: rgba(0,0,0,0.35); padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-            <h4 id="admin-date-title" style="color: #ff007f;">Hours for:</h4>
-            <span style="font-size:0.75rem; color:#94a3b8;">Green = Open, Red = Booked</span>
+        <!-- EVENTS CHECKBOXES -->
+        <div>
+          <div class="event-list-panel">
+            <h3>🎉 Events</h3>
+            <div id="events-list-checkboxes"></div>
           </div>
-          <div class="hour-toggle-grid" id="hours-buttons-wrap"></div>
-        </div>
-      </div>
 
-      <div class="glass-box">
-        <h3 style="color: #ff007f; margin-bottom: 6px;">📥 Booked Appointments & Plans</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Meetings scheduled by visitors.</p>
-
-        <div class="table-container" style="max-height: 480px; overflow-y: auto;">
-          <table>
-            <thead>
-              <tr>
-                <th>Date & Hours</th>
-                <th>Client</th>
-                <th>Contact</th>
-                <th>Activity Plan</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="appointments-table-body"></tbody>
-          </table>
+          <!-- ASSIGNMENT CONTROLS -->
+          <div class="assignment-controls">
+            <h4>Assign Events to Selected User</h4>
+            <p id="selected-user-info" style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 16px;">Select a user first</p>
+            <div class="event-checkboxes" id="assignment-checkboxes"></div>
+            <button id="btn-save-assignment" class="btn-assign" disabled>💾 Save Assignment</button>
+            <div id="assignment-status" class="status-message"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="admin-grid" style="margin-top: 24px;">
-      <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 6px;">🎉 Create New Event</h3>
-        <input type="text" id="ev-title" class="input-field" placeholder="Event Title">
-        <textarea id="ev-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
-        <input type="text" id="ev-drive" class="input-field" placeholder="Google Drive Folder Link">
-        <button id="btn-create-event" class="btn">Publish Event</button>
-      </div>
-
-      <div class="glass-box">
-        <h3 style="color: #ff007f; margin-bottom: 6px;">👥 Registered Users</h3>
-        <div class="table-container" style="max-height: 220px; overflow-y: auto;">
-          <table>
-            <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
-            <tbody id="user-table-body"></tbody>
-          </table>
-        </div>
-      </div>
+    <!-- TAB 2: AVAILABILITY CALENDAR -->
+    <div id="tab-calendar" class="admin-tab-content" style="display: none;">
+      <p style="color: #94a3b8; margin-bottom: 20px;">Manage availability slots for appointments</p>
+      <!-- Calendar will be rendered here -->
+      <div id="calendar-container"></div>
     </div>
 
-    <div class="glass-box" style="margin-top: 24px;">
-      <h3 style="color: #00f2fe; margin-bottom: 6px;">📋 Existing Events</h3>
-      <div class="table-container">
-        <table>
-          <thead><tr><th>Title</th><th>Drive Folder Link</th><th>Actions</th></tr></thead>
-          <tbody id="events-table-body"></tbody>
-        </table>
-      </div>
+    <!-- TAB 3: BOOKINGS -->
+    <div id="tab-bookings" class="admin-tab-content" style="display: none;">
+      <p style="color: #94a3b8; margin-bottom: 20px;">View and manage all appointment bookings</p>
+      <div id="bookings-list" style="display: grid; gap: 16px;"></div>
     </div>
   </div>
 
   <script type="module">
     import { supabase } from './config.js';
 
-    const user = JSON.parse(localStorage.getItem('portal_user'));
-    const isAdminUser = (u) => !!u && (u.is_admin === true || u.role === 'admin');
-    if (!user || !isAdminUser(user)) {
-      alert("Admin access only!");
-      window.location.href = 'index.html';
-    }
+    let currentAdmin = null;
+    let selectedUser = null;
+    let selectedEventIds = [];
 
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    const standardHours = [
-      "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00",
-      "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00",
-      "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00",
-      "21:00 - 22:00", "22:00 - 23:00"
-    ];
-
-    const adminCalMonth = document.getElementById('admin-cal-month');
-    const adminCalYear = document.getElementById('admin-cal-year');
-    const adminCalPrev = document.getElementById('admin-cal-prev');
-    const adminCalNext = document.getElementById('admin-cal-next');
-    const adminCalendarGrid = document.getElementById('admin-calendar-grid');
-
-    const adminHourlyManager = document.getElementById('admin-hourly-manager');
-    const adminDateTitle = document.getElementById('admin-date-title');
-    const hoursButtonsWrap = document.getElementById('hours-buttons-wrap');
-
-    let currentCalDate = new Date();
-    let selectedDateStr = '';
-
-    function initAdminCalendar() {
-      const startYear = new Date().getFullYear();
-      adminCalYear.innerHTML = '';
-      for (let y = startYear; y < startYear + 6; y++) {
-        const opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = y;
-        adminCalYear.appendChild(opt);
+    // Check if user is logged in and is admin
+    window.addEventListener('load', async () => {
+      const user = JSON.parse(localStorage.getItem('portal_user'));
+      if (!user || !user.is_admin) {
+        window.location.href = 'index.html';
+        return;
       }
+      currentAdmin = user;
+      document.getElementById('admin-title').textContent = `Admin Dashboard - ${user.username}`;
+      
+      await loadUsers();
+      await loadEvents();
+    });
 
-      adminCalMonth.innerHTML = '';
-      monthNames.forEach((m, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = m;
-        adminCalMonth.appendChild(opt);
-      });
+    // TAB SWITCHING
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        
+        // Update active button
+        document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
 
-      adminCalMonth.value = currentCalDate.getMonth();
-      adminCalYear.value = currentCalDate.getFullYear();
+        // Update active content
+        document.querySelectorAll('.admin-tab-content').forEach(content => {
+          content.style.display = 'none';
+        });
+        document.getElementById(`tab-${tabName}`).style.display = 'block';
 
-      adminCalMonth.addEventListener('change', () => { currentCalDate.setMonth(parseInt(adminCalMonth.value)); renderAdminCalendar(); });
-      adminCalYear.addEventListener('change', () => { currentCalDate.setFullYear(parseInt(adminCalYear.value)); renderAdminCalendar(); });
-
-      adminCalPrev.addEventListener('click', () => {
-        currentCalDate.setMonth(currentCalDate.getMonth() - 1);
-        adminCalMonth.value = currentCalDate.getMonth();
-        adminCalYear.value = currentCalDate.getFullYear();
-        renderAdminCalendar();
-      });
-
-      adminCalNext.addEventListener('click', () => {
-        currentCalDate.setMonth(currentCalDate.getMonth() + 1);
-        adminCalMonth.value = currentCalDate.getMonth();
-        adminCalYear.value = currentCalDate.getFullYear();
-        renderAdminCalendar();
-      });
-
-      renderAdminCalendar();
-    }
-
-    async function renderAdminCalendar() {
-      adminCalendarGrid.innerHTML = '';
-
-      const year = currentCalDate.getFullYear();
-      const month = currentCalDate.getMonth();
-      const totalDays = new Date(year, month + 1, 0).getDate();
-
-      let startingDay = new Date(year, month, 1).getDay() - 1;
-      if (startingDay === -1) startingDay = 6;
-
-      const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-      const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`;
-
-      const { data: slots } = await supabase
-        .from('availability_slots')
-        .select('*')
-        .gte('slot_date', startDateStr)
-        .lte('slot_date', endDateStr);
-
-      const slotMap = {};
-      (slots || []).forEach(s => {
-        if (s.is_active && !s.is_booked) {
-          slotMap[s.slot_date] = (slotMap[s.slot_date] || 0) + 1;
+        // Load tab-specific data
+        if (tabName === 'bookings') {
+          loadBookings();
+        } else if (tabName === 'calendar') {
+          loadAvailabilityCalendar();
         }
       });
+    });
 
-      for (let i = 0; i < startingDay; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'admin-day-cell empty';
-        adminCalendarGrid.appendChild(empty);
-      }
+    // LOAD USERS
+    async function loadUsers() {
+      const { data: users } = await supabase.from('users').select('*').order('username');
+      const usersList = document.getElementById('users-list');
+      usersList.innerHTML = '';
 
-      for (let day = 1; day <= totalDays; day++) {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const openHours = slotMap[dateStr] || 0;
-
-        const cell = document.createElement('div');
-        cell.className = `admin-day-cell ${openHours > 0 ? 'has-open' : ''}`;
-        cell.innerHTML = `
-          <span>${day}</span>
-          ${openHours > 0 ? `<span style="font-size:0.65rem; color:#10b981; margin-top:2px;">${openHours}h</span>` : ''}
+      (users || []).forEach(user => {
+        const userItem = document.createElement('div');
+        userItem.className = 'user-item';
+        userItem.innerHTML = `
+          <div style="flex: 1;">
+            <div class="user-name">${user.username}</div>
+            <div class="user-email">${user.email}</div>
+          </div>
+          <div class="user-role-badge ${user.is_admin ? 'admin' : ''}">
+            ${user.is_admin ? 'Admin' : 'User'}
+          </div>
         `;
 
-        cell.addEventListener('click', () => {
-          document.querySelectorAll('.admin-day-cell').forEach(c => c.classList.remove('selected'));
-          cell.classList.add('selected');
-          openHourlyManager(dateStr);
+        userItem.addEventListener('click', () => {
+          document.querySelectorAll('.user-item').forEach(u => u.classList.remove('selected'));
+          userItem.classList.add('selected');
+          selectedUser = user;
+          loadUserEventAssignments(user.id);
         });
 
-        adminCalendarGrid.appendChild(cell);
-      }
+        usersList.appendChild(userItem);
+      });
     }
 
-    async function openHourlyManager(dateStr) {
-      selectedDateStr = dateStr;
-      adminHourlyManager.style.display = 'block';
-      adminDateTitle.textContent = `Hours for: ${dateStr}`;
-      loadDayHours(dateStr);
+    // LOAD EVENTS
+    async function loadEvents() {
+      const { data: events } = await supabase.from('events').select('*').order('title');
+      const eventsList = document.getElementById('events-list-checkboxes');
+      eventsList.innerHTML = '';
+
+      (events || []).forEach(event => {
+        const item = document.createElement('div');
+        item.className = 'checkbox-item';
+        item.innerHTML = `
+          <input type="checkbox" id="event-${event.id}" data-event-id="${event.id}">
+          <label for="event-${event.id}">${event.title}</label>
+        `;
+        item.querySelector('input').addEventListener('change', updateSelectedEvents);
+        eventsList.appendChild(item);
+      });
     }
 
-    async function loadDayHours(dateStr) {
-      hoursButtonsWrap.innerHTML = '<span style="font-size:0.75rem; color:#94a3b8;">Loading slots...</span>';
+    // LOAD USER EVENT ASSIGNMENTS
+    async function loadUserEventAssignments(userId) {
+      const { data: assignments } = await supabase
+        .from('event_access')
+        .select('event_id')
+        .eq('user_id', userId);
 
-      const { data: existingSlots } = await supabase
-        .from('availability_slots')
-        .select('*')
-        .eq('slot_date', dateStr);
+      const assignedEventIds = (assignments || []).map(a => a.event_id);
 
-      const slotStateMap = {};
-      (existingSlots || []).forEach(s => {
-        slotStateMap[s.hour_slot] = s;
+      document.querySelectorAll('#events-list-checkboxes input[type="checkbox"]').forEach(checkbox => {
+        const eventId = parseInt(checkbox.dataset.eventId);
+        checkbox.checked = assignedEventIds.includes(eventId);
       });
 
-      hoursButtonsWrap.innerHTML = '';
-      standardHours.forEach(h => {
-        const currentSlot = slotStateMap[h];
-        const btn = document.createElement('div');
+      updateAssignmentCheckboxes(assignedEventIds);
+      document.getElementById('selected-user-info').textContent = `Selected: ${selectedUser.username}`;
+      document.getElementById('btn-save-assignment').disabled = false;
+    }
 
-        let stateClass = 'closed';
-        let label = 'Closed';
+    function updateAssignmentCheckboxes(assignedEventIds = []) {
+      const { data: events } = supabase.from('events').select('*');
+      const container = document.getElementById('assignment-checkboxes');
+      container.innerHTML = '';
 
-        if (currentSlot) {
-          if (currentSlot.is_booked) {
-            stateClass = 'booked';
-            label = 'Booked';
-          } else if (currentSlot.is_active) {
-            stateClass = 'open';
-            label = 'Open';
-          }
-        }
-
-        btn.className = `hour-toggle-btn ${stateClass}`;
-        btn.innerHTML = `<div>${h}</div><div style="font-size:0.7rem; opacity:0.8;">${label}</div>`;
-
-        if (stateClass !== 'booked') {
-          btn.addEventListener('click', async () => {
-            const nextActive = stateClass !== 'open';
-            await supabase.from('availability_slots').upsert({
-              slot_date: dateStr,
-              hour_slot: h,
-              is_active: nextActive,
-              is_booked: false
-            }, { onConflict: 'slot_date, hour_slot' });
-
-            loadDayHours(dateStr);
-            renderAdminCalendar();
+      supabase.from('events').select('*').then(({ data: events }) => {
+        (events || []).forEach(event => {
+          const isAssigned = assignedEventIds.includes(event.id);
+          const item = document.createElement('div');
+          item.className = 'checkbox-item';
+          item.innerHTML = `
+            <input type="checkbox" id="assign-event-${event.id}" data-event-id="${event.id}" ${isAssigned ? 'checked' : ''}>
+            <label for="assign-event-${event.id}">${event.title}</label>
+          `;
+          item.querySelector('input').addEventListener('change', () => {
+            selectedEventIds = Array.from(document.querySelectorAll('#assignment-checkboxes input[type="checkbox"]:checked'))
+              .map(cb => parseInt(cb.dataset.eventId));
           });
-        }
-
-        hoursButtonsWrap.appendChild(btn);
+          container.appendChild(item);
+        });
       });
     }
 
-    async function loadAppointments() {
-      const tbody = document.getElementById('appointments-table-body');
-      tbody.innerHTML = '';
+    function updateSelectedEvents() {
+      selectedEventIds = Array.from(document.querySelectorAll('#events-list-checkboxes input[type="checkbox"]:checked'))
+        .map(cb => parseInt(cb.dataset.eventId));
+    }
 
-      const { data: appts } = await supabase
-        .from('appointments')
-        .select('*')
-        .order('appointment_date', { ascending: false });
-
-      if (!appts || appts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="color:#94a3b8; text-align:center;">No appointments booked yet.</td></tr>';
+    // SAVE ASSIGNMENT
+    document.getElementById('btn-save-assignment').addEventListener('click', async () => {
+      if (!selectedUser) {
+        alert('Please select a user first');
         return;
       }
 
-      appts.forEach(a => {
-        const slotsText = Array.isArray(a.selected_slots) ? a.selected_slots.join('<br>') : a.selected_slots;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${a.appointment_date}</strong><br><span style="color:#00f2fe; font-size:0.75rem;">${slotsText}</span></td>
-          <td><strong>${a.client_name}</strong><br><span style="font-size:0.75rem; color:#94a3b8;">${a.client_email}</span></td>
-          <td><span style="color:#ff007f;">${a.client_contact}</span></td>
-          <td style="font-size:0.8rem; color:#cbd5e1; max-width:200px;">${a.activity_plan}</td>
-          <td><button class="btn-action btn-del btn-cancel-app" data-id="${a.id}">Cancel</button></td>
-        `;
+      const statusEl = document.getElementById('assignment-status');
+      const selectedCheckboxes = Array.from(document.querySelectorAll('#assignment-checkboxes input[type="checkbox"]:checked'))
+        .map(cb => parseInt(cb.dataset.eventId));
 
-        tr.querySelector('.btn-cancel-app').addEventListener('click', async () => {
-          if (confirm("Cancel this appointment and free up the hours?")) {
-            await supabase.from('appointments').delete().eq('id', a.id);
-            if (Array.isArray(a.selected_slots)) {
-              await supabase.from('availability_slots')
-                .update({ is_booked: false })
-                .eq('slot_date', a.appointment_date)
-                .in('hour_slot', a.selected_slots);
-            }
-            loadAppointments();
-            renderAdminCalendar();
-            if (selectedDateStr) loadDayHours(selectedDateStr);
-          }
-        });
+      try {
+        // Remove old assignments
+        await supabase.from('event_access').delete().eq('user_id', selectedUser.id);
 
-        tbody.appendChild(tr);
-      });
-    }
+        // Add new assignments
+        if (selectedCheckboxes.length > 0) {
+          const records = selectedCheckboxes.map(eventId => ({
+            user_id: selectedUser.id,
+            event_id: eventId,
+            granted_by: currentAdmin.id,
+            granted_at: new Date().toISOString()
+          }));
 
-    async function loadEvents() {
-      const tbody = document.getElementById('events-table-body');
-      tbody.innerHTML = '';
-      const { data: evts } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+          await supabase.from('event_access').insert(records);
+        }
 
-      (evts || []).forEach(evt => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${evt.title}</strong></td>
-          <td><input type="text" class="input-field input-drive" value="${evt.drive_folder_url || ''}" style="margin:0; padding:6px; width:280px; font-size:0.8rem;"></td>
-          <td style="display:flex; gap:6px;">
-            <button class="btn-action btn-save">💾 Save</button>
-            <button class="btn-action btn-del btn-del-evt">🗑️ Delete</button>
-          </td>
-        `;
-
-        tr.querySelector('.btn-save').addEventListener('click', async () => {
-          const drive = tr.querySelector('.input-drive').value.trim();
-          await supabase.from('events').update({ drive_folder_url: drive }).eq('id', evt.id);
-          alert("Saved!");
-        });
-
-        tr.querySelector('.btn-del-evt').addEventListener('click', async () => {
-          if (confirm("Delete this event?")) {
-            await supabase.from('events').delete().eq('id', evt.id);
-            loadEvents();
-          }
-        });
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    document.getElementById('btn-create-event').addEventListener('click', async () => {
-      const title = document.getElementById('ev-title').value.trim();
-      const description = document.getElementById('ev-desc').value.trim();
-      const drive_folder_url = document.getElementById('ev-drive').value.trim();
-      if (!title) return alert("Title required!");
-      await supabase.from('events').insert({ title, description, drive_folder_url });
-      document.getElementById('ev-title').value = '';
-      document.getElementById('ev-desc').value = '';
-      document.getElementById('ev-drive').value = '';
-      loadEvents();
+        statusEl.className = 'status-message success';
+        statusEl.textContent = `✓ ${selectedUser.username} assigned to ${selectedCheckboxes.length} event(s)`;
+      } catch (err) {
+        statusEl.className = 'status-message error';
+        statusEl.textContent = `✗ Error: ${err.message}`;
+      }
     });
 
-    async function loadUsers() {
-      const tbody = document.getElementById('user-table-body');
-      tbody.innerHTML = '';
-      const { data: users } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+    // LOAD BOOKINGS
+    async function loadBookings() {
+      const { data: bookings } = await supabase.from('appointments').select('*').order('appointment_date', { ascending: false });
+      const list = document.getElementById('bookings-list');
+      list.innerHTML = '';
 
-      (users || []).forEach(u => {
-        const tr = document.createElement('tr');
-        const role = u.role || 'user';
-        tr.innerHTML = `
-          <td><strong>${u.username}</strong></td>
-          <td>${u.email || '-'}</td>
-          <td><span style="color:${role === 'admin' ? '#00f2fe' : role === 'manager' ? '#ff007f' : '#10b981'};">${role}</span></td>
-          <td><span style="color:${u.is_active ? '#10b981' : '#f43f5e'};">${u.is_active ? 'Active' : 'Disabled'}</span></td>
+      (bookings || []).forEach(booking => {
+        const card = document.createElement('div');
+        card.className = 'glass-box';
+        card.innerHTML = `
+          <h4 style="color: #00f2fe; margin-bottom: 8px;">📅 ${booking.appointment_date}</h4>
+          <p><strong>Client:</strong> ${booking.client_name}</p>
+          <p><strong>Email:</strong> ${booking.client_email}</p>
+          <p><strong>Contact:</strong> ${booking.client_contact}</p>
+          <p><strong>Plan:</strong> ${booking.activity_plan}</p>
+          <p style="color: #94a3b8; font-size: 0.85rem;"><strong>Hours:</strong> ${(booking.selected_slots || []).join(', ')}</p>
         `;
-        tbody.appendChild(tr);
+        list.appendChild(card);
       });
     }
 
-    initAdminCalendar();
-    loadAppointments();
-    loadEvents();
-    loadUsers();
+    // LOAD AVAILABILITY CALENDAR
+    async function loadAvailabilityCalendar() {
+      // This can be expanded later for slot management
+      const container = document.getElementById('calendar-container');
+      container.innerHTML = '<p style="color: #94a3b8; text-align: center;">Calendar management coming soon</p>';
+    }
+
+    // LOGOUT
+    document.getElementById('btn-logout-admin').addEventListener('click', () => {
+      localStorage.removeItem('portal_user');
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('btn-back-portal').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
   </script>
 </body>
 </html>

@@ -10,11 +10,11 @@ export function initBooking() {
   submitBtn.onclick = async () => {
     const user = getSessionUser();
     if (!user) {
-      alert('Lütfen önce oturum açın.');
+      alert('Please log in first.');
       return;
     }
 
-    const clientName = user.username || 'Kullanıcı';
+    const clientName = user.username || 'User';
     const clientEmail = user.email || '';
     const contact = document.getElementById('book-contact')?.value.trim() || '-';
     const plan = document.getElementById('book-plan')?.value.trim();
@@ -22,22 +22,20 @@ export function initBooking() {
     const dateStr = getActiveDate();
     const slots = getSelectedSlots();
 
-    // Kontrol: Sadece saat seçimi ve açıklama notu zorunlu
     if (!slots || slots.length === 0) {
-      alert('Lütfen yukarıdaki saatlerden en az birini seçin.');
+      alert('Please select at least one hour slot.');
       return;
     }
 
     if (!plan) {
-      alert('Lütfen görüşme notu / planı alanını doldurun.');
+      alert('Please provide a short description or meeting agenda.');
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'İşleniyor...';
+    submitBtn.textContent = 'Processing booking...';
 
     try {
-      // 1. Supabase'e Randevuyu Ekle
       const { error: appErr } = await supabase.from('appointments').insert([{
         appointment_date: dateStr,
         selected_slots: slots,
@@ -48,7 +46,6 @@ export function initBooking() {
       }]);
       if (appErr) throw appErr;
 
-      // 2. Saatleri Rezerve Olarak İşaretle
       const { error: slotErr } = await supabase
         .from('availability_slots')
         .update({ is_booked: true })
@@ -56,7 +53,6 @@ export function initBooking() {
         .in('hour_slot', slots);
       if (slotErr) throw slotErr;
 
-      // 3. Arka Planda Google Apps Script Webhook'una Bildir
       const queryParams = new URLSearchParams({
         client_name: clientName,
         client_email: clientEmail,
@@ -69,18 +65,17 @@ export function initBooking() {
       fetch(`${EMAIL_WEBHOOK_URL}?${queryParams}`, {
         method: 'GET',
         mode: 'no-cors'
-      }).catch(e => console.warn('Mail webhook uyarısı:', e));
+      }).catch(e => console.warn('Mail webhook notification dispatched.'));
 
-      alert(`Randevunuz başarıyla oluşturuldu! Bilgilendirme maili ${clientEmail} adresine gönderildi.`);
+      alert(`Appointment confirmed! Confirmation email sent to ${clientEmail}.`);
 
-      // Formu temizle ve görünümü sıfırla
       if (document.getElementById('book-contact')) document.getElementById('book-contact').value = '';
       if (document.getElementById('book-plan')) document.getElementById('book-plan').value = '';
       resetSelections();
       await renderCalendarDays();
 
     } catch (err) {
-      alert('Rezervasyon kaydedilirken hata oluştu: ' + err.message);
+      alert('Error creating appointment: ' + err.message);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Confirm Booking Now';

@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title id="docTitle">Plan Zero | Member Portal</title>
+  <title>Plan Zero | Member Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style id="dynamicStyle">
+  <style>
     :root {
       --bg: #070a12;
       --card-bg: rgba(15, 23, 42, 0.7);
@@ -43,8 +43,8 @@
     #gateModal h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; color: var(--primary); }
     #gateModal p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
     
-    header { text-align: center; margin-bottom: 10px; }
-    h1 {
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .header-left h1 {
       font-size: 2.2rem; background: linear-gradient(135deg, #fff 30%, var(--primary) 70%, var(--accent));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       font-weight: 800; letter-spacing: -0.5px;
@@ -52,8 +52,15 @@
     .welcome-pill {
       display: inline-block; padding: 5px 14px; border-radius: 999px;
       background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25);
-      color: var(--primary); font-size: 0.85rem; font-weight: 600; margin-bottom: 12px;
+      color: var(--primary); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;
     }
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;
+      padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: var(--danger); color: #fff; }
+
     .card {
       background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(16px);
       border-radius: 20px; padding: 22px; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.5);
@@ -80,6 +87,7 @@
     }
     .btn-back:hover { color: var(--primary); }
 
+    /* Suggestions */
     .sug-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
     .sug-item {
       background: rgba(2, 6, 23, 0.5); border: 1px solid var(--border);
@@ -88,6 +96,7 @@
     .sug-user { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
     .sug-text { font-size: 0.95rem; color: #fff; }
 
+    /* Gallery */
     .gallery-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 14px;
     }
@@ -101,7 +110,7 @@
       display: flex; flex-direction: column; justify-content: space-between; padding: 8px;
     }
     .btn-download {
-      align-self: flex-end; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border);
+      align-self: flex-end; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border);
       color: #fff; border-radius: 8px; padding: 4px 8px; font-size: 0.75rem; text-decoration: none;
       display: flex; align-items: center; gap: 4px; backdrop-filter: blur(6px);
     }
@@ -127,29 +136,29 @@
 </head>
 <body>
 
-  <!-- Gatekeeper -->
+  <!-- Gatekeeper (İsim Giriş Ekranı) -->
   <div id="gateModal">
     <h2>🔒 Access Gate</h2>
-    <p>Enter your name or nickname to unlock your events.</p>
+    <p>Enter your authorized name to view your events.</p>
     <input type="text" id="gateNameInput" placeholder="Your Name..." style="text-align:center;" />
     <button type="button" class="btn-submit" onclick="loginGuest()">Open Portal</button>
     <div id="gateError" style="color:var(--danger); font-size:0.85rem; margin-top:10px; display:none;">
-      Access Denied: Name not recognized.
+      Access Denied: Name not found in guest list.
     </div>
   </div>
 
-  <!-- Dynamic Injection Hook (Admin kodları buraya da basabilir) -->
-  <div id="remoteCustomContainer"></div>
-
-  <!-- Main Container -->
+  <!-- Ana Portal -->
   <div class="container" id="mainPortal">
     <header>
-      <div id="welcomeBadge" class="welcome-pill">Member Access</div>
-      <h1 id="appHeadline">Plan Zero</h1>
-      <p id="portalSub">Your exclusive events & memory vaults.</p>
+      <div class="header-left">
+        <div id="welcomeBadge" class="welcome-pill">Member Access</div>
+        <h1>Plan Zero</h1>
+      </div>
+      <!-- Çıkış Yap Butonu -->
+      <button class="btn-logout" onclick="logoutGuest()">Exit / Switch ➔</button>
     </header>
 
-    <!-- LIST OF AUTHORIZED EVENTS -->
+    <!-- ETKİNLİK LİSTESİ -->
     <div id="eventsListView">
       <div class="card">
         <h2 style="margin-bottom:16px;">🎟️ Your Authorized Events</h2>
@@ -159,7 +168,7 @@
       </div>
     </div>
 
-    <!-- SINGLE EVENT VIEW -->
+    <!-- TEK ETKİNLİK DETAYI & ANILAR -->
     <div id="eventDetailView">
       <button class="btn-back" onclick="backToEvents()">← Back to Events List</button>
 
@@ -169,7 +178,7 @@
         <p id="viewEventDesc" style="color:var(--text-muted); font-size:0.95rem; line-height:1.5;"></p>
       </div>
 
-      <!-- SUGGESTIONS & IDEAS -->
+      <!-- ÖNERİLER BÖLÜMÜ -->
       <div class="card">
         <h2>💡 Suggestions & Ideas for this Event</h2>
         <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
@@ -184,7 +193,7 @@
         </div>
       </div>
 
-      <!-- Upload Photo Form -->
+      <!-- FOTOĞRAF YÜKLEME ALANI -->
       <div class="card">
         <h2>📸 Upload Memories</h2>
         <input type="file" id="photoFileInput" accept="image/*" />
@@ -192,9 +201,9 @@
         <button type="button" class="btn-submit" id="uploadBtn" onclick="uploadPhotoToEvent()">Save Photo to Vault 🚀</button>
       </div>
 
-      <!-- Photos Vault Grid -->
+      <!-- FOTOĞRAF ARŞİVİ (İNDİRME DESTEKLİ) -->
       <div class="card">
-        <h2>🖼️ Memory Vault</h2>
+        <h2>🖼️️ Memory Vault</h2>
         <div class="gallery-grid" id="galleryContainer">
           <p class="empty-state">No photos uploaded for this event yet.</p>
         </div>
@@ -210,68 +219,13 @@
     let currentGuest = localStorage.getItem("pz_user");
     let activeEventId = null;
 
-    // === OTA ENGINE: Remote Config & Live Self-Updating ===
-    async function fetchAndApplyRemoteConfig() {
-      const { data, error } = await supabaseClient.from('remote_config').select('*').eq('id', 1).single();
-      if (error || !data) return;
-
-      if (data.config_type === 'json') {
-        try {
-          const cfg = JSON.parse(data.payload);
-          if (cfg.title) {
-            document.getElementById('appHeadline').innerText = cfg.title;
-            document.title = cfg.title + " | Member Portal";
-          }
-          if (cfg.subtitle) document.getElementById('portalSub').innerText = cfg.subtitle;
-          if (cfg.primary_color) {
-            document.documentElement.style.setProperty('--primary', cfg.primary_color);
-          }
-          if (cfg.accent_color) {
-            document.documentElement.style.setProperty('--accent', cfg.accent_color);
-          }
-          if (cfg.custom_css) {
-            let el = document.getElementById('otaCss');
-            if (!el) {
-              el = document.createElement('style');
-              el.id = 'otaCss';
-              document.head.appendChild(el);
-            }
-            el.innerHTML = cfg.custom_css;
-          }
-        } catch(e) { console.error("JSON parse error:", e); }
-      } else if (data.config_type === 'raw_code') {
-        // Ham HTML / TXT / Script doğrudan enjekte edilir
-        const container = document.getElementById('remoteCustomContainer');
-        container.innerHTML = data.payload;
-        // Script tag'lerini dinamik çalıştır
-        const scripts = container.querySelectorAll("script");
-        scripts.forEach(oldScript => {
-          const newScript = document.createElement("script");
-          Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-          newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-          oldScript.parentNode.replaceChild(newScript, oldScript);
-        });
-      }
-    }
-
-    // Realtime Dinleyici: Admin bir şey gönderdiği an F5 atmadan güncelle!
-    supabaseClient
-      .channel('public:remote_config')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'remote_config' }, payload => {
-        fetchAndApplyRemoteConfig();
-      })
-      .subscribe();
-
-    fetchAndApplyRemoteConfig();
-
-    // === Standart Portal Fonksiyonları ===
     async function loginGuest() {
       const name = document.getElementById('gateNameInput').value.trim();
       const err = document.getElementById('gateError');
       err.style.display = 'none';
       if (!name) return;
 
-      const { data: guests } = await supabaseClient.from('guests').select('name');
+      const { data: guests, error } = await supabaseClient.from('guests').select('name');
       const isAllowed = guests && guests.some(g => g.name.toLowerCase() === name.toLowerCase());
 
       if (isAllowed) {
@@ -281,6 +235,16 @@
       } else {
         err.style.display = 'block';
       }
+    }
+
+    function logoutGuest() {
+      localStorage.removeItem("pz_user");
+      currentGuest = null;
+      activeEventId = null;
+      document.getElementById('gateNameInput').value = '';
+      document.getElementById('mainPortal').style.display = 'none';
+      document.getElementById('gateModal').style.display = 'block';
+      document.body.style.alignItems = 'center';
     }
 
     function openPortal() {

@@ -52,7 +52,7 @@
 
   .cbx { display:inline-flex; align-items:center; gap:6px; background:#12121c; border:1px solid #333; padding:7px 14px; border-radius:999px; margin:0 6px 6px 0; cursor:pointer; font-size:.9rem; }
   .cbx input { accent-color:var(--accent); }
-  .msg { margin-top:10px; font-size:.9rem; min-height:1.2em; }
+  .msg { margin-top:10px; font-size:.95rem; min-height:1.2em; font-weight:600; }
   .ok { color:var(--accent2); } .bad { color:var(--danger); }
 </style>
 <base target="_blank">
@@ -61,7 +61,7 @@
 
 <!-- ŞİFRE KAPISI -->
 <div id="gate" class="gate">
-  <div class="title" style="margin-bottom:20px">Plan <span>Zero</span> 🛰️ Kontrol Paneli</div>
+  <div class="title" style="margin-bottom:20px">Plan <span>Zero</span> 🛰️️ Kontrol Paneli</div>
   <input id="pass" type="password" placeholder="••••" inputmode="numeric">
   <button class="btn" onclick="unlock()">Giriş</button>
   <div class="err" id="gateErr"></div>
@@ -100,14 +100,14 @@
     <div class="card">
       <h2>Yeni Etkinlik Oluştur</h2>
       <label class="f">Etkinlik Adı</label>
-      <input type="text" id="evTitle" placeholder="örn: Pazar Kahvaltısı + Doğa Yürüyüşü">
+      <input type="text" id="evTitle" placeholder="örn: Cumartesi Kahvesi & Yürüyüş">
       <label class="f">Tarih & Saat</label>
       <input type="datetime-local" id="evDate">
       <label class="f">Açıklama</label>
-      <textarea id="evDesc" rows="3" placeholder="Buluşma yeri, saat detayı, ne getirmeleri gerektiği..."></textarea>
-      <label class="f">Kimler Katılabilir?</label>
+      <textarea id="evDesc" rows="3" placeholder="Buluşma yeri, detaylar..."></textarea>
+      <label class="f">Kimler Katılabilir? (Hiçbiri seçilmezse herkese açık olur)</label>
       <div id="evGuests" style="margin-bottom:10px"><span style="color:var(--muted);font-size:.9rem">Önce davetli eklemelisin.</span></div>
-      <button class="btn" onclick="createEvent()">Etkinliği Oluştur 🚀</button>
+      <button class="btn" id="btnSubmitEv" onclick="createEvent()">Etkinliği Oluştur 🚀</button>
       <div class="msg" id="evMsg"></div>
     </div>
     <div class="card">
@@ -121,7 +121,7 @@
 </div>
 
 <script>
-const ADMIN_PASS = "2116"; // Not: Bu yumuşak bir kilit — kodu gören herkes görür. Ciddi gizlilik gerekirse Supabase Auth kullanılmalı.
+const ADMIN_PASS = "2116";
 const LS_ADMIN = "pz_admin_ok";
 
 function unlock() {
@@ -160,10 +160,10 @@ async function loadGuests() {
     pill.innerHTML = `${esc(g.name)} <button title="Sil" onclick="delGuest(${g.id}, '${esc(g.name)}')">✕</button>`;
     box.appendChild(pill);
   });
-  // Etkinlik formundaki checkboxları da tazele
+
   const cb = document.getElementById("evGuests");
   cb.innerHTML = "";
-  if (!data || data.length === 0) { cb.innerHTML = "<span style='color:var(--muted);font-size:.9rem'>Önce davetli eklemelisin.</span>"; }
+  if (!data || data.length === 0) { cb.innerHTML = "<span style='color:var(--muted);font-size:.9rem'>Davetli bulunamadı.</span>"; }
   else data.forEach(g => {
     const l = document.createElement("label");
     l.className = "cbx";
@@ -190,43 +190,90 @@ async function delGuest(id, name) {
   loadGuests();
 }
 
-// ---------- ETKİNLİKLER ----------
+// ---------- ETKİNLİKLER (HATA GİDERİLDİ) ----------
 async function createEvent() {
   const title = document.getElementById("evTitle").value.trim();
   const dateVal = document.getElementById("evDate").value;
   const desc = document.getElementById("evDesc").value.trim();
   const msg = document.getElementById("evMsg");
-  const guests = Array.from(document.querySelectorAll("#evGuests input:checked")).map(c => c.value);
+  const btn = document.getElementById("btnSubmitEv");
+  const selectedGuests = Array.from(document.querySelectorAll("#evGuests input:checked")).map(c => c.value);
 
-  if (!title || !dateVal) { msg.className = "msg bad"; msg.textContent = "❌ Etkinlik adı ve tarih zorunlu."; return; }
-  if (guests.length === 0) { msg.className = "msg bad"; msg.textContent = "❌ En az bir davetli seçmelisin."; return; }
+  if (!title) {
+    msg.className = "msg bad";
+    msg.textContent = "❌ Etkinlik adı zorunludur.";
+    return;
+  }
 
-  const { error } = await sb.from("events").insert({
-    title, event_date: new Date(dateVal).toISOString(),
-    description: desc, allowed_guests: guests.join(",")
-  });
-  if (error) { msg.className = "msg bad"; msg.textContent = "❌ " + error.message; return; }
+  // Tarih boşsa varsayılan olarak şu anki zamanı al
+  let eventDateIso;
+  if (!dateVal) {
+    eventDateIso = new Date().toISOString();
+  } else {
+    const parsed = new Date(dateVal);
+    eventDateIso = isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+  }
 
-  msg.className = "msg ok"; msg.textContent = "✅ Etkinlik oluşturuldu!";
-  document.getElementById("evTitle").value = "";
-  document.getElementById("evDate").value = "";
-  document.getElementById("evDesc").value = "";
-  document.querySelectorAll("#evGuests input").forEach(c => c.checked = false);
-  loadEvents();
+  // Davetli seçilmediyse tüm kayıtlı davetlileri otomatik yetkilendir
+  let guestsStr = selectedGuests.join(",");
+  if (!guestsStr) {
+    const allCbs = Array.from(document.querySelectorAll("#evGuests input")).map(c => c.value);
+    guestsStr = allCbs.join(",");
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Kaydediliyor...";
+  msg.textContent = "";
+
+  try {
+    const { data, error } = await sb.from("events").insert([{
+      title: title,
+      event_date: eventDateIso,
+      description: desc,
+      allowed_guests: guestsStr
+    }]).select();
+
+    if (error) {
+      msg.className = "msg bad";
+      msg.textContent = "❌ Supabase Hatası: " + error.message;
+      alert("Hata: " + error.message);
+    } else {
+      msg.className = "msg ok";
+      msg.textContent = "✅ Etkinlik başarıyla oluşturuldu!";
+      document.getElementById("evTitle").value = "";
+      document.getElementById("evDate").value = "";
+      document.getElementById("evDesc").value = "";
+      document.querySelectorAll("#evGuests input").forEach(c => c.checked = false);
+      loadEvents();
+    }
+  } catch (err) {
+    msg.className = "msg bad";
+    msg.textContent = "❌ Beklenmedik hata: " + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Etkinliği Oluştur 🚀";
+  }
 }
 
 async function loadEvents() {
-  const { data } = await sb.from("events").select("*").order("event_date");
+  const { data, error } = await sb.from("events").select("*").order("event_date", { ascending: false });
   const tb = document.getElementById("evTable");
   tb.innerHTML = "";
-  if (!data || data.length === 0) { tb.innerHTML = "<tr><td colspan='4' style='color:var(--muted)'>Henüz etkinlik yok.</td></tr>"; return; }
+  if (error) {
+    tb.innerHTML = `<tr><td colspan='4' style='color:var(--danger)'>Hata: ${esc(error.message)}</td></tr>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    tb.innerHTML = "<tr><td colspan='4' style='color:var(--muted)'>Henüz etkinlik yok.</td></tr>";
+    return;
+  }
   data.forEach(ev => {
     const tr = document.createElement("tr");
     const d = new Date(ev.event_date);
     tr.innerHTML = `
       <td><b>${esc(ev.title)}</b><br><small style="color:var(--muted)">${esc(ev.description || "")}</small></td>
       <td>${d.toLocaleDateString("tr-TR")}<br><small style="color:var(--muted)">${d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</small></td>
-      <td>${(ev.allowed_guests||"").split(",").map(g=>`<span class="pill" style="margin:2px 2px">${esc(g.trim())}</span>`).join("")}</td>
+      <td>${(ev.allowed_guests||"").split(",").filter(Boolean).map(g=>`<span class="pill" style="margin:2px 2px">${esc(g.trim())}</span>`).join("") || '<span style="color:var(--muted)">Herkes</span>'}</td>
       <td><button class="btn btn-sm btn-danger" onclick="delEvent(${ev.id}, '${esc(ev.title)}')">Sil 🗑️</button></td>`;
     tb.appendChild(tr);
   });

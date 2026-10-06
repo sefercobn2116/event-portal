@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Admin Dashboard • NEXUS</title>
+  
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
   <style>
     .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 12px; overflow-x: auto; }
@@ -16,9 +19,12 @@
 
   <div class="container">
     <div class="nav-header">
-      <div>
-        <h2 id="admin-title" style="color: #00f2fe;">Admin Dashboard</h2>
-        <span style="font-size: 0.85rem; color: #ff007f;">Management Suite</span>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="./icon.svg" alt="NEXUS" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);">
+        <div>
+          <h2 id="admin-title" style="color: #00f2fe; margin: 0;">Admin Dashboard</h2>
+          <span style="font-size: 0.85rem; color: #ff007f;">Management Suite</span>
+        </div>
       </div>
       <div style="display: flex; gap: 10px;">
         <a href="index.html" class="btn" style="text-decoration: none; padding: 6px 16px; font-size: 0.85rem;">← Back to Portal</a>
@@ -82,7 +88,14 @@
         <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title *">
         <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
         <input type="text" id="new-evt-loc" class="input-field" placeholder="Location / Maps link (Optional)">
-        <input type="datetime-local" id="new-evt-date" class="input-field" title="Event Date and Time">
+        
+        <div style="margin-bottom: 12px;">
+          <label for="new-evt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">
+            📅 Event Date & Time
+          </label>
+          <input type="datetime-local" id="new-evt-date" class="input-field" style="margin-bottom: 0;">
+        </div>
+
         <input type="text" id="new-evt-spotify" class="input-field" placeholder="Spotify Playlist URL (Optional)">
         
         <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.85rem; color: #00f2fe; cursor: pointer;">
@@ -416,7 +429,6 @@
       loadEvents();
     };
 
-    // KULLANICI LİSTESİ VE YETKİLERİ
     async function loadUsers() {
       const { data: users } = await supabase.from('users').select('*');
       allUsersCache = users || [];
@@ -487,7 +499,6 @@
       document.getElementById('btn-adm-save-perms').disabled = false;
     }
 
-    // YETKİ KAYDETME BUTONU (GARANTİLİ YAZMA)
     document.getElementById('btn-adm-save-perms').onclick = async () => {
       if (!selectedUserForPerms) return;
       const saveBtn = document.getElementById('btn-adm-save-perms');
@@ -499,7 +510,6 @@
       const canCreate = document.getElementById('perm-can-create-events').checked;
 
       try {
-        // 1. can_create_events kolonunu güncelle
         const { error: userErr } = await supabase
           .from('users')
           .update({ can_create_events: canCreate })
@@ -507,7 +517,6 @@
 
         if (userErr) throw userErr;
 
-        // 2. Görünürlük izinlerini güncelle
         await supabase.from('event_access').delete().eq('user_id', selectedUserForPerms.id);
         if (eventIds.length > 0) {
           const records = eventIds.map(eId => ({

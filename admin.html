@@ -82,6 +82,7 @@
         <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title *">
         <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
         <input type="text" id="new-evt-drive" class="input-field" placeholder="Google Drive Folder URL / Folder ID">
+        <input type="text" id="new-evt-loc" class="input-field" placeholder="Location Name or Google Maps Address Link (Optional)">
         <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Create Event</button>
       </div>
       <div class="glass-box">
@@ -329,7 +330,8 @@
         row.innerHTML = `
           <div>
             <strong style="color: #00f2fe;">${evt.title}</strong>
-            <p style="color: #94a3b8; font-size: 0.8rem;">Drive: ${evt.drive_folder_url || 'None'}</p>
+            <p style="color: #94a3b8; font-size: 0.8rem; margin: 2px 0;">📍 ${evt.location || 'No location set'}</p>
+            <p style="color: #64748b; font-size: 0.75rem;">Drive: ${evt.drive_folder_url || 'None'}</p>
           </div>
           <button class="btn btn-pink btn-del-evt" style="padding: 4px 10px; font-size: 0.75rem;">Delete</button>
         `;
@@ -346,12 +348,14 @@
       const title = document.getElementById('new-evt-title').value.trim();
       const desc = document.getElementById('new-evt-desc').value.trim();
       const drive = document.getElementById('new-evt-drive').value.trim();
+      const loc = document.getElementById('new-evt-loc').value.trim();
       if (!title) return alert('Event title is required!');
 
-      await supabase.from('events').insert([{ title, description: desc, drive_folder_url: drive }]);
+      await supabase.from('events').insert([{ title, description: desc, drive_folder_url: drive, location: loc }]);
       document.getElementById('new-evt-title').value = '';
       document.getElementById('new-evt-desc').value = '';
       document.getElementById('new-evt-drive').value = '';
+      document.getElementById('new-evt-loc').value = '';
       loadEvents();
     };
 

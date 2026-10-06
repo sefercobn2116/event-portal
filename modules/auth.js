@@ -18,16 +18,19 @@ export function clearSession() {
   localStorage.removeItem('portal_user');
 }
 
-export async function loginUser(email, password) {
+// ARTIK KULLANICI ADI VEYA E-POSTA İLE GİRİŞ YAPILABİLİR
+export async function loginUser(usernameOrEmail, password) {
+  const cleanInput = usernameOrEmail.trim();
+
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .eq('email', email.trim().toLowerCase())
+    .or(`username.eq.${cleanInput},email.eq.${cleanInput.toLowerCase()}`)
     .eq('password', password)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
-    throw new Error('Geçersiz e-posta veya şifre.');
+    throw new Error('Geçersiz kullanıcı adı veya şifre.');
   }
 
   setSessionUser(data);
@@ -35,23 +38,24 @@ export async function loginUser(email, password) {
 }
 
 export async function registerUser(username, email, password) {
+  const cleanUsername = username.trim();
   const cleanEmail = email.trim().toLowerCase();
-  
-  // E-posta kontrolü
+
+  // Çakışma kontrolü
   const { data: existing } = await supabase
     .from('users')
     .select('id')
-    .eq('email', cleanEmail)
+    .or(`username.eq.${cleanUsername},email.eq.${cleanEmail}`)
     .maybeSingle();
 
   if (existing) {
-    throw new Error('Bu e-posta adresi zaten kullanımda.');
+    throw new Error('Bu kullanıcı adı veya e-posta adresi zaten kullanımda.');
   }
 
   const { data, error } = await supabase
     .from('users')
     .insert([{
-      username: username.trim(),
+      username: cleanUsername,
       email: cleanEmail,
       password: password,
       role: 'user',

@@ -17,7 +17,6 @@ export async function initEventExpenses(eventId, containerId) {
 
   await renderExpensesUI(eventId, containerId);
 
-  // Realtime güncellemeleri dinle
   activeExpenseChannel = supabase
     .channel(`realtime_expenses_${eventId}`)
     .on('postgres_changes', {
@@ -38,19 +37,15 @@ async function renderExpensesUI(eventId, containerId) {
   const user = getSessionUser();
   const isAdmin = user && (user.is_admin || user.role === 'admin');
 
-  // 1. Harcamaları ve erişim listesini çek
   const [{ data: expenses, error: expErr }, { data: accessList }] = await Promise.all([
     supabase.from('event_expenses').select('*').eq('event_id', eventId).order('created_at', { ascending: false }),
     supabase.from('event_access').select('user_id, users(id, username)').eq('event_id', eventId)
   ]);
 
-  if (expErr) {
-    console.error('Expenses load error:', expErr);
-  }
+  if (expErr) console.error('Expenses load error:', expErr);
 
   const items = expenses || [];
 
-  // Katılımcı havuzu
   const participantMap = new Map();
   (accessList || []).forEach(a => {
     if (a.users) participantMap.set(a.users.username, a.users.id);
@@ -65,7 +60,6 @@ async function renderExpensesUI(eventId, containerId) {
   const memberNames = Array.from(participantMap.keys());
   const memberCount = Math.max(memberNames.length, 1);
 
-  // 2. Matematiksel Hesap
   let totalPool = 0;
   const paidBy = {};
   memberNames.forEach(m => { paidBy[m] = 0; });
@@ -78,9 +72,7 @@ async function renderExpensesUI(eventId, containerId) {
 
   const sharePerPerson = totalPool / memberCount;
 
-  // 3. Arayüzü Oluştur
   container.innerHTML = `
-    <!-- Özet Panosu -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px;">
       <div style="background: rgba(0,242,254,0.08); border: 1px solid rgba(0,242,254,0.3); border-radius: 8px; padding: 10px; text-align: center;">
         <span style="font-size: 0.75rem; color: #94a3b8; display: block;">Total Expenses</span>
@@ -92,18 +84,16 @@ async function renderExpensesUI(eventId, containerId) {
       </div>
     </div>
 
-    <!-- Harcama Ekleme Formu -->
     <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; margin-bottom: 14px;">
       <h5 style="color: #00f2fe; margin: 0 0 8px 0; font-size: 0.85rem;">+ Log New Shared Expense</h5>
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <input type="text" id="exp-desc-input" class="input-field" placeholder="Description (e.g. Dinner, Drinks, Taxi)" style="flex: 2; min-width: 150px; margin-bottom: 0;">
+        <input type="text" id="exp-desc-input" class="input-field" placeholder="Description (e.g. Dinner, Taxi, Drinks)" style="flex: 2; min-width: 150px; margin-bottom: 0;">
         <input type="number" id="exp-amount-input" class="input-field" placeholder="Amount (€)" step="0.5" style="flex: 1; min-width: 90px; margin-bottom: 0;">
         <button id="btn-submit-expense" class="btn btn-pink" style="padding: 0 20px; font-size: 0.85rem; font-weight: 700;">Add</button>
       </div>
       <div id="exp-form-status" style="margin-top: 6px; font-size: 0.75rem;"></div>
     </div>
 
-    <!-- Dengeler / Dağılım -->
     <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px; margin-bottom: 14px;">
       <h5 style="color: #94a3b8; margin: 0 0 8px 0; font-size: 0.8rem;">⚖️ Balances & Settlements</h5>
       <div style="display: grid; gap: 6px;">
@@ -120,7 +110,7 @@ async function renderExpensesUI(eventId, containerId) {
 
           return `
             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,0.04);">
-              <span><strong>${name}</strong> (paid${paid.toFixed(2)} €)</span>
+              <span><strong>${name}</strong> (paid ${paid.toFixed(2)} €)</span>
               <strong style="color: ${badgeColor};">${badgeText}</strong>
             </div>
           `;
@@ -128,7 +118,6 @@ async function renderExpensesUI(eventId, containerId) {
       </div>
     </div>
 
-    <!-- Harcama Geçmişi Listesi -->
     <div>
       <h5 style="color: #94a3b8; margin: 0 0 6px 0; font-size: 0.8rem;">Recent Expenses</h5>
       <div id="expense-history-list" style="max-height: 200px; overflow-y: auto; display: grid; gap: 6px;">
@@ -137,7 +126,6 @@ async function renderExpensesUI(eventId, containerId) {
     </div>
   `;
 
-  // 4. Harcama Geçmişi Satırları & Doğrudan Silme Olayı
   const historyList = document.getElementById('expense-history-list');
   items.forEach(it => {
     const isOwner = user && (String(user.id) === String(it.user_id) || user.username === it.payer_name);
@@ -178,7 +166,6 @@ async function renderExpensesUI(eventId, containerId) {
           delBtn.disabled = false;
           delBtn.textContent = '🗑️';
         } else {
-          // Anında arayüzü güncelle
           await renderExpensesUI(eventId, containerId);
         }
       });
@@ -187,7 +174,6 @@ async function renderExpensesUI(eventId, containerId) {
     historyList.appendChild(row);
   });
 
-  // 5. Harcama Ekleme Butonu
   const submitBtn = document.getElementById('btn-submit-expense');
   const descInput = document.getElementById('exp-desc-input');
   const amountInput = document.getElementById('exp-amount-input');

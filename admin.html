@@ -326,7 +326,7 @@
     <!-- TAB 1: MODÜL & JSON YÖNETİCİSİ -->
     <div id="tab-manifest-manager" class="admin-tab-content">
       <div class="glass-box" style="margin-bottom: 24px;">
-        <h3 style="color: #00f2fe; margin-bottom: 8px;">🚀 Dinamik Modül Dağıtıcısı (JSON Manifest)</h3>
+        <h3 id="form-heading" style="color: #00f2fe; margin-bottom: 8px;">🚀 Dinamik Modül Dağıtıcısı (JSON Manifest)</h3>
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">
           Buraya yapıştıracağınız modül JSON'ı hem Supabase'e kaydedilir hem de GitHub Token girdiyseniz deponuza bağımsız dosya olarak commit edilir.
         </p>
@@ -341,12 +341,12 @@
   "title": "Tam Ekran Lightbox Galeri",
   "file_path": "./modules/lightbox.js",
   "trigger_event": "btn-toggle-gallery:click",
-  "is_active": true,
-  "file_code": "// Modül kodu..."
+  "is_active": true
 }'></textarea>
 
         <div style="display: flex; gap: 12px; align-items: center; margin-top: 10px;">
           <button id="btn-deploy-module" class="btn" style="width: auto; padding: 12px 28px;">📤 Modülü Yükle ve Dağıt</button>
+          <button id="btn-cancel-edit" class="btn" style="width: auto; padding: 12px 20px; display: none; background: rgba(255,255,255,0.1); color: #fff;">Vazgeç</button>
           <span id="deploy-status" style="font-size: 0.85rem; color: #00f2fe;"></span>
         </div>
       </div>
@@ -514,7 +514,7 @@
     });
 
     // ==========================================
-    // 1. MODÜL VE JSON MANIFEST DAĞITICI
+    // 1. TEMİZ & PRATİK MODÜL YÖNETİCİSİ
     // ==========================================
     async function loadModulesList() {
       const container = document.getElementById('active-modules-list');
@@ -534,34 +534,63 @@
       container.innerHTML = '';
       modules.forEach(mod => {
         const card = document.createElement('div');
-        card.style.cssText = 'background: rgba(18,24,43,0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center;';
+        card.style.cssText = 'background: rgba(18,24,43,0.85); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; box-sizing: border-box;';
+        
         card.innerHTML = `
-          <div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <strong style="color: #00f2fe; font-size: 1rem;">${mod.title}</strong>
-              <span style="font-size: 0.75rem; background: rgba(0,242,254,0.15); color: #00f2fe; padding: 2px 8px; border-radius: 6px;">${mod.module_key}</span>
-            </div>
-            <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 4px;">
-              📁 <code>${mod.file_path}</code> | ⚡ Tetikleyici: <code>${mod.trigger_event || 'auto'}</code> | Durum: ${mod.is_active ? '🟢 Aktif' : '🔴 Pasif'}
-            </p>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <strong style="color: #00f2fe; font-size: 1.05rem;">${mod.title}</strong>
+            <span style="font-size: 0.75rem; background: rgba(0,242,254,0.15); color: #00f2fe; padding: 3px 8px; border-radius: 6px; font-family: monospace;">${mod.module_key}</span>
+            <span style="font-size: 0.8rem; color: ${mod.is_active ? '#22c55e' : '#f43f5e'}; font-weight: 600;">
+              ${mod.is_active ? '● Aktif' : '○ Pasif'}
+            </span>
           </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn-toggle-mod" data-id="${mod.id}" style="background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 14px; border-radius: 8px; cursor: pointer;">
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-edit-mod" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
+              ✏️ Düzenle
+            </button>
+            <button class="btn-toggle-mod" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">
               ${mod.is_active ? 'Durdur' : 'Aktif Et'}
             </button>
-            <button class="btn-delete-mod" data-id="${mod.id}" style="background: rgba(244,63,94,0.15); border: 1px solid #f43f5e; color: #f43f5e; padding: 6px 14px; border-radius: 8px; cursor: pointer;">
-              Kaldır
+            <button class="btn-delete-mod" style="background: rgba(244,63,94,0.15); border: 1px solid #f43f5e; color: #f43f5e; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">
+              🗑️ Kaldır
             </button>
           </div>
         `;
 
+        // 1. DÜZENLE: JSON'ı yukarı taşır
+        card.querySelector('.btn-edit-mod').addEventListener('click', () => {
+          const formattedJson = JSON.stringify({
+            module_key: mod.module_key,
+            title: mod.title,
+            file_path: mod.file_path,
+            trigger_event: mod.trigger_event || 'auto',
+            is_active: mod.is_active
+          }, null, 2);
+
+          const inputArea = document.getElementById('module-json-input');
+          inputArea.value = formattedJson;
+          
+          const deployBtn = document.getElementById('btn-deploy-module');
+          deployBtn.textContent = '💾 Değişiklikleri Kaydet & Güncelle';
+          deployBtn.classList.add('btn-pink');
+
+          const cancelBtn = document.getElementById('btn-cancel-edit');
+          if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+
+          inputArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          inputArea.focus();
+        });
+
+        // 2. AKTİF / PASİF
         card.querySelector('.btn-toggle-mod').addEventListener('click', async () => {
           await supabase.from('app_modules').update({ is_active: !mod.is_active }).eq('id', mod.id);
           loadModulesList();
         });
 
+        // 3. SİL
         card.querySelector('.btn-delete-mod').addEventListener('click', async () => {
-          if (confirm(`"${mod.title}" modülünü kaldırmak istediğinize emin misiniz?`)) {
+          if (confirm(`"${mod.title}" modülünü tamamen silmek istediğinize emin misiniz?`)) {
             await supabase.from('app_modules').delete().eq('id', mod.id);
             loadModulesList();
           }
@@ -571,17 +600,29 @@
       });
     }
 
+    // VAZGEÇ BUTONU
+    document.getElementById('btn-cancel-edit')?.addEventListener('click', () => {
+      document.getElementById('module-json-input').value = '';
+      const deployBtn = document.getElementById('btn-deploy-module');
+      deployBtn.textContent = '📤 Modülü Yükle ve Dağıt';
+      deployBtn.classList.remove('btn-pink');
+      document.getElementById('btn-cancel-edit').style.display = 'none';
+      document.getElementById('deploy-status').textContent = '';
+    });
+
+    // KAYDET VEYA GÜNCELLE
     document.getElementById('btn-deploy-module')?.addEventListener('click', async () => {
       const statusEl = document.getElementById('deploy-status');
       const rawJson = document.getElementById('module-json-input').value.trim();
       const ghRepo = document.getElementById('gh-repo').value.trim();
       const ghToken = document.getElementById('gh-token').value.trim();
+      const deployBtn = document.getElementById('btn-deploy-module');
 
-      if (!rawJson) return alert("Lütfen modül JSON manifestini girin!");
+      if (!rawJson) return alert("Lütfen modül JSON içeriğini girin!");
 
       try {
         const manifest = JSON.parse(rawJson);
-        statusEl.textContent = 'Modül işleniyor...';
+        statusEl.textContent = 'Kaydediliyor...';
 
         if (ghRepo && ghToken && manifest.file_code && manifest.file_path) {
           statusEl.textContent = 'GitHub deposuna dosya yazılıyor...';
@@ -604,8 +645,11 @@
 
         if (error) throw error;
 
-        statusEl.textContent = '✓ Başarıyla yüklendi ve index tarafına bağlandı!';
+        statusEl.textContent = '✓ Başarıyla kaydedildi ve canlıya alındı!';
         document.getElementById('module-json-input').value = '';
+        deployBtn.textContent = '📤 Modülü Yükle ve Dağıt';
+        deployBtn.classList.remove('btn-pink');
+        document.getElementById('btn-cancel-edit').style.display = 'none';
         loadModulesList();
       } catch (err) {
         statusEl.textContent = `✗ Hata: ${err.message}`;

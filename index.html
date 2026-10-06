@@ -79,7 +79,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
       <div id="nav-btn-events" class="glass-box" style="cursor: pointer;">
         <h3 style="color: #00f2fe; margin-bottom: 8px;">🎉 My Events</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem;">Gallery, shared bills, suggestions, and room chat.</p>
+        <p style="color: #94a3b8; font-size: 0.85rem;">Gallery, shared bills, tasks, suggestions, and room chat.</p>
       </div>
       <div id="nav-btn-booking" class="glass-box" style="cursor: pointer;">
         <h3 style="color: #ff007f; margin-bottom: 8px;">📅 Booking & Calendar</h3>
@@ -183,19 +183,25 @@
 
         <div id="room-spotify-wrap" style="display: none; margin-bottom: 20px;"></div>
 
-        <!-- ORTAK HESAP -->
+        <!-- 1. ORTAK HESAP (SPLIT BILL) -->
         <div id="room-expenses-section" style="display: none; margin-bottom: 24px;">
           <h4 style="color: #ff007f; font-size: 0.9rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
           <div id="room-expenses-container"></div>
         </div>
 
-        <!-- MEDYA GALERİSİ -->
-        <div style="margin-bottom: 24px;">
+        <!-- 2. GÖREVLER & GETİRİLECEKLER LİSTESİ (TASKS CHECKLIST) -->
+        <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+          <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
+          <div id="room-tasks-container"></div>
+        </div>
+
+        <!-- 3. MEDYA GALERİSİ -->
+        <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Shared Media Gallery</h4>
           <div id="room-gallery-container"></div>
         </div>
 
-        <!-- ÖNERİLER -->
+        <!-- 4. CANLI ÖNERİLER -->
         <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
           <div style="display: flex; gap: 8px; margin-bottom: 12px;">
@@ -205,7 +211,7 @@
           <div id="room-suggestions-list" style="max-height: 180px; overflow-y: auto;"></div>
         </div>
 
-        <!-- CHAT -->
+        <!-- 5. CANLI CHAT -->
         <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
           <div id="room-chat-messages" style="height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
@@ -243,7 +249,6 @@
     let countdownInterval = null;
     let allPortalUsers = [];
 
-    // Session Yardımcıları
     function getSessionUser() {
       try {
         const u = localStorage.getItem('portal_user');
@@ -256,7 +261,6 @@
       localStorage.removeItem('portal_user');
     }
 
-    // SAYFA AÇILIR AÇILMAZ KESİN GÖRÜNÜM BAŞLATICI
     async function startApp() {
       let user = getSessionUser();
       
@@ -267,7 +271,6 @@
         return;
       }
 
-      // Veritabanından en güncel kullanıcı bilgilerini çek
       try {
         const { data: latest } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
         if (latest) {
@@ -623,7 +626,7 @@
         spotWrap.style.display = 'none';
       }
 
-      // Güvenli Harcama Bölüşümü Yüklemesi
+      // 1. Ortak Harcama (Split Expenses)
       const expSection = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSection.style.display = 'block';
@@ -631,20 +634,29 @@
           const { initEventExpenses } = await import('./modules/expenses.js');
           initEventExpenses(event.id, 'room-expenses-container');
         } catch (e) {
-          console.warn('Expenses module load error:', e);
+          console.warn('Expenses module fallback:', e);
         }
       } else {
         expSection.style.display = 'none';
       }
 
+      // 2. Görevler & Getirilecekler Listesi (Tasks / Checklist)
+      try {
+        const { initEventTasks } = await import('./modules/tasks.js');
+        initEventTasks(event.id, 'room-tasks-container');
+      } catch (e) {
+        console.warn('Tasks module fallback:', e);
+      }
+
       room.style.display = 'block';
 
-      // Galeri, Chat ve Önerileri Güvenli Yükle
+      // 3. Galeri
       try {
         const { renderEventGallery } = await import('./modules/gallery.js');
         renderEventGallery('room-gallery-container', event.drive_folder_url);
       } catch(e) { console.warn(e); }
 
+      // 4. Sohbet & Öneriler
       try {
         const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
         initEventChat(event.id, 'room-chat-messages');

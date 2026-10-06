@@ -40,8 +40,8 @@ export async function initCalendar() {
   });
 
   ySel.innerHTML = '';
-  const startYear = new Date().getFullYear();
-  for (let y = startYear; y < startYear + 6; y++) {
+  const currentYear = currentDate.getFullYear();
+  for (let y = currentYear - 1; y < currentYear + 6; y++) {
     const opt = document.createElement('option');
     opt.value = y;
     opt.textContent = y;
@@ -61,19 +61,26 @@ export async function initCalendar() {
     renderCalendarDays();
   };
 
-  document.getElementById('cal-prev-month')?.addEventListener('click', () => {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    mSel.value = currentDate.getMonth();
-    ySel.value = currentDate.getFullYear();
-    renderCalendarDays();
-  });
+  const prevBtn = document.getElementById('cal-prev-month');
+  const nextBtn = document.getElementById('cal-next-month');
 
-  document.getElementById('cal-next-month')?.addEventListener('click', () => {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    mSel.value = currentDate.getMonth();
-    ySel.value = currentDate.getFullYear();
-    renderCalendarDays();
-  });
+  if (prevBtn) {
+    prevBtn.onclick = () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      mSel.value = currentDate.getMonth();
+      ySel.value = currentDate.getFullYear();
+      renderCalendarDays();
+    };
+  }
+
+  if (nextBtn) {
+    nextBtn.onclick = () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      mSel.value = currentDate.getMonth();
+      ySel.value = currentDate.getFullYear();
+      renderCalendarDays();
+    };
+  }
 
   await renderCalendarDays();
 }
@@ -81,19 +88,20 @@ export async function initCalendar() {
 export async function renderCalendarDays() {
   const grid = document.getElementById('calendar-days-grid');
   if (!grid) return;
-  grid.innerHTML = '';
+  grid.innerHTML = '<p style="grid-column: span 7; text-align: center; color: #94a3b8;">Yükleniyor...</p>';
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const totalDays = new Date(year, month + 1, 0).getDate();
 
+  // Pazartesi başlangıçlı indeks hesabı
   let firstDayIndex = new Date(year, month, 1).getDay() - 1;
   if (firstDayIndex === -1) firstDayIndex = 6;
 
   const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
   const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`;
 
-  const { data: slots } = await supabase
+  const { data: slots, error } = await supabase
     .from('availability_slots')
     .select('slot_date')
     .gte('slot_date', startDateStr)
@@ -101,10 +109,16 @@ export async function renderCalendarDays() {
     .eq('is_active', true)
     .eq('is_booked', false);
 
+  if (error) {
+    console.error("Slot çekme hatası:", error);
+  }
+
   const slotMap = {};
   (slots || []).forEach(s => {
     slotMap[s.slot_date] = (slotMap[s.slot_date] || 0) + 1;
   });
+
+  grid.innerHTML = '';
 
   for (let i = 0; i < firstDayIndex; i++) {
     const emptyCell = document.createElement('div');
@@ -113,7 +127,8 @@ export async function renderCalendarDays() {
   }
 
   for (let day = 1; day <= totalDays; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayStr = String(day).padStart(2, '0');
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${dayStr}`;
     const count = slotMap[dateStr] || 0;
 
     const cell = document.createElement('div');
@@ -125,7 +140,7 @@ export async function renderCalendarDays() {
 
     if (count > 0) {
       cell.onclick = () => {
-        document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('#calendar-days-grid .cal-day-cell').forEach(c => c.classList.remove('selected'));
         cell.classList.add('selected');
         activeSelectedDate = dateStr;
         loadDaySlots(dateStr);

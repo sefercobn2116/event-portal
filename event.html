@@ -107,7 +107,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
           <h3 style="color: var(--neon-cyan); margin-bottom: 4px;">📸 Etkinlik Medya Alanı</h3>
-          <p style="color: #94a3b8; font-size: 0.85rem;">Fotoğrafları toplu seçip yükleyin, orijinal kalitede cihazınıza indirin.</p>
+          <p style="color: #94a3b8; font-size: 0.85rem;">Fotoğrafları toplu seçip yükleyin, orijinal kalitede indirin.</p>
         </div>
         <div style="display: flex; gap: 10px;">
           <input type="file" id="media-file-input" multiple accept="image/*,video/*" style="display: none;">
@@ -134,7 +134,7 @@
       </div>
     </div>
 
-    <!-- Sohbet ve Oylama Grid -->
+    <!-- Sohbet ve Oylama Izgarası -->
     <div class="grid-layout">
       <!-- Canlı Mesajlaşma -->
       <div class="glass-box chat-container">
@@ -152,7 +152,7 @@
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Ortak aktivite öner ve oyla!</p>
 
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="Örn: Kahve içmeye gidelim mi?">
+          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="Örn: Akşam kahve içelim mi?">
           <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Ekle</button>
         </div>
 
@@ -164,7 +164,7 @@
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    // 1. Kullanıcı Kontrolü
+    // 1. Kullanıcı Doğrulama
     const user = JSON.parse(localStorage.getItem('portal_user'));
     if (!user) {
       window.location.href = 'index.html';
@@ -181,7 +181,7 @@
 
     let currentFolderId = '';
 
-    // 2. Yetki Kontrolü
+    // 2. Sayfa Yetki Kontrolü
     async function verifyAccess() {
       if (user.is_admin) return true;
       const { data, error } = await supabase
@@ -199,7 +199,7 @@
       return true;
     }
 
-    // 3. Etkinlik Detayı ve Klasör ID Çıkarımı
+    // 3. Etkinlik Detayını Çekme ve Klasör ID'sini Ayıklama
     async function loadEventData() {
       const { data: evt } = await supabase.from('events').select('*').eq('id', eventId).single();
       if (evt) {
@@ -207,13 +207,14 @@
         document.getElementById('event-desc').textContent = evt.description || 'Detay girilmedi.';
         
         if (evt.drive_folder_url) {
+          // Link verilmişse içindeki ID'yi bul, sadece ID yazılmışsa direkt al
           const match = evt.drive_folder_url.match(/[-\w]{25,}/);
           currentFolderId = match ? match[0] : evt.drive_folder_url;
         }
       }
     }
 
-    // 4. Giriş İstemeyen Doğrudan Yükleme
+    // 4. Doğrudan Fotoğraf / Video Yükleme (Giriş İstemez)
     const fileInput = document.getElementById('media-file-input');
     const triggerBtn = document.getElementById('btn-trigger-upload');
     const uploadStatus = document.getElementById('upload-status');
@@ -222,7 +223,7 @@
 
     triggerBtn.addEventListener('click', () => {
       if (!currentFolderId) {
-        alert("Bu etkinlik için klasör ID'si tanımlanmamış!");
+        alert("Bu etkinlik için henüz bir Drive klasörü atanmamış!");
         return;
       }
       fileInput.click();
@@ -250,23 +251,25 @@
             body: JSON.stringify({
               folderId: currentFolderId,
               fileName: file.name,
-              mimeType: file.type,
+              mimeType: file.type || 'image/jpeg',
               fileData: cleanBase64
             })
           });
         } catch (err) {
-          console.warn("Dosya iletildi:", file.name);
+          console.warn("Dosya gönderildi:", file.name);
         }
       }
 
       progressBar.style.width = '100%';
-      statusText.textContent = "✅ Tüm fotoğraflar Google Drive'a başarıyla yüklendi!";
+      statusText.textContent = "✅ Tüm fotoğraflar Drive'a yüklendi!";
       fileInput.value = '';
-      setTimeout(() => { uploadStatus.style.display = 'none'; }, 4000);
-
+      
+      // Galeri açıksa otomatik yenile
       if (galleryContainer.style.display === 'block') {
         fetchDriveFiles();
       }
+
+      setTimeout(() => { uploadStatus.style.display = 'none'; }, 4000);
     });
 
     const toBase64 = file => new Promise((resolve, reject) => {
@@ -276,7 +279,7 @@
       reader.onerror = error => reject(error);
     });
 
-    // 5. Resimleri Listele & Tam Kalitede İndir
+    // 5. Fotoğrafları Listeleme & Orijinal Kalitede İndirme
     const btnToggleGallery = document.getElementById('btn-toggle-gallery');
     const galleryContainer = document.getElementById('gallery-container');
     const galleryGrid = document.getElementById('gallery-grid');
@@ -293,28 +296,43 @@
     });
 
     async function fetchDriveFiles() {
-      galleryGrid.innerHTML = '<p style="color:#94a3b8;">Drive taranıyor...</p>';
-      const url = `https://www.googleapis.com/drive/v3/files?q='${currentFolderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webContentLink)&key=${GOOGLE_API_KEY}`;
+      galleryGrid.innerHTML = '<p style="color:#94a3b8;">5 TB Drive taranıyor...</p>';
+
+      const cleanId = currentFolderId.includes('folders/') 
+        ? currentFolderId.split('folders/')[1].split('?')[0] 
+        : currentFolderId;
+
+      const query = encodeURIComponent(`'${cleanId}' in parents and trashed = false`);
+      const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,mimeType,thumbnailLink,webContentLink)&key=${GOOGLE_API_KEY}`;
 
       try {
         const res = await fetch(url);
         const data = await res.json();
 
+        if (data.error) {
+          galleryGrid.innerHTML = `<p style="color:#ef4444;">API Hatası: ${data.error.message}</p>`;
+          console.error("Drive API Error:", data.error);
+          return;
+        }
+
         if (!data.files || data.files.length === 0) {
-          galleryGrid.innerHTML = '<p style="color:#94a3b8;">Bu klasörde henüz yüklenmiş bir dosya yok.</p>';
+          galleryGrid.innerHTML = '<p style="color:#94a3b8;">Bu klasörde henüz yüklenmiş fotoğraf yok.</p>';
           return;
         }
 
         galleryGrid.innerHTML = '';
         data.files.forEach(file => {
-          const previewImg = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s400') : 'https://via.placeholder.com/200?text=Fotoğraf';
+          const previewImg = file.thumbnailLink 
+            ? file.thumbnailLink.replace(/=s\d+/, '=s600') 
+            : `https://lh3.googleusercontent.com/d/${file.id}`;
+
           const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;
 
           const card = document.createElement('div');
           card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;";
           card.innerHTML = `
-            <div style="height: 140px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-              <img src="${previewImg}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+            <div style="height: 150px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+              <img src="${previewImg}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Dosya'">
             </div>
             <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
               <span style="font-size: 0.75rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
@@ -325,12 +343,13 @@
           `;
           galleryGrid.appendChild(card);
         });
+
       } catch (err) {
         galleryGrid.innerHTML = '<p style="color:#ef4444;">Dosyalar listelenemedi. Klasör erişim iznini kontrol edin.</p>';
       }
     }
 
-    // 6. Canlı Mesajlaşma (Supabase Realtime)
+    // 6. Canlı Sohbet (Supabase Realtime)
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const btnSendChat = document.getElementById('btn-send-chat');
@@ -376,7 +395,7 @@
       filter: `event_id=eq.${eventId}`
     }, payload => appendMessage(payload.new)).subscribe();
 
-    // 7. Oylama
+    // 7. Günlük Aktivite Oylama Bölümü
     const pollList = document.getElementById('poll-list');
     const pollInput = document.getElementById('poll-input');
     const btnAddPoll = document.getElementById('btn-add-poll');

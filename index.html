@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal & Booking</title>
+  <title>Portal & Booking System</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .hub-grid {
@@ -12,11 +12,7 @@
       gap: 24px;
       margin-top: 30px;
     }
-    @media (max-width: 768px) {
-      .hub-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 768px) { .hub-grid { grid-template-columns: 1fr; } }
     .hub-card {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--glass-border);
@@ -40,34 +36,67 @@
       border-color: var(--neon-pink);
       box-shadow: 0 12px 30px rgba(255, 0, 127, 0.25);
     }
-    .slot-pill {
-      background: rgba(0, 242, 254, 0.15);
-      border: 1px solid var(--neon-cyan);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 10px;
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+    .auth-tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1rem;
+      font-weight: 700;
       cursor: pointer;
-      font-size: 0.9rem;
+      padding-bottom: 6px;
+      border-bottom: 2px solid transparent;
       transition: 0.2s;
     }
-    .slot-pill:hover {
-      background: var(--neon-cyan);
-      color: #000;
+    .auth-tab-btn.active {
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
     }
-    .slot-pill.selected {
-      background: var(--neon-cyan);
-      color: #000;
-      font-weight: bold;
-    }
-    .grid-layout {
+    .hourly-slots-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-top: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
     }
-    @media (max-width: 850px) {
-      .grid-layout { grid-template-columns: 1fr; }
+    .hour-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: 0.2s;
+      user-select: none;
     }
+    .hour-chip:hover {
+      border-color: var(--neon-cyan);
+    }
+    .hour-chip.selected {
+      background: var(--neon-cyan);
+      color: #070913;
+      font-weight: bold;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.5);
+    }
+    .music-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+    }
+    .btn-icon { background: none; border: none; color: #fff; cursor: pointer; font-size: 1rem; }
+    .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+    @media (max-width: 850px) { .grid-layout { grid-template-columns: 1fr; } }
     .chat-container { display: flex; flex-direction: column; height: 480px; }
     .chat-messages {
       flex: 1;
@@ -79,69 +108,28 @@
       border-radius: 12px;
       background: rgba(0, 0, 0, 0.25);
     }
-    .msg-item {
-      padding: 10px 14px;
-      border-radius: 14px;
-      max-width: 80%;
-      word-break: break-word;
-      font-size: 0.9rem;
-    }
-    .msg-item.mine {
-      align-self: flex-end;
-      background: linear-gradient(135deg, #00f2fe, #3b82f6);
-      color: #fff;
-    }
-    .msg-item.theirs {
-      align-self: flex-start;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--glass-border);
-    }
-    .msg-author { font-size: 0.75rem; opacity: 0.8; margin-bottom: 3px; font-weight: bold; }
+    .msg-item { padding: 10px 14px; border-radius: 14px; max-width: 80%; font-size: 0.9rem; }
+    .msg-item.mine { align-self: flex-end; background: linear-gradient(135deg, #00f2fe, #3b82f6); color: #fff; }
+    .msg-item.theirs { align-self: flex-start; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); }
     .poll-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; max-height: 280px; overflow-y: auto; }
     .poll-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 14px;
     }
-    .btn-vote {
-      background: rgba(0, 242, 254, 0.2);
-      border: 1px solid var(--neon-cyan);
-      color: var(--neon-cyan);
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.2s;
-    }
-    .btn-vote:hover { background: var(--neon-cyan); color: #000; }
-    .music-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 6px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--glass-border);
-    }
-    .btn-icon { background: none; border: none; color: #fff; cursor: pointer; font-size: 1rem; }
+    .btn-vote { background: rgba(0, 242, 254, 0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <!-- Kesintisiz Arka Plan Müziği -->
+  <!-- Kesintisiz Müzik Çalar -->
   <audio id="bg-audio" preload="auto"></audio>
 
-  <!-- ================= 0. VIEW: ANA GİRİŞ / HUB ================= -->
+  <!-- ================= 0. VIEW: ANA GİRİŞ HUB ================= -->
   <div id="view-hub" class="container">
     <div class="nav-header">
       <h2 style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
         Welcome to Portal
       </h2>
-      <!-- Müzik Kontrolleri -->
       <div class="music-bar">
         <button id="btn-prev-music" class="btn-icon">⏮️</button>
         <button id="btn-music-toggle" class="btn-icon">▶️</button>
@@ -150,43 +138,55 @@
       </div>
     </div>
 
-    <p style="text-align: center; color: #94a3b8; margin-top: 10px;">Select what you would like to explore today</p>
+    <p style="text-align: center; color: #94a3b8; margin-top: 10px;">Select an experience to continue</p>
 
     <div class="hub-grid">
-      <!-- Events Kartı -->
       <div id="card-go-events" class="hub-card">
         <span style="font-size: 3rem;">🎉</span>
         <h2 style="color: var(--neon-cyan); margin: 0;">Event Portal</h2>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Access active events, live group chats, suggestions, and 5 TB media gallery.</p>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Group events, live chat, poll suggestions, and 5 TB Google Drive gallery.</p>
         <span class="badge badge-open" style="margin-top: 10px;">Enter Events →</span>
       </div>
 
-      <!-- Booking Kartı -->
       <div id="card-go-booking" class="hub-card pink">
         <span style="font-size: 3rem;">📅</span>
         <h2 style="color: var(--neon-pink); margin: 0;">Book an Appointment</h2>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">View my open calendar dates and pick an available time slot that fits your schedule.</p>
-        <span class="badge badge-open" style="margin-top: 10px; background: rgba(255,0,127,0.2); color: var(--neon-pink); border-color: var(--neon-pink);">Schedule Now →</span>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Check my real-time open slots, pick hours, and tell me what you want to do.</p>
+        <span class="badge badge-open" style="margin-top: 10px; background: rgba(255,0,127,0.2); color: var(--neon-pink); border-color: var(--neon-pink);">Pick a Time →</span>
       </div>
     </div>
   </div>
 
-  <!-- ================= 1. VIEW: ETKİNLİK GİRİŞİ ================= -->
-  <div id="view-login" class="container" style="display: none;">
+  <!-- ================= 1. VIEW: EMAIL TABANLI KAYIT / GİRİŞ ================= -->
+  <div id="view-auth" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 14px; font-size: 0.85rem;">← Back to Main Hub</button>
     </div>
-    <div class="glass-box login-wrap" style="margin-top: 30px; max-width: 440px; margin-left: auto; margin-right: auto; text-align: center;">
-      <h1 style="margin-bottom: 8px;">Portal Login</h1>
-      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">Enter your username to access events</p>
-      
-      <input type="text" id="username-input" class="input-field" placeholder="e.g. sefer" autocomplete="off" />
-      <button id="btn-login" class="btn" style="width: 100%;">Login & Continue</button>
-      <p id="login-err" style="color: #f43f5e; margin-top: 12px; font-size: 0.85rem; display: none;"></p>
+
+    <div class="glass-box login-wrap" style="max-width: 440px; margin: 30px auto; text-align: center;">
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab-btn active">Sign In</button>
+        <button id="tab-register" class="auth-tab-btn">Create Account</button>
+      </div>
+
+      <!-- Giriş Formu -->
+      <div id="form-login-wrap">
+        <input type="email" id="login-email" class="input-field" placeholder="Enter your email address" autocomplete="off" />
+        <button id="btn-login" class="btn" style="width: 100%;">Sign In</button>
+      </div>
+
+      <!-- Kayıt Formu -->
+      <div id="form-register-wrap" style="display: none;">
+        <input type="text" id="reg-name" class="input-field" placeholder="Your Name & Surname" autocomplete="off" />
+        <input type="email" id="reg-email" class="input-field" placeholder="Your Unique Email" autocomplete="off" />
+        <button id="btn-register" class="btn btn-pink" style="width: 100%;">Create Account</button>
+      </div>
+
+      <p id="auth-err" style="color: #f43f5e; margin-top: 14px; font-size: 0.85rem; display: none;"></p>
     </div>
   </div>
 
-  <!-- ================= 2. VIEW: ETKİNLİK VİTRİNİ ================= -->
+  <!-- ================= 2. VIEW: ETKİNLİK DASHBOARD ================= -->
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div>
@@ -214,7 +214,6 @@
       <p id="event-desc" style="color: #94a3b8; font-size: 0.95rem;"></p>
     </div>
 
-    <!-- Media Gallery -->
     <div class="glass-box" style="margin-top: 20px;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
@@ -240,7 +239,6 @@
       </div>
     </div>
 
-    <!-- Chat & Suggestions -->
     <div class="grid-layout">
       <div class="glass-box chat-container">
         <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Group Chat</h3>
@@ -255,7 +253,7 @@
         <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 What's the Plan Today?</h3>
         <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Suggest an activity and vote!</p>
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="e.g. Coffee walk?">
+          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="e.g. Dinner together?">
           <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Add</button>
         </div>
         <div class="poll-list" id="poll-list"></div>
@@ -263,42 +261,52 @@
     </div>
   </div>
 
-  <!-- ================= 4. VIEW: RANDEVU ALMA TAKVİMİ ================= -->
+  <!-- ================= 4. VIEW: SAATLİK TAKVİM RANDEVU ALMA ================= -->
   <div id="view-booking" class="container" style="display: none;">
     <div class="nav-header">
       <button class="btn btn-to-hub" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Main Hub</button>
-      <span style="font-size: 0.9rem; color: #94a3b8;">Calendar Availability</span>
+      <span style="font-size: 0.9rem; color: #94a3b8;">Hourly Appointment Booking</span>
     </div>
 
     <div class="glass-box" style="margin-top: 20px;">
-      <h2 style="color: var(--neon-pink); margin-bottom: 6px;">📅 Book an Appointment</h2>
-      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px;">
-        Pick an available date and time slot from the schedule below to book our meeting.
+      <h2 style="color: var(--neon-pink); margin-bottom: 6px;">📅 Pick Your Date & Hourly Slots</h2>
+      <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">
+        Click a glowing day on the calendar, choose your hours, and share your activity idea!
       </p>
 
-      <div style="margin-bottom: 20px;">
-        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 6px;">Select Date:</label>
-        <select id="booking-date-select" class="input-field" style="max-width: 320px;"></select>
-      </div>
-
-      <div style="margin-bottom: 24px;">
-        <label style="font-size: 0.85rem; color: #cbd5e1; display: block; margin-bottom: 10px;">Available Time Slots:</label>
-        <div id="booking-slots-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
-          <p style="color: #94a3b8; font-size: 0.85rem;">Select a date to view open slots.</p>
+      <!-- Takvim -->
+      <div class="calendar-wrapper">
+        <div class="calendar-header">
+          <button id="cal-prev-month" class="calendar-nav-btn">‹</button>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="cal-month-select" class="input-field" style="margin: 0; padding: 6px 12px; width: auto; font-weight: bold;"></select>
+            <select id="cal-year-select" class="input-field" style="margin: 0; padding: 6px 12px; width: auto; font-weight: bold;"></select>
+          </div>
+          <button id="cal-next-month" class="calendar-nav-btn">›</button>
         </div>
+        <div class="calendar-grid" id="calendar-days-grid"></div>
       </div>
 
-      <div id="booking-form-wrap" style="display: none; border-top: 1px solid var(--glass-border); padding-top: 20px; max-width: 480px;">
-        <h4 style="color: var(--neon-cyan); margin-bottom: 12px;">Confirm Booking Details</h4>
-        <input type="text" id="book-name" class="input-field" placeholder="Your Name & Surname *">
+      <!-- Seçilen Günün Saatlik Slotları -->
+      <div id="selected-day-slots-wrap" style="display: none; margin-bottom: 24px;">
+        <h4 id="selected-date-heading" style="color: var(--neon-cyan); margin-bottom: 4px;">Available Hours:</h4>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 12px;">You can select multiple hours by clicking on them.</p>
+        <div id="hourly-slots-container" class="hourly-slots-grid"></div>
+      </div>
+
+      <!-- Randevu Formu -->
+      <div id="booking-form-wrap" style="display: none; border-top: 1px solid var(--glass-border); padding-top: 20px; max-width: 520px;">
+        <h4 style="color: var(--neon-pink); margin-bottom: 14px;">Confirm Your Booking</h4>
+        <input type="text" id="book-name" class="input-field" placeholder="Your Name *">
+        <input type="email" id="book-email" class="input-field" placeholder="Your Email Address *">
         <input type="text" id="book-contact" class="input-field" placeholder="Phone or Instagram / WhatsApp Handle *">
-        <textarea id="book-notes" class="input-field" style="height: 70px; resize: none;" placeholder="Note / Reason for meeting (optional)"></textarea>
-        <button id="btn-submit-booking" class="btn">Confirm Appointment</button>
+        <textarea id="book-plan" class="input-field" style="height: 85px; resize: none;" placeholder="What would you like to do during these hours? (e.g., Coffee, sightseeing, dinner...) *"></textarea>
+        <button id="btn-submit-booking" class="btn" style="width: 100%;">Confirm Appointment</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= GÖRSEL ŞÖLEN: HER TIKLAMADA NEON DALGA SCRIPTİ ================= -->
+  <!-- HER TIKLAMADA NEON DALGA SCRIPTİ -->
   <script>
     window.addEventListener('click', (e) => {
       const ripple = document.createElement('div');
@@ -310,11 +318,11 @@
     });
   </script>
 
-  <!-- ================= ANA UYGULAMA MOTORU ================= -->
+  <!-- ANA UYGULAMA MOTORU -->
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    // MÜZİK ÇALMA LİSTESİ
+    // MÜZİK
     const playlist = [
       { title: "Lofi Chill Night", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" },
       { title: "Deep Atmosphere", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
@@ -335,26 +343,12 @@
     }
 
     function playTrack() {
-      audio.play().then(() => { btnMusicToggle.textContent = '⏸️'; }).catch(() => { btnMusicToggle.textContent = '▶️'; });
+      audio.play().then(() => { btnMusicToggle.textContent = '⏸️'; }).catch(() => { btnMusicToggle.textContent = '▶️️'; });
     }
 
-    btnNextMusic.addEventListener('click', () => {
-      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-      loadTrack(currentTrackIndex);
-      playTrack();
-    });
-
-    btnPrevMusic.addEventListener('click', () => {
-      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
-      loadTrack(currentTrackIndex);
-      playTrack();
-    });
-
-    audio.addEventListener('ended', () => {
-      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-      loadTrack(currentTrackIndex);
-      playTrack();
-    });
+    btnNextMusic.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+    btnPrevMusic.addEventListener('click', () => { currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
+    audio.addEventListener('ended', () => { currentTrackIndex = (currentTrackIndex + 1) % playlist.length; loadTrack(currentTrackIndex); playTrack(); });
 
     btnMusicToggle.addEventListener('click', () => {
       if (audio.paused) playTrack();
@@ -363,27 +357,27 @@
 
     loadTrack(0);
 
-    // GÖRÜNÜM GEÇİŞLERİ
+    // GÖRÜNÜM YÖNETİMİ
     const viewHub = document.getElementById('view-hub');
-    const viewLogin = document.getElementById('view-login');
+    const viewAuth = document.getElementById('view-auth');
     const viewDashboard = document.getElementById('view-dashboard');
     const viewEventDetail = document.getElementById('view-event-detail');
     const viewBooking = document.getElementById('view-booking');
 
-    function hideAllViews() {
+    function hideAll() {
       viewHub.style.display = 'none';
-      viewLogin.style.display = 'none';
+      viewAuth.style.display = 'none';
       viewDashboard.style.display = 'none';
       viewEventDetail.style.display = 'none';
       viewBooking.style.display = 'none';
     }
 
     function showHub() {
-      hideAllViews();
+      hideAll();
       viewHub.style.display = 'block';
     }
 
-    document.querySelectorAll('.btn-to-hub').forEach(btn => btn.addEventListener('click', showHub));
+    document.querySelectorAll('.btn-to-hub').forEach(b => b.addEventListener('click', showHub));
 
     document.getElementById('card-go-events').addEventListener('click', () => {
       playTrack();
@@ -392,56 +386,118 @@
         currentUser = user;
         showDashboard();
       } else {
-        hideAllViews();
-        viewLogin.style.display = 'block';
+        hideAll();
+        viewAuth.style.display = 'block';
       }
     });
 
     document.getElementById('card-go-booking').addEventListener('click', () => {
       playTrack();
-      hideAllViews();
+      hideAll();
       viewBooking.style.display = 'block';
-      loadAvailableDates();
+      initCalendar();
     });
 
-    // ETKİNLİK SİSTEMİ
+    // EMAIL TABANLI GİRİŞ VE KAYIT
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const formLoginWrap = document.getElementById('form-login-wrap');
+    const formRegisterWrap = document.getElementById('form-register-wrap');
+    const authErr = document.getElementById('auth-err');
+
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      formLoginWrap.style.display = 'block';
+      formRegisterWrap.style.display = 'none';
+      authErr.style.display = 'none';
+    });
+
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      formRegisterWrap.style.display = 'block';
+      formLoginWrap.style.display = 'none';
+      authErr.style.display = 'none';
+    });
+
     let currentUser = null;
-    let activeEventId = null;
-    let activeFolderId = '';
-    let chatChannel = null;
 
-    const usernameInput = document.getElementById('username-input');
-    const btnLogin = document.getElementById('btn-login');
-    const btnLogout = document.getElementById('btn-logout');
-    const loginErr = document.getElementById('login-err');
-    const welcomeText = document.getElementById('welcome-text');
-    const adminLink = document.getElementById('admin-link');
-    const eventsList = document.getElementById('events-list');
-    const btnBackDashboard = document.getElementById('btn-back-dashboard');
+    // Giriş Yap (Email ile)
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      authErr.style.display = 'none';
 
-    btnLogin.addEventListener('click', async () => {
-      const username = usernameInput.value.trim().toLowerCase();
-      loginErr.style.display = 'none';
-      if (!username) { loginErr.textContent = 'Please enter your username.'; loginErr.style.display = 'block'; return; }
+      if (!email) {
+        authErr.textContent = 'Please enter your email.';
+        authErr.style.display = 'block';
+        return;
+      }
 
-      const { data: user } = await supabase.from('users').select('*').ilike('username', username).maybeSingle();
-      if (!user) { loginErr.textContent = 'Username not registered.'; loginErr.style.display = 'block'; return; }
-      if (!user.is_active) { loginErr.textContent = 'Account inactive.'; loginErr.style.display = 'block'; return; }
+      const { data: user, error } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
+      if (error || !user) {
+        authErr.textContent = 'Account not found with this email. Please register!';
+        authErr.style.display = 'block';
+        return;
+      }
+
+      if (!user.is_active) {
+        authErr.textContent = 'Account is disabled by administrator.';
+        authErr.style.display = 'block';
+        return;
+      }
 
       currentUser = user;
       localStorage.setItem('portal_user', JSON.stringify(user));
       showDashboard();
     });
 
-    btnLogout.addEventListener('click', () => {
-      localStorage.removeItem('portal_user');
-      showHub();
+    // Kayıt Ol (Benzersiz Email ile)
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim().toLowerCase();
+      authErr.style.display = 'none';
+
+      if (!name || !email) {
+        authErr.textContent = 'Please fill in all fields.';
+        authErr.style.display = 'block';
+        return;
+      }
+
+      const { data: existing } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
+      if (existing) {
+        authErr.textContent = 'This email is already registered. Please sign in!';
+        authErr.style.display = 'block';
+        return;
+      }
+
+      const { data: newUser, error } = await supabase.from('users').insert({
+        username: name,
+        email: email,
+        is_active: true
+      }).select().single();
+
+      if (error) {
+        authErr.textContent = error.message;
+        authErr.style.display = 'block';
+        return;
+      }
+
+      currentUser = newUser;
+      localStorage.setItem('portal_user', JSON.stringify(newUser));
+      showDashboard();
     });
 
+    // DASHBOARD
+    const eventsList = document.getElementById('events-list');
+    const welcomeText = document.getElementById('welcome-text');
+    const adminLink = document.getElementById('admin-link');
+    const btnLogout = document.getElementById('btn-logout');
+
     async function showDashboard() {
-      hideAllViews();
+      hideAll();
       viewDashboard.style.display = 'block';
-      welcomeText.textContent = `Welcome, ${currentUser.username.toUpperCase()}`;
+      welcomeText.textContent = `Welcome, ${currentUser.username}`;
       if (currentUser.is_admin) adminLink.style.display = 'inline';
 
       const { data: allEvents } = await supabase.from('events').select('*').order('created_at', { ascending: false });
@@ -465,6 +521,16 @@
       });
     }
 
+    btnLogout.addEventListener('click', () => {
+      localStorage.removeItem('portal_user');
+      showHub();
+    });
+
+    // ETKİNLİK ODASI & CHAT & DRIVE
+    let activeEventId = null;
+    let activeFolderId = '';
+    let chatChannel = null;
+
     async function openEventDetail(evt) {
       activeEventId = evt.id;
       if (evt.drive_folder_url) {
@@ -472,7 +538,7 @@
         activeFolderId = match ? match[0] : evt.drive_folder_url;
       } else { activeFolderId = ''; }
 
-      hideAllViews();
+      hideAll();
       viewEventDetail.style.display = 'block';
       document.getElementById('current-user-tag').textContent = `User: ${currentUser.username}`;
       document.getElementById('event-title').textContent = evt.title;
@@ -483,18 +549,14 @@
 
       if (chatChannel) supabase.removeChannel(chatChannel);
       chatChannel = supabase.channel('chat-room-' + activeEventId).on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'event_messages',
-        filter: `event_id=eq.${activeEventId}`
+        event: 'INSERT', schema: 'public', table: 'event_messages', filter: `event_id=eq.${activeEventId}`
       }, payload => {
         if (payload.new.username.toLowerCase() !== currentUser.username.toLowerCase()) appendMessage(payload.new);
       }).subscribe();
     }
 
-    btnBackDashboard.addEventListener('click', showDashboard);
+    document.getElementById('btn-back-dashboard').addEventListener('click', showDashboard);
 
-    // CHAT
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const btnSendChat = document.getElementById('btn-send-chat');
@@ -510,7 +572,7 @@
       const isMine = msg.username.toLowerCase() === currentUser.username.toLowerCase();
       const div = document.createElement('div');
       div.className = `msg-item ${isMine ? 'mine' : 'theirs'}`;
-      div.innerHTML = `<div class="msg-author">${msg.username}</div><div>${msg.message}</div>`;
+      div.innerHTML = `<div style="font-size:0.75rem; font-weight:bold; margin-bottom:2px;">${msg.username}</div><div>${msg.message}</div>`;
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -520,18 +582,13 @@
       if (!text) return;
       chatInput.value = '';
       appendMessage({ username: currentUser.username, message: text });
-      await supabase.from('event_messages').insert({
-        event_id: activeEventId,
-        user_id: currentUser.id,
-        username: currentUser.username,
-        message: text
-      });
+      await supabase.from('event_messages').insert({ event_id: activeEventId, user_id: currentUser.id, username: currentUser.username, message: text });
     }
 
     btnSendChat.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    // SUGGESTIONS
+    // OYLAMA
     const pollList = document.getElementById('poll-list');
     const pollInput = document.getElementById('poll-input');
     const btnAddPoll = document.getElementById('btn-add-poll');
@@ -559,7 +616,7 @@
       loadPolls();
     });
 
-    // 5 TB GOOGLE DRIVE YÜKLEME & GALERİ
+    // 5 TB DRIVE MEDYA
     const fileInput = document.getElementById('media-file-input');
     const triggerBtn = document.getElementById('btn-trigger-upload');
     const uploadStatus = document.getElementById('upload-status');
@@ -619,101 +676,210 @@
       } catch (e) { galleryGrid.innerHTML = '<p style="color:#ef4444;">Error fetching photos.</p>'; }
     }
 
-    // RANDEVU ALMA MOTORU
-    const bookingDateSelect = document.getElementById('booking-date-select');
-    const bookingSlotsContainer = document.getElementById('booking-slots-container');
+    // ================= SAATLİK VE ÇOKLU SEÇİMLİ TAKVİM SİSTEMİ =================
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+    const calMonthSelect = document.getElementById('cal-month-select');
+    const calYearSelect = document.getElementById('cal-year-select');
+    const calPrevMonth = document.getElementById('cal-prev-month');
+    const calNextMonth = document.getElementById('cal-next-month');
+    const calendarDaysGrid = document.getElementById('calendar-days-grid');
+    const selectedDaySlotsWrap = document.getElementById('selected-day-slots-wrap');
+    const selectedDateHeading = document.getElementById('selected-date-heading');
+    const hourlySlotsContainer = document.getElementById('hourly-slots-container');
     const bookingFormWrap = document.getElementById('booking-form-wrap');
-    let selectedSlotId = null;
 
-    async function loadAvailableDates() {
-      bookingDateSelect.innerHTML = '<option value="">Select Date...</option>';
-      const today = new Date().toISOString().split('T')[0];
+    let currentCalDate = new Date();
+    let selectedDateStr = '';
+    let selectedSlotIds = new Set();
+    let availableSlotsCache = [];
 
-      const { data: slots } = await supabase
-        .from('availability_slots')
-        .select('slot_date')
-        .gte('slot_date', today)
-        .eq('is_booked', false)
-        .order('slot_date');
-
-      if (!slots || slots.length === 0) {
-        bookingSlotsContainer.innerHTML = '<p style="color:#94a3b8;">No available slots currently scheduled. Please check back later!</p>';
-        return;
+    function initCalendar() {
+      const startYear = new Date().getFullYear();
+      calYearSelect.innerHTML = '';
+      for (let y = startYear; y < startYear + 6; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        calYearSelect.appendChild(opt);
       }
 
-      const uniqueDates = [...new Set(slots.map(s => s.slot_date))];
-      uniqueDates.forEach(d => {
+      calMonthSelect.innerHTML = '';
+      monthNames.forEach((m, idx) => {
         const opt = document.createElement('option');
-        opt.value = d;
-        opt.textContent = new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-        bookingDateSelect.appendChild(opt);
+        opt.value = idx;
+        opt.textContent = m;
+        calMonthSelect.appendChild(opt);
       });
+
+      calMonthSelect.value = currentCalDate.getMonth();
+      calYearSelect.value = currentCalDate.getFullYear();
+
+      calMonthSelect.addEventListener('change', () => { currentCalDate.setMonth(parseInt(calMonthSelect.value)); renderCalendar(); });
+      calYearSelect.addEventListener('change', () => { currentCalDate.setFullYear(parseInt(calYearSelect.value)); renderCalendar(); });
+
+      calPrevMonth.addEventListener('click', () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() - 1);
+        calMonthSelect.value = currentCalDate.getMonth();
+        calYearSelect.value = currentCalDate.getFullYear();
+        renderCalendar();
+      });
+
+      calNextMonth.addEventListener('click', () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() + 1);
+        calMonthSelect.value = currentCalDate.getMonth();
+        calYearSelect.value = currentCalDate.getFullYear();
+        renderCalendar();
+      });
+
+      renderCalendar();
     }
 
-    bookingDateSelect.addEventListener('change', async () => {
-      const date = bookingDateSelect.value;
+    async function renderCalendar() {
+      calendarDaysGrid.innerHTML = '';
+      selectedDaySlotsWrap.style.display = 'none';
       bookingFormWrap.style.display = 'none';
-      selectedSlotId = null;
+      selectedSlotIds.clear();
 
-      if (!date) {
-        bookingSlotsContainer.innerHTML = '<p style="color:#94a3b8;">Select a date to view open slots.</p>';
-        return;
-      }
+      dayNames.forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'calendar-day-header';
+        h.textContent = d;
+        calendarDaysGrid.appendChild(h);
+      });
 
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+
+      let startingDay = new Date(year, month, 1).getDay() - 1;
+      if (startingDay === -1) startingDay = 6;
+
+      const startDateStr = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+      const endDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`;
+
+      // Aktif ve Rezerve edilmemiş slotları al
       const { data: slots } = await supabase
         .from('availability_slots')
         .select('*')
-        .eq('slot_date', date)
-        .eq('is_booked', false)
-        .order('start_time');
+        .gte('slot_date', startDateStr)
+        .lte('slot_date', endDateStr)
+        .eq('is_active', true)
+        .eq('is_booked', false);
 
-      bookingSlotsContainer.innerHTML = '';
-      if (!slots || slots.length === 0) {
-        bookingSlotsContainer.innerHTML = '<p style="color:#f43f5e;">All slots are booked for this date!</p>';
-        return;
+      availableSlotsCache = slots || [];
+
+      const slotMap = {};
+      availableSlotsCache.forEach(s => {
+        slotMap[s.slot_date] = (slotMap[s.slot_date] || 0) + 1;
+      });
+
+      for (let i = 0; i < startingDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'calendar-cell';
+        empty.style.opacity = '0.1';
+        calendarDaysGrid.appendChild(empty);
       }
 
-      slots.forEach(s => {
-        const btn = document.createElement('button');
-        btn.className = 'slot-pill';
-        btn.textContent = `${s.start_time} - ${s.end_time}`;
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.slot-pill').forEach(el => el.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedSlotId = s.id;
-          bookingFormWrap.style.display = 'block';
-        });
-        bookingSlotsContainer.appendChild(btn);
-      });
-    });
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hasOpenSlots = slotMap[dateStr] && slotMap[dateStr] > 0;
 
+        const cell = document.createElement('div');
+        cell.className = `calendar-cell ${hasOpenSlots ? 'has-available' : ''}`;
+        cell.innerHTML = `
+          <span>${day}</span>
+          ${hasOpenSlots ? `<span style="font-size:0.65rem; color:#00f2fe; margin-top:2px;">● ${slotMap[dateStr]} hrs</span>` : ''}
+        `;
+
+        if (hasOpenSlots) {
+          cell.addEventListener('click', () => {
+            document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected'));
+            cell.classList.add('selected');
+            selectedDateStr = dateStr;
+            showHourlySlotsForDate(dateStr);
+          });
+        }
+
+        calendarDaysGrid.appendChild(cell);
+      }
+    }
+
+    function showHourlySlotsForDate(dateStr) {
+      const daySlots = availableSlotsCache.filter(s => s.slot_date === dateStr).sort((a,b) => a.hour_slot.localeCompare(b.hour_slot));
+      selectedDaySlotsWrap.style.display = 'block';
+      bookingFormWrap.style.display = 'none';
+      selectedSlotIds.clear();
+
+      const formatted = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+      selectedDateHeading.textContent = `Open Hours on ${formatted}:`;
+      hourlySlotsContainer.innerHTML = '';
+
+      // Kullanıcı oturum açmışsa adını/emailini otomatik doldur
+      if (currentUser) {
+        document.getElementById('book-name').value = currentUser.username;
+        document.getElementById('book-email').value = currentUser.email || '';
+      }
+
+      daySlots.forEach(s => {
+        const chip = document.createElement('div');
+        chip.className = 'hour-chip';
+        chip.textContent = s.hour_slot;
+        chip.addEventListener('click', () => {
+          if (selectedSlotIds.has(s.id)) {
+            selectedSlotIds.delete(s.id);
+            chip.classList.remove('selected');
+          } else {
+            selectedSlotIds.add(s.id);
+            chip.classList.add('selected');
+          }
+
+          if (selectedSlotIds.size > 0) {
+            bookingFormWrap.style.display = 'block';
+          } else {
+            bookingFormWrap.style.display = 'none';
+          }
+        });
+        hourlySlotsContainer.appendChild(chip);
+      });
+    }
+
+    // Randevuyu Onayla ve Saatleri Kapat
     document.getElementById('btn-submit-booking').addEventListener('click', async () => {
       const name = document.getElementById('book-name').value.trim();
+      const email = document.getElementById('book-email').value.trim().toLowerCase();
       const contact = document.getElementById('book-contact').value.trim();
-      const notes = document.getElementById('book-notes').value.trim();
+      const plan = document.getElementById('book-plan').value.trim();
 
-      if (!selectedSlotId || !name || !contact) {
-        alert("Please fill in your name and contact info!");
+      if (selectedSlotIds.size === 0 || !name || !email || !contact || !plan) {
+        alert("Please select at least one hour and fill in all required fields!");
         return;
       }
 
+      const slotArray = Array.from(selectedSlotIds);
+      const chosenHourNames = availableSlotsCache.filter(s => selectedSlotIds.has(s.id)).map(s => s.hour_slot);
+
+      // 1. Randevuyu Kaydet
       const { error: appErr } = await supabase.from('appointments').insert({
-        slot_id: selectedSlotId,
+        user_id: currentUser ? currentUser.id : null,
         client_name: name,
+        client_email: email,
         client_contact: contact,
-        notes: notes
+        activity_plan: plan,
+        appointment_date: selectedDateStr,
+        selected_slots: chosenHourNames
       });
 
       if (appErr) return alert("Booking error: " + appErr.message);
 
-      await supabase.from('availability_slots').update({ is_booked: true }).eq('id', selectedSlotId);
+      // 2. Seçilen Saat Slotlarını Rezerve Et (is_booked = true)
+      await supabase.from('availability_slots').update({ is_booked: true }).in('id', slotArray);
 
-      alert("🎉 Your appointment has been booked successfully!");
-      document.getElementById('book-name').value = '';
-      document.getElementById('book-contact').value = '';
-      document.getElementById('book-notes').value = '';
+      alert(`🎉 Appointment confirmed for ${chosenHourNames.join(', ')}! The hours are now reserved.`);
+      document.getElementById('book-plan').value = '';
       bookingFormWrap.style.display = 'none';
-      loadAvailableDates();
+      renderCalendar();
     });
   </script>
 </body>

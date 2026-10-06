@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event & Booking Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 1. GİRİŞ & KAYIT EKRANI -->
+  <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
+    <div class="glass-box">
+      <h2 id="auth-title" style="color: #00f2fe; text-align: center; margin-bottom: 20px;">Portal Girişi</h2>
+      
+      <div id="auth-register-fields" style="display: none;">
+        <input type="text" id="reg-username" class="input-field" placeholder="Kullanıcı Adı">
+      </div>
+      <input type="email" id="auth-email" class="input-field" placeholder="E-posta Adresi">
+      <input type="password" id="auth-password" class="input-field" placeholder="Şifre">
+      
+      <button id="btn-auth-submit" class="btn" style="width: 100%; margin-top: 8px;">Giriş Yap</button>
+      
+      <div style="text-align: center; margin-top: 16px;">
+        <a href="#" id="toggle-auth-mode" style="color: #94a3b8; font-size: 0.85rem; text-decoration: none;">
+          Hesabın yok mu? Kayıt Ol
+        </a>
+      </div>
+      <div id="auth-status" style="margin-top: 12px; font-size: 0.85rem; text-align: center;"></div>
+    </div>
+  </div>
+
+  <!-- 2. ANA PORTAL DASHBOARD -->
+  <div id="view-dashboard" class="container" style="display: none;">
+    <div class="nav-header">
+      <div>
+        <h2 id="user-greeting" style="color: #00f2fe;">Hoş Geldiniz</h2>
+        <span id="user-role-text" style="font-size: 0.85rem; color: #94a3b8;">Üye Paneli</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a id="btn-admin-link" href="admin.html" class="btn btn-pink" style="display: none; padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">
+          ⚙️ Admin Panel
+        </a>
+        <button id="btn-logout" class="btn" style="padding: 8px 16px; font-size: 0.85rem;">Çıkış Yap</button>
+      </div>
+    </div>
+
+    <!-- Menü Seçenekleri -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
+      <div id="nav-btn-events" class="glass-box" style="cursor: pointer; transition: 0.2s;">
+        <h3 style="color: #00f2fe; margin-bottom: 8px;">🎉 Etkinliklerim</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem;">Katıldığınız etkinlikler, paylaşılan fotoğraflar ve oda sohbeti.</p>
+      </div>
+      <div id="nav-btn-booking" class="glass-box" style="cursor: pointer; transition: 0.2s;">
+        <h3 style="color: #ff007f; margin-bottom: 8px;">📅 Randevu & Takvim</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem;">Müsait gün ve saatleri inceleyip doğrudan rezervasyon oluşturun.</p>
+      </div>
+    </div>
+
+    <!-- BÖLÜM A: TAKVİM & RANDEVU -->
+    <div id="section-booking" style="display: none;">
+      <div class="glass-box">
+        <h3 style="color: #ff007f; margin-bottom: 16px;">📅 Müsaitlik Takvimi & Randevu Talebi</h3>
+        
+        <div class="cal-top-bar">
+          <button id="cal-prev-month" class="cal-nav-btn">‹</button>
+          <div style="display: flex; gap: 8px;">
+            <select id="cal-month-select" class="cal-dropdown"></select>
+            <select id="cal-year-select" class="cal-dropdown"></select>
+          </div>
+          <button id="cal-next-month" class="cal-nav-btn">›</button>
+        </div>
+
+        <div class="cal-weekdays">
+          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+        </div>
+
+        <div class="cal-days-grid" id="calendar-days-grid"></div>
+
+        <!-- Seçilen Günün Saatleri -->
+        <div id="selected-day-slots-wrap" style="display: none; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 18px;">
+          <h4 id="selected-date-heading" style="color: #00f2fe; margin-bottom: 10px;">Available Hours</h4>
+          <div id="hourly-slots-container" class="slot-matrix"></div>
+        </div>
+
+        <!-- Randevu Rezervasyon Formu -->
+        <div id="booking-form-wrap" style="display: none; margin-top: 20px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 14px;">
+          <h4 style="color: #00f2fe; margin-bottom: 12px;">Randevu Bilgilerinizi Girin</h4>
+          <input type="text" id="book-name" class="input-field" placeholder="Adınız Soyadınız *">
+          <input type="email" id="book-email" class="input-field" placeholder="E-posta Adresiniz (Onay buraya gelecektir) *">
+          <input type="text" id="book-contact" class="input-field" placeholder="Telefon / Telegram / Instagram *">
+          <textarea id="book-plan" class="input-field" style="height: 70px; resize: none;" placeholder="Görüşme amacı / planınız *"></textarea>
+          
+          <button id="btn-submit-booking" class="btn btn-pink" style="width: 100%;">Confirm Booking Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BÖLÜM B: ETKİNLİKLER & GALERİ / CHAT -->
+    <div id="section-events" style="display: none;">
+      <div class="glass-box">
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">Erişebildiğiniz Etkinlikler</h3>
+        <div id="events-grid-list" style="display: grid; gap: 12px;"></div>
+      </div>
+
+      <!-- Seçilen Etkinliğin Detay Odası (Galeri + Chat) -->
+      <div id="event-detail-room" class="glass-box" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 id="room-title" style="color: #00f2fe; margin: 0;">Etkinlik Odası</h3>
+          <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.8rem;">Odayı Kapat</button>
+        </div>
+
+        <!-- Galeri Alanı -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Fotoğraf Galerisi</h4>
+          <div id="room-gallery-container"></div>
+        </div>
+
+        <!-- Canlı Mesajlaşma Alanı -->
+        <div>
+          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Canlı Mesajlaşma</h4>
+          <div id="room-chat-messages" style="height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="chat-input-text" class="input-field" placeholder="Bir mesaj yazın..." style="margin-bottom: 0;">
+            <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 24px;">Gönder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODÜL BAĞLANTILARI (BOOTLOADER) -->
+  <script type="module">
+    import { supabase } from './config.js';
+    import { getSessionUser, loginUser, registerUser, clearSession } from './modules/auth.js';
+    import { initCalendar } from './modules/calendar.js';
+    import { initBooking } from './modules/booking.js';
+    import { renderEventGallery } from './modules/gallery.js';
+    import { initEventChat, sendChatMessage } from './modules/chat.js';
+
+    let isRegisterMode = false;
+    let currentOpenEventId = null;
+
+    window.addEventListener('load', () => {
+      checkUserState();
+    });
+
+    function checkUserState() {
+      const user = getSessionUser();
+      if (!user) {
+        document.getElementById('view-auth').style.display = 'block';
+        document.getElementById('view-dashboard').style.display = 'none';
+        setupAuthEvents();
+      } else {
+        document.getElementById('view-auth').style.display = 'none';
+        document.getElementById('view-dashboard').style.display = 'block';
+        setupDashboard(user);
+      }
+    }
+
+    // AUTH İŞLEMLERİ
+    function setupAuthEvents() {
+      const toggleBtn = document.getElementById('toggle-auth-mode');
+      const submitBtn = document.getElementById('btn-auth-submit');
+      const regFields = document.getElementById('auth-register-fields');
+      const authTitle = document.getElementById('auth-title');
+      const statusEl = document.getElementById('auth-status');
+
+      toggleBtn.onclick = (e) => {
+        e.preventDefault();
+        isRegisterMode = !isRegisterMode;
+        if (isRegisterMode) {
+          authTitle.textContent = 'Yeni Hesap Oluştur';
+          regFields.style.display = 'block';
+          submitBtn.textContent = 'Kayıt Ol';
+          toggleBtn.textContent = 'Zaten hesabın var mı? Giriş Yap';
+        } else {
+          authTitle.textContent = 'Portal Girişi';
+          regFields.style.display = 'none';
+          submitBtn.textContent = 'Giriş Yap';
+          toggleBtn.textContent = 'Hesabın yok mu? Kayıt Ol';
+        }
+      };
+
+      submitBtn.onclick = async () => {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-password').value;
+        statusEl.style.color = '#00f2fe';
+        statusEl.textContent = 'İşleniyor...';
+
+        try {
+          if (isRegisterMode) {
+            const username = document.getElementById('reg-username').value;
+            if (!username) throw new Error('Lütfen bir kullanıcı adı girin.');
+            await registerUser(username, email, pass);
+          } else {
+            await loginUser(email, pass);
+          }
+          checkUserState();
+        } catch (err) {
+          statusEl.style.color = '#f43f5e';
+          statusEl.textContent = err.message;
+        }
+      };
+    }
+
+    // DASHBOARD İŞLEMLERİ
+    function setupDashboard(user) {
+      document.getElementById('user-greeting').textContent = `Hoş Geldin, ${user.username}`;
+      if (user.is_admin || user.role === 'admin') {
+        document.getElementById('btn-admin-link').style.display = 'inline-flex';
+        document.getElementById('user-role-text').textContent = 'Yetkili Yönetici';
+      }
+
+      document.getElementById('btn-logout').onclick = () => {
+        clearSession();
+        window.location.reload();
+      };
+
+      // Menü Geçişleri
+      const secBooking = document.getElementById('section-booking');
+      const secEvents = document.getElementById('section-events');
+
+      document.getElementById('nav-btn-booking').onclick = () => {
+        secBooking.style.display = 'block';
+        secEvents.style.display = 'none';
+        initCalendar();
+        initBooking();
+      };
+
+      document.getElementById('nav-btn-events').onclick = () => {
+        secEvents.style.display = 'block';
+        secBooking.style.display = 'none';
+        loadUserEvents(user);
+      };
+
+      // Varsayılan olarak Randevu sekmesini aç
+      document.getElementById('nav-btn-booking').click();
+    }
+
+    // Kullanıcının Erişebildiği Etkinlikleri Listeleme
+    async function loadUserEvents(user) {
+      const container = document.getElementById('events-grid-list');
+      container.innerHTML = '<p style="color: #94a3b8;">Etkinlikler yükleniyor...</p>';
+
+      let query;
+      if (user.is_admin || user.role === 'admin') {
+        query = supabase.from('events').select('*');
+      } else {
+        const { data: access } = await supabase.from('event_access').select('event_id').eq('user_id', user.id);
+        const eventIds = (access || []).map(a => a.event_id);
+        query = supabase.from('events').select('*').in('id', eventIds);
+      }
+
+      const { data: events, error } = await query;
+      if (error || !events || events.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8;">Erişebileceğiniz aktif bir etkinlik bulunamadı.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      events.forEach(evt => {
+        const card = document.createElement('div');
+        card.className = 'glass-box';
+        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer;';
+        card.innerHTML = `
+          <div>
+            <h4 style="color: #00f2fe; margin-bottom: 4px;">${evt.title}</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem;">${evt.description || 'Açıklama yok'}</p>
+          </div>
+          <button class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Odaya Gir →</button>
+        `;
+        card.onclick = () => openEventRoom(evt);
+        container.appendChild(card);
+      });
+    }
+
+    function openEventRoom(event) {
+      currentOpenEventId = event.id;
+      const room = document.getElementById('event-detail-room');
+      document.getElementById('room-title').textContent = `Etkinlik Odası: ${event.title}`;
+      room.style.display = 'block';
+
+      renderEventGallery('room-gallery-container', event.drive_folder_url);
+      initEventChat(event.id, 'room-chat-messages');
+
+      document.getElementById('btn-close-room').onclick = () => {
+        room.style.display = 'none';
+        currentOpenEventId = null;
+      };
+
+      document.getElementById('btn-send-chat').onclick = () => {
+        sendChatMessage(currentOpenEventId, 'chat-input-text');
+      };
+      document.getElementById('chat-input-text').onkeydown = (e) => {
+        if (e.key === 'Enter') sendChatMessage(currentOpenEventId, 'chat-input-text');
+      };
+
+      room.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

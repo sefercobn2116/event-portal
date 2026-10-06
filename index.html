@@ -49,7 +49,7 @@
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img id="user-nav-avatar" src="" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00f2fe; background: #111;">
+        <img id="user-nav-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00f2fe; background: #111;">
         <div>
           <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.3rem;">Welcome</h2>
           <span id="user-role-text" style="font-size: 0.85rem; color: #94a3b8;">Member Space</span>
@@ -124,7 +124,7 @@
     <!-- SECTION B: EVENTS -->
     <div id="section-events" style="display: none;">
       
-      <!-- YETKİLİ KULLANICILAR İÇİN "CREATE EVENT" BUTONU & MODAL -->
+      <!-- HOST YOUR OWN EVENT (YETKİLİ KULLANICILAR) -->
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -236,26 +236,45 @@
     import { initBooking } from './modules/booking.js';
     import { renderEventGallery } from './modules/gallery.js';
     import { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } from './modules/chat.js';
-    import { initEventExpenses } from './modules/expenses.js';
 
     let isRegisterMode = false;
     let currentOpenEventId = null;
     let countdownInterval = null;
     let allPortalUsers = [];
 
-    window.addEventListener('load', () => checkUserState());
+    // Hata durumunda ekranda hiçbir şeyin donmaması için korumalı başlatıcı
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        checkUserState();
+      } catch (err) {
+        console.error('Initialization error:', err);
+        document.getElementById('view-auth').style.display = 'block';
+      }
+    });
 
-    function checkUserState() {
-      const user = getSessionUser();
+    async function checkUserState() {
+      let user = getSessionUser();
       if (!user) {
         document.getElementById('view-auth').style.display = 'block';
         document.getElementById('view-dashboard').style.display = 'none';
         setupAuthEvents();
-      } else {
-        document.getElementById('view-auth').style.display = 'none';
-        document.getElementById('view-dashboard').style.display = 'block';
-        setupDashboard(user);
+        return;
       }
+
+      // Veritabanından en güncel yetkileri (can_create_events vs.) tazele
+      try {
+        const { data: latestUser } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+        if (latestUser) {
+          user = latestUser;
+          localStorage.setItem('portal_user', JSON.stringify(latestUser));
+        }
+      } catch (e) {
+        console.warn('User refresh fallback', e);
+      }
+
+      document.getElementById('view-auth').style.display = 'none';
+      document.getElementById('view-dashboard').style.display = 'block';
+      setupDashboard(user);
     }
 
     function setupAuthEvents() {
@@ -322,10 +341,8 @@
         window.location.reload();
       };
 
-      // QR Modal Event
       setupInviteQR();
 
-      // Navigation
       const secBooking = document.getElementById('section-booking');
       const secEvents = document.getElementById('section-events');
 
@@ -342,7 +359,6 @@
         loadUserEvents(user);
       };
 
-      // Yetkili kullanıcı etkinlik oluşturucu paneli
       if (user.can_create_events || user.is_admin || user.role === 'admin') {
         document.getElementById('user-create-event-panel').style.display = 'block';
         setupUserEventCreation(user);
@@ -387,7 +403,6 @@
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
       };
 
-      // Kullanıcı listesini çek
       const { data: users } = await supabase.from('users').select('id, username, email').neq('id', user.id);
       allPortalUsers = users || [];
       renderUserChecklist(allPortalUsers);
@@ -462,7 +477,6 @@
           return;
         }
 
-        // Seçilen kişilere erişim ver (+ oluşturan kişiye)
         const checkedUsers = Array.from(document.querySelectorAll('.evt-member-chk:checked')).map(cb => parseInt(cb.dataset.id));
         checkedUsers.push(user.id);
 
@@ -529,12 +543,12 @@
       });
     }
 
-    function openEventRoom(event) {
+    async function openEventRoom(event) {
       currentOpenEventId = event.id;
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
-      // 1. Konum / Yol Tarifi
+      // 1. Konum
       const locWrap = document.getElementById('room-location-wrap');
       if (event.location && event.location.trim()) {
         const loc = event.location.trim();
@@ -549,7 +563,7 @@
         locWrap.style.display = 'none';
       }
 
-      // 2. Canlı Geri Sayım Sayacı
+      // 2. Sayaç
       const cdBadge = document.getElementById('room-countdown-badge');
       if (countdownInterval) clearInterval(countdownInterval);
 
@@ -574,7 +588,7 @@
         cdBadge.style.display = 'none';
       }
 
-      // 3. Spotify Mini Player
+      // 3. Spotify
       const spotWrap = document.getElementById('room-spotify-wrap');
       if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
         let spotEmbed = event.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
@@ -586,18 +600,23 @@
         spotWrap.style.display = 'none';
       }
 
-      // 4. İsteğe Bağlı Ortak Hesap (Expenses)
+      // 4. Ortak Harcama (Dinamik import ile modül hatasını önler)
       const expSection = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSection.style.display = 'block';
-        initEventExpenses(event.id, 'room-expenses-container');
+        try {
+          const { initEventExpenses } = await import('./modules/expenses.js');
+          initEventExpenses(event.id, 'room-expenses-container');
+        } catch (err) {
+          console.warn('Expenses module skipped:', err);
+        }
       } else {
         expSection.style.display = 'none';
       }
 
       room.style.display = 'block';
 
-      // 5. Galeri, Sohbet ve Öneriler
+      // 5. Galeri, Sohbet, Öneri
       renderEventGallery('room-gallery-container', event.drive_folder_url);
       initEventChat(event.id, 'room-chat-messages');
       initEventSuggestions(event.id, 'room-suggestions-list');

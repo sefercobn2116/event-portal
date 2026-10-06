@@ -1,485 +1,282 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plan Zero | Member Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg: #070a12;
-      --card-bg: rgba(15, 23, 42, 0.7);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(56, 189, 248, 0.4);
-      --primary: #38bdf8;
-      --accent: #f43f5e;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --danger: #ef4444;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
-    body {
-      background-color: var(--bg);
-      background-image: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
-                        radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%);
-      background-attachment: fixed;
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px 16px 80px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .container { max-width: 760px; width: 100%; display: none; flex-direction: column; gap: 20px; }
-    
-    #gateModal {
-      max-width: 400px; width: 100%; background: var(--card-bg); border: 1px solid var(--border);
-      backdrop-filter: blur(20px); border-radius: 20px; padding: 32px 24px; text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
-    }
-    #gateModal h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; color: var(--primary); }
-    #gateModal p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
-    
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .header-left h1 {
-      font-size: 2.2rem; background: linear-gradient(135deg, #fff 30%, var(--primary) 70%, var(--accent));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      font-weight: 800; letter-spacing: -0.5px;
-    }
-    .welcome-pill {
-      display: inline-block; padding: 5px 14px; border-radius: 999px;
-      background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25);
-      color: var(--primary); font-size: 0.85rem; font-weight: 600; margin-bottom: 6px;
-    }
-    .btn-logout {
-      background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;
-      padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
-    }
-    .btn-logout:hover { background: var(--danger); color: #fff; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Zero ✦ Buluşma Portalı</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ===== SUPABASE BAĞLANTI AYARLARI =====
+  const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<style>
+  :root { --bg:#0f0f14; --card:#1a1a24; --accent:#7c5cff; --accent2:#00e0a4; --text:#eaeaf0; --muted:#9a9ab0; }
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
+  body { background:var(--bg); color:var(--text); min-height:100vh; }
+  .wrap { max-width:720px; margin:0 auto; padding:24px 16px; }
+  .hidden { display:none !important; }
 
-    .card {
-      background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(16px);
-      border-radius: 20px; padding: 22px; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.5);
-    }
-    
-    .events-grid { display: flex; flex-direction: column; gap: 14px; }
-    .event-card {
-      background: rgba(2, 6, 23, 0.6); border: 1px solid var(--border);
-      border-radius: 16px; padding: 18px; cursor: pointer; transition: all 0.25s ease;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .event-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-    .event-title { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .event-meta { font-size: 0.85rem; color: var(--text-muted); }
-    .btn-view {
-      background: rgba(56, 189, 248, 0.15); border: 1px solid var(--primary); color: var(--primary);
-      padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 0.8rem;
-    }
+  /* GİRİŞ EKRANI */
+  .gate { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:20px; }
+  .gate h1 { font-size:2.2rem; margin-bottom:8px; }
+  .gate h1 span { color:var(--accent); }
+  .gate p { color:var(--muted); margin-bottom:24px; }
+  .gate input { padding:14px 18px; border-radius:12px; border:1px solid #333; background:var(--card); color:var(--text); font-size:1.05rem; width:min(320px,90vw); text-align:center; outline:none; }
+  .gate input:focus { border-color:var(--accent); }
+  .btn { margin-top:14px; padding:13px 34px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; transition:.2s; }
+  .btn:hover { filter:brightness(1.15); transform:translateY(-1px); }
+  .btn:disabled { opacity:.5; cursor:wait; }
+  .err { color:#ff6b81; margin-top:12px; min-height:1.2em; }
 
-    #eventDetailView { display: none; flex-direction: column; gap: 20px; }
-    .btn-back {
-      background: transparent; border: none; color: var(--text-muted); font-size: 0.9rem;
-      cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; width: fit-content;
-    }
-    .btn-back:hover { color: var(--primary); }
+  /* ÜST BAR */
+  header { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid #26263a; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  .badge { background:linear-gradient(135deg,var(--accent),#a48bff); padding:6px 14px; border-radius:999px; font-size:.85rem; font-weight:600; }
+  .title { font-size:1.3rem; font-weight:700; }
+  .title span { color:var(--accent2); }
+  .exit { background:transparent; border:1px solid #3a3a55; color:var(--muted); padding:8px 14px; border-radius:10px; cursor:pointer; font-size:.85rem; }
+  .exit:hover { border-color:#ff6b81; color:#ff6b81; }
 
-    .sug-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
-    .sug-item {
-      background: rgba(2, 6, 23, 0.5); border: 1px solid var(--border);
-      border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
-    }
-    .sug-user { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
-    .sug-text { font-size: 0.95rem; color: #fff; }
+  /* ETKİNLİK KARTLARI */
+  .card { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:16px; }
+  .ev-title { font-size:1.25rem; font-weight:700; }
+  .ev-date { color:var(--accent2); font-weight:600; margin:6px 0; font-size:.95rem; }
+  .ev-desc { color:var(--muted); line-height:1.5; white-space:pre-wrap; }
+  .empty { text-align:center; color:var(--muted); padding:50px 0; }
 
-    /* Media Grid */
-    .gallery-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 14px;
-    }
-    .media-card {
-      border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: #000;
-      position: relative; display: flex; flex-direction: column;
-    }
-    .media-preview {
-      width: 100%; height: 180px; object-fit: cover; display: block; background: #000;
-    }
-    .media-footer {
-      padding: 8px 10px; background: rgba(15, 23, 42, 0.9);
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.75rem; border-top: 1px solid var(--border);
-    }
-    .btn-download {
-      background: rgba(56, 189, 248, 0.15); border: 1px solid var(--primary);
-      color: var(--primary); border-radius: 6px; padding: 3px 8px; font-size: 0.7rem; text-decoration: none;
-      font-weight: 700;
-    }
-    .btn-download:hover { background: var(--primary); color: #000; }
+  /* ÖNERİLER */
+  .sug { border-top:1px solid #26263a; margin-top:18px; padding-top:14px; }
+  .sug h3, .up h3 { font-size:1rem; margin-bottom:10px; color:var(--accent2); }
+  .sug-item { background:#12121c; border-radius:10px; padding:10px 14px; margin-bottom:8px; font-size:.92rem; }
+  .sug-item b { color:var(--accent); }
+  .sug-item small { color:var(--muted); display:block; margin-top:2px; }
+  .sug form { display:flex; gap:8px; margin-top:10px; }
+  .sug input { flex:1; padding:10px 14px; border-radius:10px; border:1px solid #333; background:#12121c; color:var(--text); outline:none; }
+  .sug input:focus { border-color:var(--accent); }
 
-    input[type="text"], input[type="file"] {
-      width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
-      background: rgba(2, 6, 23, 0.7); color: #fff; font-size: 0.95rem; outline: none; margin-bottom: 10px;
-    }
-    .btn-submit {
-      width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: white; border: none; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 700;
-      cursor: pointer;
-    }
-    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-secondary {
-      background: rgba(15, 23, 42, 0.8); color: var(--primary); border: 1px solid var(--primary);
-      border-radius: 12px; padding: 10px 16px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
-      white-space: nowrap;
-    }
-    .upload-status {
-      font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 8px; text-align: center; display: none;
-    }
-    .empty-state { text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px 0; }
-  </style>
+  /* YÜKLEME + GALERİ */
+  .up { margin-top:18px; }
+  .file-btn { display:inline-block; padding:12px 22px; background:#12121c; border:1px dashed #444; border-radius:12px; cursor:pointer; color:var(--muted); }
+  .file-btn:hover { border-color:var(--accent2); color:var(--text); }
+  .prog { margin-top:10px; font-size:.88rem; color:var(--accent2); min-height:1.2em; }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:14px; }
+  .mem { position:relative; border-radius:12px; overflow:hidden; border:1px solid #26263a; background:#000; }
+  .mem img, .mem video { width:100%; height:140px; object-fit:cover; display:block; }
+  .mem a { display:block; text-align:center; padding:7px; font-size:.8rem; background:#12121c; color:var(--accent2); text-decoration:none; }
+  .mem a:hover { background:#1c1c2c; }
+  .cap { font-size:.72rem; color:var(--muted); text-align:center; padding:4px; background:#12121c; }
+</style>
+<base target="_blank">
 </head>
 <body>
 
-  <div id="gateModal">
-    <h2>🔒 Access Gate</h2>
-    <p>Enter your authorized name to view your events.</p>
-    <input type="text" id="gateNameInput" placeholder="Your Name..." style="text-align:center;" />
-    <button type="button" class="btn-submit" onclick="loginGuest()">Open Portal</button>
-    <div id="gateError" style="color:var(--danger); font-size:0.85rem; margin-top:10px; display:none;">
-      Access Denied: Name not found in guest list.
+<!-- GİRİŞ KAPISI -->
+<div id="gate" class="gate">
+  <h1>Plan <span>Zero</span> ✦</h1>
+  <p>Hoş geldin! Devam etmek için davetli ismini yaz.</p>
+  <input id="nameInput" type="text" placeholder="Adın (örn: Sefer)" autocomplete="off">
+  <button class="btn" id="loginBtn" onclick="login()">Giriş Yap →</button>
+  <div class="err" id="gateErr"></div>
+</div>
+
+<!-- PORTAL -->
+<div id="portal" class="wrap hidden">
+  <header>
+    <span class="badge" id="userBadge"></span>
+    <span class="title">Plan <span>Zero</span></span>
+    <button class="exit" onclick="logout()">Çıkış / Değiştir ➔</button>
+  </header>
+  <div id="events"></div>
+</div>
+
+<script>
+const LS_KEY = "pz_user";
+const MAX_IMG = 1280; // piksel — büyük fotoğraflar otomatik küçültülür
+
+// ---------- GİRİŞ / ÇIKIŞ ----------
+async function login() {
+  const name = document.getElementById("nameInput").value.trim();
+  const err = document.getElementById("gateErr");
+  const btn = document.getElementById("loginBtn");
+  if (!name) { err.textContent = "Önce ismini yazmalısın."; return; }
+  btn.disabled = true; btn.textContent = "Kontrol ediliyor...";
+  const { data, error } = await sb.from("guests").select("name").ilike("name", name);
+  btn.disabled = false; btn.textContent = "Giriş Yap →";
+  if (error) { err.textContent = "Bağlantı hatası: " + error.message; return; }
+  if (!data || data.length === 0) { err.textContent = "Bu isim davetli listesinde yok 😕"; return; }
+  const realName = data[0].name;
+  localStorage.setItem(LS_KEY, realName);
+  openPortal(realName);
+}
+
+function logout() {
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+function openPortal(name) {
+  document.getElementById("gate").classList.add("hidden");
+  document.getElementById("portal").classList.remove("hidden");
+  document.getElementById("userBadge").textContent = "👋 " + name;
+  loadEvents(name);
+}
+
+// ---------- ETKİNLİKLER ----------
+async function loadEvents(userName) {
+  const box = document.getElementById("events");
+  box.innerHTML = "<div class='empty'>Etkinlikler yükleniyor...</div>";
+  const { data: events, error } = await sb.from("events").select("*").order("event_date");
+  if (error) { box.innerHTML = "<div class='empty'>Hata: " + error.message + "</div>"; return; }
+  const mine = (events || []).filter(e => (e.allowed_guests || "").split(",").map(s=>s.trim()).includes(userName));
+  if (mine.length === 0) { box.innerHTML = "<div class='empty'>Şu an için sana atanmış etkinlik yok.<br>Admin ekleyince burada görünecek.</div>"; return; }
+  box.innerHTML = "";
+  mine.forEach(ev => box.appendChild(renderEvent(ev, userName)));
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) +
+         " · " + d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+}
+
+function renderEvent(ev, userName) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="ev-title">🎉 ${esc(ev.title)}</div>
+    <div class="ev-date">📅 ${fmtDate(ev.event_date)}</div>
+    <div class="ev-desc">${esc(ev.description || "")}</div>
+    <div class="sug">
+      <h3>💡 Fikir & Öneriler</h3>
+      <div class="sug-list" id="sug-${ev.id}"><div class="sug-item">Yükleniyor...</div></div>
+      <form onsubmit="return addSuggestion(event, ${ev.id}, '${esc(userName)}')">
+        <input type="text" placeholder="Bir fikrin mi var? Yaz bakalım..." required>
+        <button class="btn" style="margin-top:0">Gönder</button>
+      </form>
     </div>
-  </div>
+    <div class="up">
+      <h3>📸 Anı Yükle</h3>
+      <label class="file-btn">Fotoğraf / Video Seç (çoklu seçilebilir)
+        <input type="file" multiple accept="image/*,video/*" style="display:none"
+               onchange="uploadFiles(this, ${ev.id}, '${esc(userName)}')">
+      </label>
+      <div class="prog" id="prog-${ev.id}"></div>
+      <div class="gallery" id="gal-${ev.id}"></div>
+    </div>`;
+  loadSuggestions(ev.id);
+  loadGallery(ev.id);
+  return card;
+}
 
-  <div class="container" id="mainPortal">
-    <header>
-      <div class="header-left">
-        <div id="welcomeBadge" class="welcome-pill">Member Access</div>
-        <h1>Plan Zero</h1>
-      </div>
-      <button class="btn-logout" onclick="logoutGuest()">Exit / Switch ➔</button>
-    </header>
+// ---------- ÖNERİLER ----------
+async function loadSuggestions(evId) {
+  const { data } = await sb.from("event_suggestions").select("*").eq("event_id", evId).order("created_at", {ascending:false});
+  const list = document.getElementById("sug-" + evId);
+  if (!list) return;
+  if (!data || data.length === 0) { list.innerHTML = "<div class='sug-item'>Henüz öneri yok — ilk sen yaz!</div>"; return; }
+  list.innerHTML = data.map(s => `<div class="sug-item"><b>${esc(s.suggested_by)}:</b> ${esc(s.text)}<small>${new Date(s.created_at).toLocaleString("tr-TR")}</small></div>`).join("");
+}
 
-    <!-- ETKİNLİK LİSTESİ -->
-    <div id="eventsListView">
-      <div class="card">
-        <h2 style="margin-bottom:16px;">🎟️ Your Authorized Events</h2>
-        <div class="events-grid" id="eventsContainer">
-          <p class="empty-state">Loading your events...</p>
-        </div>
-      </div>
-    </div>
+async function addSuggestion(e, evId, userName) {
+  e.preventDefault();
+  const input = e.target.querySelector("input");
+  const text = input.value.trim();
+  if (!text) return false;
+  await sb.from("event_suggestions").insert({ event_id: evId, suggested_by: userName, text });
+  input.value = "";
+  loadSuggestions(evId);
+  return false;
+}
 
-    <!-- TEK ETKİNLİK DETAYI & ANILAR -->
-    <div id="eventDetailView">
-      <button class="btn-back" onclick="backToEvents()">← Back to Events List</button>
+// ---------- MEDYA YÜKLEME ----------
+async function uploadFiles(input, evId, userName) {
+  const prog = document.getElementById("prog-" + evId);
+  const files = Array.from(input.files);
+  input.value = "";
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    prog.textContent = `Yükleniyor ${i+1}/${files.length}: ${f.name}...`;
+    try {
+      let dataUrl, caption = "";
+      if (f.type.startsWith("image/")) {
+        dataUrl = await resizeImage(f, MAX_IMG);
+      } else if (f.type.startsWith("video/")) {
+        if (f.size > 40 * 1024 * 1024) { prog.textContent = `⚠️ "${f.name}" çok büyük (40MB+), atlandı.`; continue; }
+        dataUrl = await readAsDataURL(f);
+        caption = "[video]";
+      } else continue;
 
-      <div class="card">
-        <h2 id="viewEventTitle">Event Title</h2>
-        <p id="viewEventMeta" style="color:var(--primary); font-size:0.9rem; font-weight:600; margin-bottom:8px;"></p>
-        <p id="viewEventDesc" style="color:var(--text-muted); font-size:0.95rem; line-height:1.5;"></p>
-      </div>
-
-      <!-- ÖNERİLER BÖLÜMÜ -->
-      <div class="card">
-        <h2>💡 Suggestions & Ideas for this Event</h2>
-        <div style="display:flex; gap:8px; margin-bottom:12px;">
-          <input type="text" id="sugInput" placeholder="Drop an idea or spot..." style="margin-bottom:0;" />
-          <button type="button" class="btn-secondary" onclick="addSuggestion()">Post Idea</button>
-        </div>
-        <div class="sug-list" id="suggestionsContainer">
-          <p class="empty-state">No ideas posted yet.</p>
-        </div>
-      </div>
-
-      <!-- TOPLU DOSYA YÜKLEME ALANI -->
-      <div class="card">
-        <h2>📸 Upload Memories (Batch Upload)</h2>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
-          Select multiple photos or videos from your library at once.
-        </p>
-        <input type="file" id="batchMediaInput" accept="image/*,video/*" multiple />
-        <input type="text" id="batchCaptionInput" placeholder="Add a caption / note (optional)..." />
-        <button type="button" class="btn-submit" id="btnUploadBatch" onclick="uploadBatchMedia()">
-          Upload All Selected Files 🚀
-        </button>
-        <div id="uploadStatusText" class="upload-status"></div>
-      </div>
-
-      <!-- ARŞİV -->
-      <div class="card">
-        <h2>🖼 Memory Vault</h2>
-        <div class="gallery-grid" id="galleryContainer">
-          <p class="empty-state">No photos or videos uploaded for this event yet.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let currentGuest = localStorage.getItem("pz_user");
-    let activeEventId = null;
-
-    async function loginGuest() {
-      const name = document.getElementById('gateNameInput').value.trim();
-      const err = document.getElementById('gateError');
-      err.style.display = 'none';
-      if (!name) return;
-
-      const { data: guests } = await supabaseClient.from('guests').select('name');
-      const isAllowed = guests && guests.some(g => g.name.toLowerCase() === name.toLowerCase());
-
-      if (isAllowed) {
-        localStorage.setItem("pz_user", name);
-        currentGuest = name;
-        openPortal();
-      } else {
-        err.style.display = 'block';
-      }
-    }
-
-    function logoutGuest() {
-      localStorage.removeItem("pz_user");
-      currentGuest = null;
-      activeEventId = null;
-      document.getElementById('gateNameInput').value = '';
-      document.getElementById('mainPortal').style.display = 'none';
-      document.getElementById('gateModal').style.display = 'block';
-      document.body.style.alignItems = 'center';
-    }
-
-    function openPortal() {
-      document.getElementById('gateModal').style.display = 'none';
-      document.getElementById('mainPortal').style.display = 'flex';
-      document.body.style.alignItems = 'flex-start';
-      document.getElementById('welcomeBadge').innerText = `Logged in as: ${currentGuest}`;
-      loadAuthorizedEvents();
-    }
-
-    if (currentGuest) openPortal();
-
-    // Kişiye Özel Etkinlik Filtreleme (Düz Metin Araması - Garanti Çalışır)
-    async function loadAuthorizedEvents() {
-      const { data: allEvents } = await supabaseClient.from('events').select('*').order('event_date', { ascending: true });
-      const container = document.getElementById('eventsContainer');
-      container.innerHTML = '';
-
-      const myEvents = (allEvents || []).filter(e => {
-        if (!e.allowed_guests) return false;
-        // İsimler virgülle ayrılmış: "Sefer,Aleksandra"
-        const list = e.allowed_guests.toLowerCase().split(',').map(s => s.trim());
-        return list.includes(currentGuest.toLowerCase());
+      const { error } = await sb.from("event_memories").insert({
+        event_id: evId, image_data: dataUrl, caption, uploaded_by: userName
       });
+      if (error) throw new Error(error.message);
+    } catch (err) {
+      prog.textContent = `❌ "${f.name}" yüklenemedi: ${err.message}`;
+    }
+  }
+  prog.textContent = "✅ Yükleme tamamlandı!";
+  setTimeout(() => prog.textContent = "", 4000);
+  loadGallery(evId);
+}
 
-      if (myEvents.length === 0) {
-        container.innerHTML = '<p class="empty-state">No authorized events assigned to you yet.</p>';
-        return;
+function readAsDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function resizeImage(file, maxDim) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      let { width: w, height: h } = img;
+      if (w > maxDim || h > maxDim) {
+        const ratio = Math.min(maxDim / w, maxDim / h);
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
       }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      res(canvas.toDataURL("image/jpeg", 0.75));
+    };
+    img.onerror = rej;
+    img.src = url;
+  });
+}
 
-      myEvents.forEach(e => {
-        const dateStr = new Date(e.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        const card = document.createElement('div');
-        card.className = 'event-card';
-        card.innerHTML = `
-          <div>
-            <div class="event-title">${e.title}</div>
-            <div class="event-meta">📅 ${dateStr}</div>
-          </div>
-          <button class="btn-view">Open Details & Vault ↗</button>
-        `;
-        card.onclick = () => openEventDetails(e);
-        container.appendChild(card);
-      });
-    }
+// ---------- GALERİ ----------
+async function loadGallery(evId) {
+  const gal = document.getElementById("gal-" + evId);
+  if (!gal) return;
+  const { data } = await sb.from("event_memories").select("*").eq("event_id", evId).order("created_at", {ascending:false});
+  if (!data || data.length === 0) { gal.innerHTML = ""; return; }
+  gal.innerHTML = "";
+  data.forEach((m, idx) => {
+    const isVideo = m.caption && m.caption.includes("[video]");
+    const div = document.createElement("div");
+    div.className = "mem";
+    const inner = isVideo
+      ? `<video src="${m.image_data}" controls preload="metadata"></video>`
+      : `<img src="${m.image_data}" loading="lazy" alt="">`;
+    div.innerHTML = `${inner}
+      <div class="cap">${esc(m.uploaded_by || "Misafir")}</div>
+      <a href="${m.image_data}" download="ani-${evId}-${idx+1}${isVideo ? ".mp4" : ".jpg"}">⬇️ İndir</a>`;
+    gal.appendChild(div);
+  });
+}
 
-    function openEventDetails(eventObj) {
-      activeEventId = eventObj.id;
-      document.getElementById('eventsListView').style.display = 'none';
-      document.getElementById('eventDetailView').style.display = 'flex';
+function esc(s) { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
 
-      const dateStr = new Date(eventObj.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-      document.getElementById('viewEventTitle').innerText = eventObj.title;
-      document.getElementById('viewEventMeta').innerText = `📅 ${dateStr}`;
-      document.getElementById('viewEventDesc').innerText = eventObj.description || 'No description provided.';
-
-      loadEventPhotos();
-      loadSuggestions();
-    }
-
-    function backToEvents() {
-      activeEventId = null;
-      document.getElementById('eventDetailView').style.display = 'none';
-      document.getElementById('eventsListView').style.display = 'block';
-      loadAuthorizedEvents();
-    }
-
-    async function loadSuggestions() {
-      const container = document.getElementById('suggestionsContainer');
-      const { data: sugs } = await supabaseClient
-        .from('event_suggestions')
-        .select('*')
-        .eq('event_id', activeEventId)
-        .order('created_at', { ascending: false });
-
-      container.innerHTML = '';
-      if (sugs && sugs.length > 0) {
-        sugs.forEach(s => {
-          container.innerHTML += `
-            <div class="sug-item">
-              <span class="sug-user">${s.suggested_by}</span>
-              <span class="sug-text">${s.text}</span>
-            </div>
-          `;
-        });
-      } else {
-        container.innerHTML = '<p class="empty-state">No ideas posted yet.</p>';
-      }
-    }
-
-    async function addSuggestion() {
-      const input = document.getElementById('sugInput');
-      const val = input.value.trim();
-      if (!val) return;
-
-      await supabaseClient.from('event_suggestions').insert([{
-        event_id: activeEventId,
-        suggested_by: currentGuest,
-        text: val
-      }]);
-
-      input.value = '';
-      loadSuggestions();
-    }
-
-    async function loadEventPhotos() {
-      const container = document.getElementById('galleryContainer');
-      container.innerHTML = '<p class="empty-state">Loading media...</p>';
-
-      const { data: media } = await supabaseClient
-        .from('event_memories')
-        .select('*')
-        .eq('event_id', activeEventId)
-        .order('created_at', { ascending: false });
-
-      container.innerHTML = '';
-      if (media && media.length > 0) {
-        media.forEach((item, idx) => {
-          const isVideo = item.image_data.startsWith('data:video') || item.caption.includes('[video]');
-          const div = document.createElement('div');
-          div.className = 'media-card';
-
-          const previewHtml = isVideo
-            ? `<video src="${item.image_data}" class="media-preview" controls></video>`
-            : `<img src="${item.image_data}" class="media-preview" alt="Memory" loading="lazy" />`;
-
-          div.innerHTML = `
-            ${previewHtml}
-            <div class="media-footer">
-              <div>
-                <strong>${item.caption ? item.caption.replace('[video]', '') : 'Memory'}</strong>
-                <div style="color:var(--text-muted); font-size:0.68rem;">by ${item.uploaded_by}</div>
-              </div>
-              <a href="${item.image_data}" download="memory_${idx+1}${isVideo ? '.mp4' : '.jpg'}" class="btn-download">
-                ⬇️ Save
-              </a>
-            </div>
-          `;
-          container.appendChild(div);
-        });
-      } else {
-        container.innerHTML = '<p class="empty-state">No photos or videos uploaded for this event yet.</p>';
-      }
-    }
-
-    // Dosyaları optimize etme
-    function processFile(file) {
-      return new Promise((resolve) => {
-        if (!file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const img = new Image();
-          img.onload = function() {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 1200;
-            let width = img.width;
-            let height = img.height;
-
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // Sıralı Toplu Yükleme Motoru
-    async function uploadBatchMedia() {
-      const fileInput = document.getElementById('batchMediaInput');
-      const capInput = document.getElementById('batchCaptionInput');
-      const btn = document.getElementById('btnUploadBatch');
-      const statusText = document.getElementById('uploadStatusText');
-
-      const files = Array.from(fileInput.files);
-      if (files.length === 0) {
-        alert("Lütfen en az bir fotoğraf veya video seçin!");
-        return;
-      }
-
-      btn.disabled = true;
-      statusText.style.display = 'block';
-
-      const baseCaption = capInput.value.trim();
-      let successCount = 0;
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        statusText.innerText = `Yükleniyor: ${i + 1} / ${files.length} (${file.name})...`;
-
-        try {
-          const base64 = await processFile(file);
-          const isVid = file.type.startsWith('video');
-
-          const { error } = await supabaseClient.from('event_memories').insert([{
-            event_id: activeEventId,
-            image_data: base64,
-            caption: (baseCaption || file.name) + (isVid ? ' [video]' : ''),
-            uploaded_by: currentGuest
-          }]);
-
-          if (!error) successCount++;
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      statusText.innerText = `✅ ${successCount} dosya başarıyla yüklendi!`;
-      fileInput.value = '';
-      capInput.value = '';
-      btn.disabled = false;
-
-      setTimeout(() => {
-        statusText.style.display = 'none';
-        loadEventPhotos();
-      }, 1500);
-    }
-  </script>
+// ---------- BAŞLAT ----------
+document.getElementById("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+const saved = localStorage.getItem(LS_KEY);
+if (saved) openPortal(saved);
+</script>
 </body>
 </html>

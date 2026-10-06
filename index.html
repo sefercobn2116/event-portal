@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Etkinlik Portalı</title>
+  <title>Event Portal</title>
   <link rel="stylesheet" href="style.css">
   <style>
     .grid-layout {
@@ -106,74 +106,76 @@
 </head>
 <body>
 
-  <!-- Arka Plan Müzik Çaları -->
+  <!-- Background Music Player -->
   <audio id="bg-audio" preload="auto"></audio>
 
-  <!-- 1. GÖRÜNÜM: GİRİŞ EKRANI -->
+  <!-- 1. VIEW: LOGIN SCREEN -->
   <div id="view-login" class="container">
     <div class="glass-box login-wrap">
-      <h1>Portala Giriş</h1>
-      <p style="color: #94a3b8; font-size: 0.9rem;">Devam etmek için adını yaz</p>
+      <h1>Portal Login</h1>
+      <p style="color: #94a3b8; font-size: 0.9rem;">Enter your username to continue</p>
       
-      <input type="text" id="username-input" class="input-field" placeholder="Örn: sefer" autocomplete="off" />
-      <button id="btn-login" class="btn">Giriş Yap ve Başla</button>
+      <input type="text" id="username-input" class="input-field" placeholder="e.g. sefer" autocomplete="off" />
+      <button id="btn-login" class="btn">Login & Enter</button>
       <p id="login-err" style="color: #f43f5e; margin-top: 12px; font-size: 0.85rem; display: none;"></p>
     </div>
   </div>
 
-  <!-- 2. GÖRÜNÜM: ETKİNLİK LİSTESİ -->
+  <!-- 2. VIEW: EVENTS DASHBOARD -->
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div>
-        <h2 id="welcome-text">Hoş Geldin</h2>
-        <span style="font-size: 0.85rem; color: #94a3b8;">Etkinlikler paneli</span>
+        <h2 id="welcome-text">Welcome</h2>
+        <span style="font-size: 0.85rem; color: #94a3b8;">Events Dashboard</span>
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">
-        <!-- Şarkı Değiştirme Butonları -->
+        <!-- Music Playlist Controls -->
         <div class="music-bar">
           <button id="btn-prev-music" class="btn-icon">⏮️</button>
           <button id="btn-music-toggle" class="btn-icon">⏸️</button>
           <button id="btn-next-music" class="btn-icon">⏭️</button>
-          <span id="music-title" style="font-size: 0.8rem; color: var(--neon-cyan); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Şarkı 1</span>
+          <span id="music-title" style="font-size: 0.8rem; color: var(--neon-cyan); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Track 1</span>
         </div>
-        <a id="admin-link" href="admin.html" style="display: none;">Admin Paneli</a>
-        <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Çıkış</button>
+        <a id="admin-link" href="admin.html" style="display: none;">Admin Panel</a>
+        <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Logout</button>
       </div>
     </div>
 
     <div id="events-list" class="events-grid"></div>
   </div>
 
-  <!-- 3. GÖRÜNÜM: ETKİNLİK DETAYI (Sohbet, Oylama, Galeri) -->
+  <!-- 3. VIEW: EVENT DETAIL (Chat, Suggestions, Gallery) -->
   <div id="view-event-detail" class="container" style="display: none;">
     <div class="nav-header">
-      <button id="btn-back-dashboard" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Etkinliklere Dön</button>
+      <button id="btn-back-dashboard" class="btn" style="width: auto; padding: 6px 16px; font-size: 0.85rem;">← Back to Events</button>
       <span id="current-user-tag" style="font-size: 0.9rem; color: #94a3b8;"></span>
     </div>
 
+    <!-- Event Header -->
     <div class="glass-box" style="margin-bottom: 20px;">
-      <h1 id="event-title" style="font-size: 1.8rem; margin-bottom: 6px;">Yükleniyor...</h1>
+      <h1 id="event-title" style="font-size: 1.8rem; margin-bottom: 6px;">Loading...</h1>
       <p id="event-desc" style="color: #94a3b8; font-size: 0.95rem;"></p>
     </div>
 
-    <!-- 5 TB Drive Alanı -->
+    <!-- Media / Drive Section -->
     <div class="glass-box" style="margin-top: 20px;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-          <h3 style="color: var(--neon-cyan); margin-bottom: 4px;">📸 Etkinlik Medya Alanı</h3>
-          <p style="color: #94a3b8; font-size: 0.85rem;">Fotoğrafları toplu seçip yükleyin, orijinal kalitede indirin.</p>
+          <h3 style="color: var(--neon-cyan); margin-bottom: 4px;">📸 Event Media Gallery</h3>
+          <p style="color: #94a3b8; font-size: 0.85rem;">Select & upload photos/videos, download in original resolution.</p>
         </div>
         <div style="display: flex; gap: 10px;">
           <input type="file" id="media-file-input" multiple accept="image/*,video/*" style="display: none;">
           <button id="btn-trigger-upload" class="btn" style="width: auto; padding: 10px 18px;">
-            ⬆️ Fotoğraf / Video Yükle
+            ⬆️ Upload Media
           </button>
           <button id="btn-toggle-gallery" class="btn-vote" style="padding: 10px 16px; border-radius: 14px;">
-            🖼️ Resimleri Göster
+            🖼️ View Photos
           </button>
         </div>
       </div>
 
+      <!-- Upload Progress -->
       <div id="upload-status" style="display: none; margin-top: 15px;">
         <div id="upload-status-text" style="font-size: 0.9rem; color: var(--neon-cyan); margin-bottom: 6px;"></div>
         <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
@@ -181,31 +183,32 @@
         </div>
       </div>
 
+      <!-- Gallery Grid -->
       <div id="gallery-container" style="display: none; margin-top: 20px;">
         <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;"></div>
       </div>
     </div>
 
-    <!-- Sohbet ve Oylama -->
+    <!-- Chat & Suggestions Grid -->
     <div class="grid-layout">
-      <!-- Canlı Sohbet -->
+      <!-- Live Chat -->
       <div class="glass-box chat-container">
-        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Ortak Sohbet</h3>
+        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--neon-cyan);">💬 Group Chat</h3>
         <div class="chat-messages" id="chat-messages"></div>
         <div style="display: flex; gap: 8px; margin-top: 12px;">
-          <input type="text" id="chat-input" class="input-field" style="margin: 0;" placeholder="Mesajını yaz..." autocomplete="off">
-          <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 20px;">Gönder</button>
+          <input type="text" id="chat-input" class="input-field" style="margin: 0;" placeholder="Type your message..." autocomplete="off">
+          <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 20px;">Send</button>
         </div>
       </div>
 
-      <!-- Oylama -->
+      <!-- Suggestions / Polls -->
       <div class="glass-box">
-        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 Gün İçinde Ne Yapalım?</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Ortak aktivite öner ve oyla!</p>
+        <h3 style="margin-bottom: 6px; font-size: 1.1rem; color: var(--neon-pink);">💡 What's the Plan Today?</h3>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 15px;">Suggest an activity and vote!</p>
 
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="Örn: Akşam kahve içelim mi?">
-          <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Ekle</button>
+          <input type="text" id="poll-input" class="input-field" style="margin: 0;" placeholder="e.g. Grab evening cocktails?">
+          <button id="btn-add-poll" class="btn" style="width: auto; padding: 0 16px;">Add</button>
         </div>
 
         <div class="poll-list" id="poll-list"></div>
@@ -216,7 +219,7 @@
   <script type="module">
     import { supabase, GOOGLE_API_KEY, UPLOAD_WEBHOOK_URL } from './config.js';
 
-    // MÜZİK ÇALMA LİSTESİ (İstediğin şarkıların MP3 linklerini buraya ekleyebilirsin)
+    // PLAYLIST
     const playlist = [
       { title: "Lofi Chill Night", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" },
       { title: "Deep Atmosphere", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" },
@@ -273,7 +276,7 @@
 
     loadTrack(0);
 
-    // PANEL & SAYFA GEÇİŞLERİ
+    // APP ROUTING & VIEWS
     const viewLogin = document.getElementById('view-login');
     const viewDashboard = document.getElementById('view-dashboard');
     const viewEventDetail = document.getElementById('view-event-detail');
@@ -298,12 +301,13 @@
       showDashboard();
     }
 
+    // 1. LOGIN
     btnLogin.addEventListener('click', async () => {
       const username = usernameInput.value.trim().toLowerCase();
       loginErr.style.display = 'none';
 
       if (!username) {
-        loginErr.textContent = 'Lütfen adınızı yazın.';
+        loginErr.textContent = 'Please enter your username.';
         loginErr.style.display = 'block';
         return;
       }
@@ -315,13 +319,13 @@
         .maybeSingle();
 
       if (error || !user) {
-        loginErr.textContent = 'Bu isim sistemde kayıtlı değil.';
+        loginErr.textContent = 'Username not found in system.';
         loginErr.style.display = 'block';
         return;
       }
 
       if (!user.is_active) {
-        loginErr.textContent = 'Giriş izniniz pasif durumdadır.';
+        loginErr.textContent = 'Your account access is currently disabled.';
         loginErr.style.display = 'block';
         return;
       }
@@ -329,7 +333,6 @@
       currentUser = user;
       localStorage.setItem('portal_user', JSON.stringify(user));
 
-      // Giriş anında müzik kesintisiz başlar
       playTrack();
       showDashboard();
     });
@@ -340,12 +343,13 @@
       location.reload();
     });
 
+    // 2. DASHBOARD VIEW
     async function showDashboard() {
       viewLogin.style.display = 'none';
       viewEventDetail.style.display = 'none';
       viewDashboard.style.display = 'block';
 
-      welcomeText.textContent = `Hoş Geldin, ${currentUser.username.toUpperCase()}`;
+      welcomeText.textContent = `Welcome, ${currentUser.username.toUpperCase()}`;
       if (currentUser.is_admin) adminLink.style.display = 'inline';
 
       const { data: allEvents } = await supabase.from('events').select('*').order('created_at', { ascending: false });
@@ -355,7 +359,7 @@
       eventsList.innerHTML = '';
 
       if (!allEvents || allEvents.length === 0) {
-        eventsList.innerHTML = '<p>Henüz etkinlik bulunmuyor.</p>';
+        eventsList.innerHTML = '<p>No active events found.</p>';
         return;
       }
 
@@ -366,10 +370,10 @@
         card.innerHTML = `
           <div>
             <h3 style="font-size: 1.25rem; margin-bottom: 8px;">${evt.title}</h3>
-            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4;">${evt.description || 'Açıklama belirtilmedi.'}</p>
+            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4;">${evt.description || 'No description provided.'}</p>
           </div>
           <div>
-            ${canAccess ? `<span class="badge badge-open">Tıkla ve Katıl →</span>` : `<span class="badge badge-lock">🔒 Kilitli</span>`}
+            ${canAccess ? `<span class="badge badge-open">Click to Join →</span>` : `<span class="badge badge-lock">🔒 Locked</span>`}
           </div>
         `;
 
@@ -381,6 +385,7 @@
       });
     }
 
+    // 3. EVENT ROOM VIEW
     async function openEventDetail(evt) {
       activeEventId = evt.id;
 
@@ -394,15 +399,13 @@
       viewDashboard.style.display = 'none';
       viewEventDetail.style.display = 'block';
 
-      document.getElementById('current-user-tag').textContent = `Giriş: ${currentUser.username}`;
+      document.getElementById('current-user-tag').textContent = `User: ${currentUser.username}`;
       document.getElementById('event-title').textContent = evt.title;
-      document.getElementById('event-desc').textContent = evt.description || 'Detay girilmedi.';
+      document.getElementById('event-desc').textContent = evt.description || 'No description provided.';
 
-      // Sohbet ve Oylamayı Aç
       loadMessages();
       loadPolls();
 
-      // Realtime Dinleyici
       if (chatChannel) supabase.removeChannel(chatChannel);
       chatChannel = supabase.channel('chat-room-' + activeEventId)
         .on('postgres_changes', {
@@ -411,7 +414,6 @@
           table: 'event_messages',
           filter: `event_id=eq.${activeEventId}`
         }, payload => {
-          // Başkasının yazdığı mesajı ekle
           if (payload.new.username.toLowerCase() !== currentUser.username.toLowerCase()) {
             appendMessage(payload.new);
           }
@@ -423,7 +425,7 @@
       showDashboard();
     });
 
-    // SOHBET (MESAJLAŞMA)
+    // 4. GROUP CHAT
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const btnSendChat = document.getElementById('btn-send-chat');
@@ -460,13 +462,11 @@
 
       chatInput.value = '';
 
-      // Anında arayüze ekle
       appendMessage({
         username: currentUser.username,
         message: text
       });
 
-      // Supabase'e kaydet
       const { error } = await supabase.from('event_messages').insert({
         event_id: activeEventId,
         user_id: currentUser.id,
@@ -475,15 +475,15 @@
       });
 
       if (error) {
-        console.error("Mesaj Supabase hatası:", error);
-        alert("Mesaj veritabanına yazılamadı: " + error.message);
+        console.error("Chat insert error:", error);
+        alert("Failed to send message: " + error.message);
       }
     }
 
     btnSendChat.addEventListener('click', sendMessage);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    // OYLAMA
+    // 5. SUGGESTIONS & VOTING
     const pollList = document.getElementById('poll-list');
     const pollInput = document.getElementById('poll-input');
     const btnAddPoll = document.getElementById('btn-add-poll');
@@ -492,7 +492,7 @@
       const { data: polls } = await supabase.from('event_suggestions').select('*').eq('event_id', activeEventId).order('votes', { ascending: false });
       pollList.innerHTML = '';
       if (!polls || polls.length === 0) {
-        pollList.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Henüz bir öneri yapılmadı. İlk fikri sen yaz!</p>';
+        pollList.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">No suggestions yet. Post the first idea!</p>';
         return;
       }
       polls.forEach(item => {
@@ -501,9 +501,9 @@
         div.innerHTML = `
           <div>
             <div style="font-size:0.95rem; font-weight:600;">${item.title}</div>
-            <div style="font-size:0.75rem; color:#94a3b8;">Ekleyen: ${item.suggested_by}</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Suggested by: ${item.suggested_by}</div>
           </div>
-          <button class="btn-vote" data-id="${item.id}">👍 ${item.votes} Oy</button>
+          <button class="btn-vote" data-id="${item.id}">👍 ${item.votes} Votes</button>
         `;
         div.querySelector('.btn-vote').addEventListener('click', async () => {
           await supabase.from('event_suggestions').update({ votes: item.votes + 1 }).eq('id', item.id);
@@ -526,7 +526,7 @@
       loadPolls();
     });
 
-    // 5 TB GOOGLE DRIVE YÜKLEME
+    // 6. GOOGLE DRIVE UPLOAD
     const fileInput = document.getElementById('media-file-input');
     const triggerBtn = document.getElementById('btn-trigger-upload');
     const uploadStatus = document.getElementById('upload-status');
@@ -535,7 +535,7 @@
 
     triggerBtn.addEventListener('click', () => {
       if (!activeFolderId) {
-        alert("Bu etkinlik için henüz bir Drive klasör ID'si girilmemiş!");
+        alert("No Google Drive folder assigned for this event!");
         return;
       }
       fileInput.click();
@@ -549,7 +549,7 @@
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        statusText.textContent = `Yükleniyor (${i + 1}/${files.length}): ${file.name}`;
+        statusText.textContent = `Uploading (${i + 1}/${files.length}): ${file.name}`;
         const percent = Math.round((i / files.length) * 100);
         progressBar.style.width = `${percent}%`;
 
@@ -568,12 +568,12 @@
             })
           });
         } catch (err) {
-          console.warn("Dosya gönderildi:", file.name);
+          console.warn("Upload transfer completed:", file.name);
         }
       }
 
       progressBar.style.width = '100%';
-      statusText.textContent = "✅ Tüm fotoğraflar Drive'a yüklendi!";
+      statusText.textContent = "✅ All photos successfully uploaded to Google Drive!";
       fileInput.value = '';
       setTimeout(() => { uploadStatus.style.display = 'none'; }, 4000);
 
@@ -589,7 +589,7 @@
       reader.onerror = error => reject(error);
     });
 
-    // RESİMLERİ GÖSTER / İNDİR
+    // 7. VIEW GALLERY & DOWNLOAD
     const btnToggleGallery = document.getElementById('btn-toggle-gallery');
     const galleryContainer = document.getElementById('gallery-container');
     const galleryGrid = document.getElementById('gallery-grid');
@@ -597,16 +597,16 @@
     btnToggleGallery.addEventListener('click', () => {
       if (galleryContainer.style.display === 'block') {
         galleryContainer.style.display = 'none';
-        btnToggleGallery.textContent = '🖼️ Resimleri Göster';
+        btnToggleGallery.textContent = '🖼️ View Photos';
       } else {
         galleryContainer.style.display = 'block';
-        btnToggleGallery.textContent = 'Kapat ✕';
+        btnToggleGallery.textContent = 'Close ✕';
         fetchDriveFiles();
       }
     });
 
     async function fetchDriveFiles() {
-      galleryGrid.innerHTML = '<p style="color:#94a3b8;">5 TB Drive taranıyor...</p>';
+      galleryGrid.innerHTML = '<p style="color:#94a3b8;">Scanning Google Drive...</p>';
 
       const cleanId = activeFolderId.includes('folders/') 
         ? activeFolderId.split('folders/')[1].split('?')[0] 
@@ -620,12 +620,12 @@
         const data = await res.json();
 
         if (data.error) {
-          galleryGrid.innerHTML = `<p style="color:#ef4444;">API Hatası: ${data.error.message}</p>`;
+          galleryGrid.innerHTML = `<p style="color:#ef4444;">API Error: ${data.error.message}</p>`;
           return;
         }
 
         if (!data.files || data.files.length === 0) {
-          galleryGrid.innerHTML = '<p style="color:#94a3b8;">Bu klasörde henüz yüklenmiş fotoğraf yok.</p>';
+          galleryGrid.innerHTML = '<p style="color:#94a3b8;">No photos uploaded to this folder yet.</p>';
           return;
         }
 
@@ -641,12 +641,12 @@
           card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;";
           card.innerHTML = `
             <div style="height: 150px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-              <img src="${previewImg}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=Dosya'">
+              <img src="${previewImg}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=File'">
             </div>
             <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
               <span style="font-size: 0.75rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
               <a href="${downloadLink}" target="_blank" class="btn" style="padding: 6px; font-size: 0.8rem; text-align: center; text-decoration: none;">
-                ⬇️ Orijinal İndir
+                ⬇️ Download Original
               </a>
             </div>
           `;
@@ -654,7 +654,7 @@
         });
 
       } catch (err) {
-        galleryGrid.innerHTML = '<p style="color:#ef4444;">Dosyalar listelenemedi. Klasör erişim iznini kontrol edin.</p>';
+        galleryGrid.innerHTML = '<p style="color:#ef4444;">Could not load files. Please check folder permissions.</p>';
       }
     }
   </script>

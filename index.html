@@ -28,7 +28,6 @@
   <!-- 1. AUTH SCREEN -->
   <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
     <div class="glass-box" style="text-align: center;">
-      <!-- LOGO -->
       <div style="margin-bottom: 16px;">
         <img src="./icon.svg" alt="NEXUS" style="width: 76px; height: 76px; border-radius: 18px; box-shadow: 0 0 25px rgba(0, 242, 254, 0.45); display: inline-block;">
       </div>
@@ -55,7 +54,6 @@
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <!-- LOGO HEADER -->
         <img src="./icon.svg" alt="NEXUS Logo" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); display: block;">
         <div>
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -116,8 +114,8 @@
 
         <div class="cal-days-grid" id="calendar-days-grid"></div>
 
-        <div id="selected-day-slots-wrap" style="display: none; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 18px;">
-          <h4 id="selected-date-heading" style="color: #00f2fe; margin-bottom: 10px;">Available Hours</h4>
+        <div id="selected-day-slots-wrap" style="display: none;">
+          <h4 id="selected-date-heading" style="color: #00f2fe; margin-bottom: 6px;">Available Hours</h4>
           <div id="hourly-slots-container" class="slot-matrix"></div>
         </div>
 
@@ -146,7 +144,15 @@
             <input type="text" id="uevt-title" class="input-field" placeholder="Event Title * (Drive folder will be generated automatically)">
             <textarea id="uevt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
             <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Google Maps Link">
-            <input type="datetime-local" id="uevt-date" class="input-field" title="Event Date and Time">
+            
+            <!-- TARİH & SAAT ALANI -->
+            <div style="margin-bottom: 12px;">
+              <label for="uevt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">
+                📅 Event Date & Time
+              </label>
+              <input type="datetime-local" id="uevt-date" class="input-field" style="margin-bottom: 0;">
+            </div>
+
             <input type="text" id="uevt-spotify" class="input-field" placeholder="Spotify Playlist URL (Optional)">
             
             <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.85rem; color: #00f2fe; cursor: pointer;">
@@ -557,7 +563,6 @@
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
-      // 1. Konum
       const locWrap = document.getElementById('room-location-wrap');
       if (event.location && event.location.trim()) {
         const loc = event.location.trim();
@@ -572,7 +577,6 @@
         locWrap.style.display = 'none';
       }
 
-      // 2. Canlı Sayaç
       const cdBadge = document.getElementById('room-countdown-badge');
       if (countdownInterval) clearInterval(countdownInterval);
 
@@ -597,7 +601,6 @@
         cdBadge.style.display = 'none';
       }
 
-      // 3. Spotify Mini Player
       const spotWrap = document.getElementById('room-spotify-wrap');
       if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
         let spotEmbed = event.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
@@ -609,7 +612,6 @@
         spotWrap.style.display = 'none';
       }
 
-      // 4. İsteğe Bağlı Ortak Hesap
       const expSection = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSection.style.display = 'block';
@@ -620,7 +622,6 @@
 
       room.style.display = 'block';
 
-      // 5. Galeri, Sohbet ve Öneri
       renderEventGallery('room-gallery-container', event.drive_folder_url);
       initEventChat(event.id, 'room-chat-messages');
       initEventSuggestions(event.id, 'room-suggestions-list');

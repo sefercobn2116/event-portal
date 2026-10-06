@@ -80,7 +80,7 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   setupLightboxDOM();
 
   if (!driveFolderUrl) {
-    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder linked for this event.</p>';
+    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder assigned for this event.</p>';
     return;
   }
 
@@ -89,24 +89,20 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   if (match) folderId = match[0];
   activeFolderId = folderId;
 
-  // Sabit Arayüz: Üst panel (Yükleme butonu) + Alt panel (Görseller alanı)
+  // Harici "Open in Drive" butonu tamamen kaldırıldı; sadece temiz yükleme paneli
   container.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <label class="btn btn-pink" style="cursor: pointer; padding: 7px 16px; font-size: 0.85rem; margin: 0;">
-          📤 Upload Photo to Drive
-          <input type="file" id="drive-photo-input" accept="image/*" style="display: none;">
-        </label>
-        <span id="upload-status" style="font-size: 0.8rem; color: #00f2fe;"></span>
-      </div>
-      <a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 0.75rem; text-decoration: none;">📁 Open in Drive</a>
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+      <label class="btn btn-pink" style="cursor: pointer; padding: 7px 18px; font-size: 0.85rem; margin: 0;">
+        📤 Upload Photo to Event
+        <input type="file" id="drive-photo-input" accept="image/*" style="display: none;">
+      </label>
+      <span id="upload-status" style="font-size: 0.85rem; font-weight: 600;"></span>
     </div>
-    <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; min-height: 80px;">
-      <p style="color: #94a3b8; font-size: 0.85rem; grid-column: 1 / -1;">Connecting to Drive folder...</p>
+    <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; min-height: 80px;">
+      <p style="color: #00f2fe; font-size: 0.85rem; grid-column: 1 / -1;">Reading photos from Drive folder...</p>
     </div>
   `;
 
-  // Fotoğraf Yükleme Olayı
   const fileInput = document.getElementById('drive-photo-input');
   const uploadStatus = document.getElementById('upload-status');
 
@@ -162,7 +158,7 @@ async function loadPhotosFromDrive(folderId) {
     const data = await res.json();
 
     if (data.status !== 'success' || !data.photos || data.photos.length === 0) {
-      grid.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; grid-column: 1 / -1;">No photos in this folder yet. Click "Upload Photo to Drive" above to add the first picture!</p>';
+      grid.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; grid-column: 1 / -1;">No photos in this folder yet. Use the upload button above to add memories!</p>';
       currentImages = [];
       return;
     }
@@ -174,7 +170,7 @@ async function loadPhotosFromDrive(folderId) {
       const thumb = document.createElement('img');
       thumb.src = imgObj.url;
       thumb.alt = imgObj.name;
-      thumb.style.cssText = 'width: 100%; height: 100px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s;';
+      thumb.style.cssText = 'width: 100%; height: 105px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s;';
       thumb.onmouseover = () => { thumb.style.transform = 'scale(1.03)'; thumb.style.borderColor = '#00f2fe'; };
       thumb.onmouseout = () => { thumb.style.transform = 'scale(1)'; thumb.style.borderColor = 'rgba(255,255,255,0.12)'; };
       thumb.onclick = () => openLightbox(idx);

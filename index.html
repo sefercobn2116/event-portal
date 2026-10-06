@@ -259,11 +259,12 @@
     let countdownInterval = null;
     let allPortalUsers = [];
 
-    window.addEventListener('DOMContentLoaded', () => {
+    // Hata yakalama garantili başlatıcı
+    window.addEventListener('load', () => {
       try {
         checkUserState();
       } catch (err) {
-        console.error('Init error:', err);
+        console.error('Fatal initialization error:', err);
         document.getElementById('view-auth').style.display = 'block';
       }
     });
@@ -277,6 +278,7 @@
         return;
       }
 
+      // Veritabanından yetkiyi hemen çek, hata alsa bile mevcut oturumla devam et
       try {
         const { data: latestUser } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
         if (latestUser) {
@@ -379,6 +381,7 @@
         setupUserEventCreation(user);
       }
 
+      // Varsayılan olarak randevu sekmesini aç
       document.getElementById('nav-btn-booking').click();
     }
 
@@ -563,6 +566,7 @@
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
+      // 1. Konum
       const locWrap = document.getElementById('room-location-wrap');
       if (event.location && event.location.trim()) {
         const loc = event.location.trim();
@@ -577,6 +581,7 @@
         locWrap.style.display = 'none';
       }
 
+      // 2. Canlı Sayaç
       const cdBadge = document.getElementById('room-countdown-badge');
       if (countdownInterval) clearInterval(countdownInterval);
 
@@ -601,6 +606,7 @@
         cdBadge.style.display = 'none';
       }
 
+      // 3. Spotify Mini Player
       const spotWrap = document.getElementById('room-spotify-wrap');
       if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
         let spotEmbed = event.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
@@ -612,6 +618,7 @@
         spotWrap.style.display = 'none';
       }
 
+      // 4. İsteğe Bağlı Ortak Hesap
       const expSection = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSection.style.display = 'block';
@@ -622,6 +629,7 @@
 
       room.style.display = 'block';
 
+      // 5. Galeri, Sohbet ve Öneri
       renderEventGallery('room-gallery-container', event.drive_folder_url);
       initEventChat(event.id, 'room-chat-messages');
       initEventSuggestions(event.id, 'room-suggestions-list');

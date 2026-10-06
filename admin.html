@@ -34,12 +34,12 @@
     #loginScreen { text-align: center; max-width: 360px; margin: 80px auto; }
     #adminContent { display: none; }
     .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-    .cb-item { background: #0f172a; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; }
+    .cb-item { background: #0f172a; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <!-- Passcode -->
+  <!-- Passcode Screen -->
   <div id="loginScreen" class="card">
     <h2 style="margin-bottom:16px;">🔒 Mission Control Access</h2>
     <input type="password" id="passInput" placeholder="Enter Admin Password..." style="margin-bottom:12px; text-align:center;" />
@@ -50,6 +50,25 @@
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <h1>⚙️ Event & Guest Command Studio</h1>
       <a href="index.html" target="_blank" style="color:var(--primary); font-size:0.9rem; text-decoration:none;">Open Portal ↗</a>
+    </div>
+
+    <!-- Master Guest Whitelist -->
+    <div class="card">
+      <h2>🛡️ Master Guest List</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">Add authorized names who can enter the site and be assigned to events.</p>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <input type="text" id="newGuestInput" placeholder="Add new person (e.g. Aleksandra)" />
+        <button onclick="addMasterGuest()">Add Person</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="masterGuestsTable"></tbody>
+      </table>
     </div>
 
     <!-- Create Event & Assign Guests -->
@@ -93,24 +112,6 @@
         <tbody id="eventsTable"></tbody>
       </table>
     </div>
-
-    <!-- Master Guest Whitelist -->
-    <div class="card">
-      <h2>🛡️ Master Guest List</h2>
-      <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <input type="text" id="newGuestInput" placeholder="Add new person (e.g. Aleksandra)" />
-        <button onclick="addMasterGuest()">Add Person</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="masterGuestsTable"></tbody>
-      </table>
-    </div>
   </div>
 
   <script>
@@ -133,7 +134,10 @@
 
     async function loadAll() {
       // 1. Guests
-      const { data: guests } = await supabaseClient.from('guests').select('*').order('name');
+      const { data: guests, error: gErr } = await supabaseClient.from('guests').select('*').order('name');
+      if (gErr) {
+        console.error("Guests fetch error:", gErr);
+      }
       allGuestsList = guests || [];
       
       const gTable = document.getElementById('masterGuestsTable');
@@ -141,27 +145,35 @@
       const cbGroup = document.getElementById('guestCheckboxes');
       cbGroup.innerHTML = '';
 
-      allGuestsList.forEach(g => {
-        gTable.innerHTML += `
-          <tr>
-            <td><strong>${g.name}</strong></td>
-            <td><button class="btn-danger" onclick="deleteMasterGuest(${g.id})">Remove</button></td>
-          </tr>
-        `;
-        cbGroup.innerHTML += `
-          <label class="cb-item">
-            <input type="checkbox" name="assignGuest" value="${g.name}"> ${g.name}
-          </label>
-        `;
-      });
+      if (allGuestsList.length === 0) {
+        gTable.innerHTML = '<tr><td colspan="2" style="color:var(--text-muted);">No guests added yet. Add your first guest above.</td></tr>';
+        cbGroup.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No guests available. Add guests below first.</span>';
+      } else {
+        allGuestsList.forEach(g => {
+          gTable.innerHTML += `
+            <tr>
+              <td><strong>${g.name}</strong></td>
+              <td><button class="btn-danger" onclick="deleteMasterGuest(${g.id})">Remove</button></td>
+            </tr>
+          `;
+          cbGroup.innerHTML += `
+            <label class="cb-item">
+              <input type="checkbox" name="assignGuest" value="${g.name}"> ${g.name}
+            </label>
+          `;
+        });
+      }
 
       // 2. Events
-      const { data: evs } = await supabaseClient.from('events').select('*').order('event_date', { ascending: false });
+      const { data: evs, error: eErr } = await supabaseClient.from('events').select('*').order('event_date', { ascending: false });
+      if (eErr) {
+        console.error("Events fetch error:", eErr);
+      }
       const evTable = document.getElementById('eventsTable');
       evTable.innerHTML = '';
-      if (evs) {
+      if (evs && evs.length > 0) {
         evs.forEach(e => {
-          const d = new Date(e.event_date).toLocaleDateString();
+          const d = new Date(e.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
           evTable.innerHTML += `
             <tr>
               <td><strong>${e.title}</strong></td>
@@ -171,6 +183,31 @@
             </tr>
           `;
         });
+      } else {
+        evTable.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);">No events published yet.</td></tr>';
+      }
+    }
+
+    async function addMasterGuest() {
+      const input = document.getElementById('newGuestInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const { data, error } = await supabaseClient.from('guests').insert([{ name: val }]);
+      if (error) {
+        alert("Guest add error: " + error.message);
+        console.error("Insert error:", error);
+      } else {
+        input.value = '';
+        loadAll();
+      }
+    }
+
+    async function deleteMasterGuest(id) {
+      if (confirm("Remove guest?")) {
+        const { error } = await supabaseClient.from('guests').delete().eq('id', id);
+        if (error) alert("Delete error: " + error.message);
+        loadAll();
       }
     }
 
@@ -189,37 +226,27 @@
         return;
       }
 
-      await supabaseClient.from('events').insert([{
+      const { error } = await supabaseClient.from('events').insert([{
         title: title,
         event_date: new Date(date).toISOString(),
         description: desc,
         allowed_guests: selectedGuests
       }]);
 
-      document.getElementById('evTitle').value = '';
-      document.getElementById('evDesc').value = '';
-      alert("Event created & assigned successfully!");
-      loadAll();
-    }
-
-    async function deleteEvent(id) {
-      if (confirm("Delete this event and all its archived photos?")) {
-        await supabaseClient.from('events').delete().eq('id', id);
+      if (error) {
+        alert("Event creation error: " + error.message);
+      } else {
+        document.getElementById('evTitle').value = '';
+        document.getElementById('evDesc').value = '';
+        alert("Event published successfully!");
         loadAll();
       }
     }
 
-    async function addMasterGuest() {
-      const val = document.getElementById('newGuestInput').value.trim();
-      if (!val) return;
-      await supabaseClient.from('guests').insert([{ name: val }]);
-      document.getElementById('newGuestInput').value = '';
-      loadAll();
-    }
-
-    async function deleteMasterGuest(id) {
-      if (confirm("Remove guest?")) {
-        await supabaseClient.from('guests').delete().eq('id', id);
+    async function deleteEvent(id) {
+      if (confirm("Delete this event and all its archived photos?")) {
+        const { error } = await supabaseClient.from('events').delete().eq('id', id);
+        if (error) alert("Delete error: " + error.message);
         loadAll();
       }
     }

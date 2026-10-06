@@ -12,7 +12,7 @@ export function setupLightboxDOM() {
   lightbox.innerHTML = `
     <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
       <div style="position: absolute; top: -45px; right: 0; display: flex; gap: 12px; align-items: center;">
-        <a id="lb-download" href="#" target="_blank" download class="btn" style="padding: 6px 14px; font-size: 0.8rem; background: #00f2fe; color: #070913; text-decoration: none;">⬇ İndir</a>
+        <a id="lb-download" href="#" target="_blank" download class="btn" style="padding: 6px 14px; font-size: 0.8rem; background: #00f2fe; color: #070913; text-decoration: none;">⬇ Download</a>
         <button id="lb-close" style="background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">✕</button>
       </div>
       <button id="lb-prev" style="position: absolute; left: -50px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">‹</button>
@@ -75,7 +75,6 @@ function showNextImage() {
   updateLightboxView();
 }
 
-// Drive Klasöründen Fotoğrafları Çekme
 export async function renderEventGallery(containerId, driveFolderUrl) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -83,20 +82,17 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
   setupLightboxDOM();
 
   if (!driveFolderUrl) {
-    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">Bu etkinlik için Google Drive klasörü atanmamış.</p>';
+    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder linked for this event.</p>';
     return;
   }
 
-  // Drive URL'sinden Folder ID'yi çek
   let folderId = driveFolderUrl.trim();
   const match = folderId.match(/[-\w]{25,}/);
   if (match) folderId = match[0];
 
-  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.85rem;">Drive klasöründeki fotoğraflar yükleniyor...</p>';
+  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.85rem;">Fetching Drive photos...</p>';
 
   try {
-    // Klasörün herkese açık Google Drive ID içeriği:
-    // Doğrudan Drive embed ve thumbnail proxy linkleri oluşturulur
     currentImages = [
       `https://lh3.googleusercontent.com/d/${folderId}=w1600`,
       `https://drive.google.com/uc?export=view&id=${folderId}`
@@ -104,8 +100,8 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
 
     container.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <span style="font-size: 0.8rem; color: #94a3b8;">Drive Klasör Bağlantısı Aktif</span>
-        <a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">📁 Tüm Klasörü Drive'da Aç</a>
+        <span style="font-size: 0.8rem; color: #94a3b8;">Google Drive Connected</span>
+        <a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" class="btn" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">📁 Open Drive Folder</a>
       </div>
       <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;"></div>
     `;
@@ -116,12 +112,12 @@ export async function renderEventGallery(containerId, driveFolderUrl) {
       thumb.src = imgUrl;
       thumb.alt = `Drive Image ${idx + 1}`;
       thumb.style.cssText = 'width: 100%; height: 95px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s;';
-      thumb.onerror = () => { thumb.style.display = 'none'; }; // Klasör linki ana linkse ve görsel değilse gizle
+      thumb.onerror = () => { thumb.style.display = 'none'; };
       thumb.onclick = () => openLightbox(idx);
       grid.appendChild(thumb);
     });
 
   } catch (err) {
-    container.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Fotoğraflar yüklenemedi: ${err.message}</p>`;
+    container.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem;">Failed to load photos: ${err.message}</p>`;
   }
 }

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Koyu Arka Plan Gradyanı -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="50%" stop-color="#070913"/>
+      <stop offset="100%" stop-color="#020307"/>
+    </linearGradient>
+
+    <!-- Neon Cyan & Magenta Işıltı Gradyanı -->
+    <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="50%" stop-color="#4facfe"/>
+      <stop offset="100%" stop-color="#ff007f"/>
+    </linearGradient>
+
+    <linearGradient id="accentLine" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff007f"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+
+    <!-- Yumuşak Neon Parlama Filtresi -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Dış Çerçeve (Squircle App Icon) -->
+  <rect x="16" y="16" width="480" height="480" rx="110" fill="url(#bgGrad)" stroke="rgba(0, 242, 254, 0.35)" stroke-width="4"/>
+
+  <!-- İç Atmosferik Arka Işık -->
+  <circle cx="256" cy="256" r="140" fill="#00f2fe" opacity="0.12" filter="blur(40px)"/>
+  <circle cx="340" cy="340" r="110" fill="#ff007f" opacity="0.12" filter="blur(40px)"/>
+
+  <!-- Geometrik Fütüristik "N / Apex" Amblemi -->
+  <g filter="url(#glow)">
+    <!-- Sol Dikey Kanat -->
+    <path d="M150 360 L150 152 Q150 140 162 140 L188 140 Q200 140 200 152 L200 360 Q200 372 188 372 L162 372 Q150 372 150 360 Z" fill="url(#neonGlow)"/>
+
+    <!-- Çapraz Dinamik Köprü -->
+    <path d="M192 156 L320 354 Q326 364 338 364 L356 364 Q366 364 362 352 L234 154 Q228 144 216 144 L198 144 Q188 144 192 156 Z" fill="url(#accentLine)"/>
+
+    <!-- Sağ Dikey Kanat -->
+    <path d="M312 360 L312 152 Q312 140 324 140 L350 140 Q362 140 362 152 L362 360 Q362 372 350 372 L324 372 Q312 372 312 360 Z" fill="url(#neonGlow)"/>
+
+    <!-- Üst Apex Parıltı Noktası -->
+    <circle cx="256" cy="116" r="10" fill="#00f2fe"/>
+  </g>
+</svg>

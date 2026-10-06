@@ -18,23 +18,23 @@
     <div class="nav-header">
       <div>
         <h2 id="admin-title" style="color: #00f2fe;">Admin Dashboard</h2>
-        <span style="font-size: 0.85rem; color: #ff007f;">Yönetici Paneli</span>
+        <span style="font-size: 0.85rem; color: #ff007f;">Management Suite</span>
       </div>
       <div style="display: flex; gap: 10px;">
-        <a href="index.html" class="btn" style="text-decoration: none; padding: 6px 16px; font-size: 0.85rem;">← Portala Dön</a>
-        <button id="btn-admin-logout" class="btn" style="padding: 6px 16px; font-size: 0.85rem;">Çıkış</button>
+        <a href="index.html" class="btn" style="text-decoration: none; padding: 6px 16px; font-size: 0.85rem;">← Back to Portal</a>
+        <button id="btn-admin-logout" class="btn" style="padding: 6px 16px; font-size: 0.85rem;">Log Out</button>
       </div>
     </div>
 
-    <!-- SEKMELER -->
+    <!-- TABS -->
     <div class="admin-tabs">
-      <button class="admin-tab-btn active" data-tab="calendar">📅 Takvim ve Saat Belirleme</button>
-      <button class="admin-tab-btn" data-tab="bookings">📋 Randevular & İptal</button>
-      <button class="admin-tab-btn" data-tab="events">🎉 Etkinlik Yönetimi</button>
-      <button class="admin-tab-btn" data-tab="assignments">👥 Kullanıcı İzinleri</button>
+      <button class="admin-tab-btn active" data-tab="calendar">📅 Manage Hours & Slots</button>
+      <button class="admin-tab-btn" data-tab="bookings">📋 Bookings & Cancellation</button>
+      <button class="admin-tab-btn" data-tab="events">🎉 Event Manager</button>
+      <button class="admin-tab-btn" data-tab="assignments">👥 User Access Permissions</button>
     </div>
 
-    <!-- TAB 1: TAKVİM & SAAT BELİRLEME -->
+    <!-- TAB 1: CALENDAR & SLOTS -->
     <div id="tab-calendar" class="admin-tab-content">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="glass-box">
@@ -54,54 +54,54 @@
 
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 id="adm-slot-heading" style="color: #00f2fe; margin: 0;">Bir Gün Seçin</h4>
+            <h4 id="adm-slot-heading" style="color: #00f2fe; margin: 0;">Select a Date</h4>
             <div id="adm-bulk-btns" style="display: none; gap: 6px;">
-              <button id="btn-adm-all" class="btn" style="padding: 4px 8px; font-size: 0.75rem;">Hepsini Seç</button>
-              <button id="btn-adm-clear" class="btn btn-pink" style="padding: 4px 8px; font-size: 0.75rem;">Temizle</button>
+              <button id="btn-adm-all" class="btn" style="padding: 4px 8px; font-size: 0.75rem;">Select All</button>
+              <button id="btn-adm-clear" class="btn btn-pink" style="padding: 4px 8px; font-size: 0.75rem;">Clear</button>
             </div>
           </div>
           <div id="adm-slot-matrix" class="slot-matrix" style="display: none; max-height: 380px; overflow-y: auto;"></div>
-          <button id="btn-adm-save-slots" class="btn" style="width: 100%; display: none; margin-top: 14px;">💾 Seçili Saatleri Kaydet</button>
+          <button id="btn-adm-save-slots" class="btn" style="width: 100%; display: none; margin-top: 14px;">💾 Save Available Hours</button>
           <div id="adm-save-status" style="margin-top: 10px; font-size: 0.85rem; text-align: center;"></div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: RANDEVULAR & İPTAL -->
+    <!-- TAB 2: BOOKINGS & REFUND -->
     <div id="tab-bookings" class="admin-tab-content" style="display: none;">
       <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 16px;">Alınan Randevular</h3>
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">Scheduled Appointments</h3>
         <div id="adm-bookings-list" style="display: grid; gap: 12px;"></div>
       </div>
     </div>
 
-    <!-- TAB 3: ETKİNLİK YÖNETİMİ -->
+    <!-- TAB 3: EVENT MANAGER -->
     <div id="tab-events" class="admin-tab-content" style="display: none;">
       <div class="glass-box" style="margin-bottom: 20px;">
-        <h3 style="color: #ff007f; margin-bottom: 12px;">Yeni Etkinlik Ekle</h3>
-        <input type="text" id="new-evt-title" class="input-field" placeholder="Etkinlik Başlığı *">
-        <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Açıklama"></textarea>
-        <input type="text" id="new-evt-drive" class="input-field" placeholder="Google Drive Klasör ID veya Linki">
-        <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Etkinlik Oluştur</button>
+        <h3 style="color: #ff007f; margin-bottom: 12px;">Create New Event</h3>
+        <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title *">
+        <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
+        <input type="text" id="new-evt-drive" class="input-field" placeholder="Google Drive Folder URL / Folder ID">
+        <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Create Event</button>
       </div>
       <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 16px;">Kayıtlı Etkinlikler</h3>
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">Active Events</h3>
         <div id="adm-events-list"></div>
       </div>
     </div>
 
-    <!-- TAB 4: KULLANICI ERİŞİM ATAMA -->
+    <!-- TAB 4: ACCESS CONTROL -->
     <div id="tab-assignments" class="admin-tab-content" style="display: none;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div class="glass-box">
-          <h3 style="color: #00f2fe; margin-bottom: 14px;">Kullanıcılar</h3>
+          <h3 style="color: #00f2fe; margin-bottom: 14px;">Registered Users</h3>
           <div id="adm-users-list"></div>
         </div>
         <div class="glass-box">
-          <h3 style="color: #ff007f; margin-bottom: 14px;">Etkinlik İzinleri</h3>
-          <p id="adm-selected-user-name" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Soldan bir kullanıcı seçin</p>
+          <h3 style="color: #ff007f; margin-bottom: 14px;">Event Access Permissions</h3>
+          <p id="adm-selected-user-name" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Pick a user from the left panel</p>
           <div id="adm-event-checks" style="display: grid; gap: 8px; margin-bottom: 16px;"></div>
-          <button id="btn-adm-save-perms" class="btn" style="width: 100%;" disabled>İzinleri Kaydet</button>
+          <button id="btn-adm-save-perms" class="btn" style="width: 100%;" disabled>Save Permissions</button>
         </div>
       </div>
     </div>
@@ -155,7 +155,6 @@
       });
     }
 
-    // TAKVİM MOTORU
     function initAdminCal() {
       const mSel = document.getElementById('adm-month-sel');
       const ySel = document.getElementById('adm-year-sel');
@@ -215,7 +214,7 @@
       activeSlots.clear();
       bookedSlots.clear();
 
-      document.getElementById('adm-slot-heading').textContent = `Saatleri Yönet: ${dateStr}`;
+      document.getElementById('adm-slot-heading').textContent = `Manage Slots: ${dateStr}`;
       document.getElementById('adm-bulk-btns').style.display = 'flex';
       document.getElementById('adm-slot-matrix').style.display = 'grid';
       document.getElementById('btn-adm-save-slots').style.display = 'block';
@@ -239,7 +238,7 @@
 
         if (bookedSlots.has(h)) {
           btn.classList.add('booked');
-          btn.title = 'Rezerve edilmiş saat';
+          btn.title = 'Slot is already booked';
         } else {
           if (activeSlots.has(h)) btn.classList.add('active');
           btn.onclick = () => {
@@ -264,7 +263,7 @@
       if (!selectedDate) return;
       const status = document.getElementById('adm-save-status');
       status.style.color = '#00f2fe';
-      status.textContent = 'Kaydediliyor...';
+      status.textContent = 'Saving changes...';
 
       await supabase.from('availability_slots').delete().eq('slot_date', selectedDate).eq('is_booked', false);
       if (activeSlots.size > 0) {
@@ -278,18 +277,17 @@
       }
 
       status.style.color = '#22c55e';
-      status.textContent = '✓ Saatler başarıyla kaydedildi!';
+      status.textContent = '✓ Available slots updated successfully!';
       renderAdminCal();
     };
 
-    // RANDEVULAR VE İPTAL MOTORU
     async function loadBookings() {
       const list = document.getElementById('adm-bookings-list');
       const { data: bookings } = await supabase.from('appointments').select('*').order('appointment_date', { ascending: false });
       list.innerHTML = '';
 
       if (!bookings || bookings.length === 0) {
-        list.innerHTML = '<p style="color: #94a3b8;">Henüz randevu bulunmuyor.</p>';
+        list.innerHTML = '<p style="color: #94a3b8;">No bookings scheduled yet.</p>';
         return;
       }
 
@@ -301,18 +299,18 @@
           <div>
             <strong style="color: #00f2fe;">${b.appointment_date}</strong> (${(b.selected_slots || []).join(', ')})
             <p style="margin: 4px 0;"><strong>${b.client_name}</strong> - ${b.client_email} / ${b.client_contact}</p>
-            <p style="color: #94a3b8; font-size: 0.85rem;">Not: ${b.activity_plan}</p>
+            <p style="color: #94a3b8; font-size: 0.85rem;">Note: ${b.activity_plan}</p>
           </div>
-          <button class="btn btn-pink btn-cancel-b" style="padding: 6px 12px; font-size: 0.8rem;">❌ İptal Et & İade Et</button>
+          <button class="btn btn-pink btn-cancel-b" style="padding: 6px 12px; font-size: 0.8rem;">❌ Cancel & Release Slot</button>
         `;
 
         card.querySelector('.btn-cancel-b').onclick = async () => {
-          if (!confirm(`${b.client_name} randevusunu iptal edip saatleri takvime iade etmek istiyor musunuz?`)) return;
+          if (!confirm(`Cancel booking for ${b.client_name} and reopen slots?`)) return;
           await supabase.from('appointments').delete().eq('id', b.id);
           if (b.selected_slots && b.selected_slots.length > 0) {
             await supabase.from('availability_slots').update({ is_booked: false }).eq('slot_date', b.appointment_date).in('hour_slot', b.selected_slots);
           }
-          alert('Randevu iptal edildi ve saatler takvime iade edildi.');
+          alert('Booking cancelled and slot reopened.');
           loadBookings();
           renderAdminCal();
         };
@@ -321,7 +319,6 @@
       });
     }
 
-    // ETKİNLİK YÖNETİMİ
     async function loadEvents() {
       const list = document.getElementById('adm-events-list');
       const { data: events } = await supabase.from('events').select('*').order('created_at', { ascending: false });
@@ -332,12 +329,12 @@
         row.innerHTML = `
           <div>
             <strong style="color: #00f2fe;">${evt.title}</strong>
-            <p style="color: #94a3b8; font-size: 0.8rem;">Drive: ${evt.drive_folder_url || 'Yok'}</p>
+            <p style="color: #94a3b8; font-size: 0.8rem;">Drive: ${evt.drive_folder_url || 'None'}</p>
           </div>
-          <button class="btn btn-pink btn-del-evt" style="padding: 4px 10px; font-size: 0.75rem;">Sil</button>
+          <button class="btn btn-pink btn-del-evt" style="padding: 4px 10px; font-size: 0.75rem;">Delete</button>
         `;
         row.querySelector('.btn-del-evt').onclick = async () => {
-          if (!confirm(`"${evt.title}" silinsin mi?`)) return;
+          if (!confirm(`Delete "${evt.title}"?`)) return;
           await supabase.from('events').delete().eq('id', evt.id);
           loadEvents();
         };
@@ -349,7 +346,7 @@
       const title = document.getElementById('new-evt-title').value.trim();
       const desc = document.getElementById('new-evt-desc').value.trim();
       const drive = document.getElementById('new-evt-drive').value.trim();
-      if (!title) return alert('Başlık zorunludur!');
+      if (!title) return alert('Event title is required!');
 
       await supabase.from('events').insert([{ title, description: desc, drive_folder_url: drive }]);
       document.getElementById('new-evt-title').value = '';
@@ -358,7 +355,6 @@
       loadEvents();
     };
 
-    // KULLANICI İZİNLERİ
     async function loadUsers() {
       const list = document.getElementById('adm-users-list');
       const { data: users } = await supabase.from('users').select('*');
@@ -376,7 +372,7 @@
         `;
         item.onclick = () => {
           selectedUserForPerms = u;
-          document.getElementById('adm-selected-user-name').textContent = `Seçilen: ${u.username} (${u.email})`;
+          document.getElementById('adm-selected-user-name').textContent = `Target: ${u.username} (${u.email})`;
           loadUserPerms(u.id);
         };
         list.appendChild(item);
@@ -419,7 +415,7 @@
         }));
         await supabase.from('event_access').insert(records);
       }
-      alert('İzinler başarıyla güncellendi!');
+      alert('Permissions saved successfully!');
     };
   </script>
 </body>

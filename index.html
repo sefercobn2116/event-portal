@@ -1,179 +1,165 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plan Zero | Canlı Portal</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = "https://gzwuaorcfboiwztjpgng.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6d3Vhb3JjZmJvaXd6dGpwZ25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNzIwODcsImV4cCI6MjEwNjg0ODA4N30.Z4xDS_h6sySGnro7EcUOO5b9S5OcJ61rujsCHLl6Ffc";
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
-<style>
-  :root { --bg:#0f0f14; --card:#1a1a24; --accent:#7c5cff; --accent2:#00e0a4; --text:#eaeaf0; --muted:#9a9ab0; }
-  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
-  body { background:var(--bg); color:var(--text); min-height:100vh; }
-  .wrap { max-width:720px; margin:0 auto; padding:24px 16px; }
-  .hidden { display:none !important; }
-
-  .gate { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:20px; }
-  .gate input { padding:14px 18px; border-radius:12px; border:1px solid #333; background:var(--card); color:var(--text); font-size:1.05rem; width:min(320px,90vw); text-align:center; outline:none; }
-  .btn { margin-top:14px; padding:13px 34px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
-
-  header { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid #26263a; margin-bottom:20px; }
-  .badge { background:linear-gradient(135deg,var(--accent),#a48bff); padding:6px 14px; border-radius:999px; font-size:.85rem; font-weight:600; }
-  .exit { background:transparent; border:1px solid #3a3a55; color:var(--muted); padding:8px 14px; border-radius:10px; cursor:pointer; }
-
-  .event-item { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
-  .event-item:hover { border-color:var(--accent); }
-  .card { background:var(--card); border:1px solid #26263a; border-radius:16px; padding:20px; margin-bottom:16px; }
-  .file-btn { display:inline-block; padding:12px 22px; background:#12121c; border:1px dashed #444; border-radius:12px; cursor:pointer; color:var(--muted); margin-top:10px; }
-  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-top:14px; }
-  .mem { border-radius:12px; overflow:hidden; border:1px solid #26263a; }
-  .mem img { width:100%; height:130px; object-fit:cover; display:block; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Etkinlik Portalı</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="gate" class="gate">
-  <h1 id="appTitle">Plan Zero ✦</h1>
-  <p style="color:var(--muted); margin: 8px 0 20px;">Giriş yapmak için adını yaz.</p>
-  <input id="nameInput" type="text" placeholder="Adın (örn: Sefer)">
-  <button class="btn" onclick="login()">Giriş Yap →</button>
-  <div id="gateErr" style="color:#ff6b81; margin-top:12px;"></div>
-</div>
+  <!-- Arka Plan Müziği -->
+  <audio id="bg-audio" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+  </audio>
 
-<div id="portal" class="wrap hidden">
-  <header>
-    <span class="badge" id="userBadge"></span>
-    <button class="exit" onclick="logout()">Çıkış ➔</button>
-  </header>
-
-  <div id="viewSelection">
-    <h2 style="font-size:1.1rem; color:var(--accent2); margin-bottom:14px;">🎟️ Katılabileceğin Etkinlikler:</h2>
-    <div id="eventsContainer"></div>
-  </div>
-
-  <div id="viewRoom" class="hidden">
-    <button onclick="backToList()" style="background:none;border:none;color:var(--muted);cursor:pointer;margin-bottom:14px;">← Geri Dön</button>
-    <div id="roomCard"></div>
-  </div>
-</div>
-
-<script>
-let appData = { guests: [], events: [] };
-let currentUser = localStorage.getItem("pz_user");
-
-async function initEngine() {
-  const { data } = await sb.from("remote_config").select("payload").eq("id", 1).maybeSingle();
-  if (data && data.payload) {
-    try {
-      appData = JSON.parse(data.payload);
-      if (appData.project_title) document.getElementById("appTitle").innerText = appData.project_title;
-    } catch(e) { console.error("JSON parse hatası", e); }
-  }
-  if (currentUser) openPortal();
-}
-
-function login() {
-  const name = document.getElementById("nameInput").value.trim();
-  const err = document.getElementById("gateErr");
-  if (!name) return;
-
-  const valid = appData.guests.some(g => g.toLowerCase() === name.toLowerCase());
-  if (valid) {
-    currentUser = name;
-    localStorage.setItem("pz_user", name);
-    openPortal();
-  } else {
-    err.innerText = "Bu isim izinli listede yok.";
-  }
-}
-
-function logout() {
-  localStorage.removeItem("pz_user");
-  location.reload();
-}
-
-function openPortal() {
-  document.getElementById("gate").classList.add("hidden");
-  document.getElementById("portal").classList.remove("hidden");
-  document.getElementById("userBadge").innerText = "👋 " + currentUser;
-
-  const container = document.getElementById("eventsContainer");
-  container.innerHTML = "";
-
-  const myEvents = appData.events.filter(e => 
-    e.allowed_guests.some(ag => ag.toLowerCase() === currentUser.toLowerCase())
-  );
-
-  if (myEvents.length === 0) {
-    container.innerHTML = "<p style='color:var(--muted)'>Sana atanmış bir etkinlik yok.</p>";
-    return;
-  }
-
-  myEvents.forEach(ev => {
-    const item = document.createElement("div");
-    item.className = "event-item";
-    item.innerHTML = `<div><h3>🎉 ${ev.title}</h3><p style="color:var(--accent2); font-size:.85rem;">📅 ${ev.date}</p></div><div>Giriş ➔</div>`;
-    item.onclick = () => openRoom(ev);
-    container.appendChild(item);
-  });
-}
-
-function openRoom(ev) {
-  document.getElementById("viewSelection").classList.add("hidden");
-  document.getElementById("viewRoom").classList.remove("hidden");
-
-  document.getElementById("roomCard").innerHTML = `
-    <div class="card">
-      <h2>🎉 ${ev.title}</h2>
-      <p style="color:var(--muted); margin: 8px 0;">${ev.description}</p>
-      <label class="file-btn">Fotoğraf Yükle
-        <input type="file" multiple accept="image/*" style="display:none" onchange="uploadMemories(this, ${ev.id})">
-      </label>
-      <div id="galStatus" style="color:var(--accent2); margin-top:8px;"></div>
-      <div class="gallery" id="roomGallery"></div>
+  <!-- 1. Giriş Ekranı -->
+  <div id="login-section" class="container">
+    <div class="glass-box login-wrap">
+      <h1>Portala Giriş</h1>
+      <p style="color: #94a3b8; font-size: 0.9rem;">Devam etmek için adını yaz</p>
+      
+      <input type="text" id="username-input" class="input-field" placeholder="Örn: sefer" autocomplete="off" />
+      <button id="btn-login" class="btn">Giriş Yap ve Başla</button>
+      <p id="login-err" style="color: #f43f5e; margin-top: 12px; font-size: 0.85rem; display: none;"></p>
     </div>
-  `;
-  loadVault(ev.id);
-}
+  </div>
 
-function backToList() {
-  document.getElementById("viewRoom").classList.add("hidden");
-  document.getElementById("viewSelection").classList.remove("hidden");
-}
+  <!-- 2. Etkinlik Vitrini (Giriş Yapılınca Açılır) -->
+  <div id="dashboard-section" class="container" style="display: none;">
+    <div class="nav-header">
+      <div>
+        <h2 id="welcome-text">Hoş Geldin</h2>
+        <span style="font-size: 0.85rem; color: #94a3b8;">Etkinlikler paneli</span>
+      </div>
+      <div>
+        <a id="admin-link" href="admin.html" style="display: none; margin-right: 15px;">Admin Paneli</a>
+        <button id="btn-logout" style="background: none; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;">Çıkış</button>
+      </div>
+    </div>
 
-async function uploadMemories(input, eventId) {
-  const files = Array.from(input.files);
-  const status = document.getElementById("galStatus");
-  status.innerText = "Yükleniyor...";
+    <div id="events-list" class="events-grid">
+      <!-- Etkinlik kartları JS ile yüklenecek -->
+    </div>
+  </div>
 
-  for (let file of files) {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      await sb.from("event_memories").insert([{
-        event_id: eventId,
-        image_data: e.target.result,
-        uploaded_by: currentUser
-      }]);
-      loadVault(eventId);
-    };
-    reader.readAsDataURL(file);
-  }
-  status.innerText = "Yüklendi!";
-  setTimeout(() => status.innerText = "", 2000);
-}
+  <script type="module">
+    import { supabase } from './config.js';
 
-async function loadVault(eventId) {
-  const { data } = await sb.from("event_memories").select("*").eq("event_id", eventId).order("created_at", { ascending: false });
-  const gal = document.getElementById("roomGallery");
-  if (!gal) return;
-  gal.innerHTML = (data || []).map(m => `<div class="mem"><img src="${m.image_data}"></div>`).join("");
-}
+    const loginSection = document.getElementById('login-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    const usernameInput = document.getElementById('username-input');
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const loginErr = document.getElementById('login-err');
+    const eventsList = document.getElementById('events-list');
+    const welcomeText = document.getElementById('welcome-text');
+    const adminLink = document.getElementById('admin-link');
+    const audio = document.getElementById('bg-audio');
 
-initEngine();
-</script>
+    // Sayfa açıldığında kayıtlı kullanıcı var mı kontrol et
+    const savedUser = JSON.parse(localStorage.getItem('portal_user'));
+    if (savedUser) {
+      renderDashboard(savedUser);
+    }
+
+    btnLogin.addEventListener('click', async () => {
+      const username = usernameInput.value.trim().toLowerCase();
+      loginErr.style.display = 'none';
+
+      if (!username) {
+        loginErr.textContent = 'Lütfen adınızı yazın.';
+        loginErr.style.display = 'block';
+        return;
+      }
+
+      // Supabase'den kontrol et
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('username', username)
+        .maybeSingle();
+
+      if (error || !user) {
+        loginErr.textContent = 'Bu isim sisteme kayıtlı değil.';
+        loginErr.style.display = 'block';
+        return;
+      }
+
+      if (!user.is_active) {
+        loginErr.textContent = 'Giriş izniniz pasif durumdadır.';
+        loginErr.style.display = 'block';
+        return;
+      }
+
+      // Kullanıcı onaylandı, müziği çal
+      audio.play().catch(() => console.log('Ses başlatılamadı'));
+
+      localStorage.setItem('portal_user', JSON.stringify(user));
+      renderDashboard(user);
+    });
+
+    btnLogout.addEventListener('click', () => {
+      localStorage.removeItem('portal_user');
+      location.reload();
+    });
+
+    async function renderDashboard(user) {
+      loginSection.style.display = 'none';
+      dashboardSection.style.display = 'block';
+      welcomeText.textContent = `Hoş Geldin, ${user.username.toUpperCase()}`;
+
+      if (user.is_admin) {
+        adminLink.style.display = 'inline';
+      }
+
+      // 1. Tüm etkinlikleri çek
+      const { data: allEvents, error: evError } = await supabase
+        .from('events')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      // 2. Kullanıcının erişebildiği etkinlikleri çek
+      const { data: userAccess } = await supabase
+        .from('event_access')
+        .select('event_id')
+        .eq('user_id', user.id);
+
+      const allowedIds = new Set((userAccess || []).map(a => a.event_id));
+
+      eventsList.innerHTML = '';
+      if (!allEvents || allEvents.length === 0) {
+        eventsList.innerHTML = '<p>Henüz eklenmiş etkinlik yok.</p>';
+        return;
+      }
+
+      allEvents.forEach(evt => {
+        // Admin ise her etkinliğe girebilir, değilse yetkisi var mı bak
+        const canAccess = user.is_admin || allowedIds.has(evt.id);
+
+        const card = document.createElement('div');
+        card.className = `event-card ${canAccess ? 'allowed' : 'locked'}`;
+        card.innerHTML = `
+          <div>
+            <h3 style="font-size: 1.25rem; margin-bottom: 8px;">${evt.title}</h3>
+            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.4;">${evt.description || 'Açıklama belirtilmedi.'}</p>
+          </div>
+          <div>
+            ${canAccess 
+              ? `<span class="badge badge-open">Tıkla ve Katıl →</span>` 
+              : `<span class="badge badge-lock">🔒 Kilitli</span>`}
+          </div>
+        `;
+
+        if (canAccess) {
+          card.addEventListener('click', () => {
+            window.location.href = `event.html?id=${evt.id}`;
+          });
+        }
+
+        eventsList.appendChild(card);
+      });
+    }
+  </script>
 </body>
 </html>

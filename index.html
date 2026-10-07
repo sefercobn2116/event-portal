@@ -227,7 +227,7 @@
 
       <!-- ETKİNLİK ODASI -->
       <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
           <div>
             <h3 id="room-title" style="color: #00f2fe; margin: 0 0 6px 0;">Event Space</h3>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -241,6 +241,15 @@
           </div>
         </div>
 
+        <!-- 👥 WHO'S IN THE ROOM? (KATILIMCILAR ŞERİDİ) -->
+        <div id="room-participants-box" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 0.75rem; color: #00f2fe; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">👥 Who's in the Room</span>
+            <span id="room-member-count-badge" style="font-size: 0.72rem; color: #94a3b8;">0 Members</span>
+          </div>
+          <div id="room-members-avatars-row" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; align-items: center;"></div>
+        </div>
+
         <div id="room-spotify-wrap" style="display: none; margin-bottom: 20px;"></div>
 
         <!-- 1. ORTAK HESAP (SPLIT BILL) -->
@@ -250,7 +259,7 @@
         </div>
 
         <!-- 2. GÖREVLER & GETİRİLECEKLER LİSTESİ (TASKS CHECKLIST) -->
-        <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,200,0.08); padding-top: 16px;">
+        <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
           <div id="room-tasks-container"></div>
         </div>
@@ -280,6 +289,27 @@
             <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 24px;">Send</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÜYE PROFİL BİLGİ DETAY MODALI (WHO'S IN THE ROOM DETAYI) -->
+  <div id="user-info-modal" class="lightbox-overlay" style="display: none;">
+    <div class="glass-box" style="max-width: 340px; text-align: center; position: relative;">
+      <button id="btn-close-user-info" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+      <img id="modal-info-avatar" src="" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #00f2fe; object-fit: cover; margin-bottom: 10px; background: #070913;" alt="Avatar">
+      <h3 id="modal-info-username" style="color: #00f2fe; margin: 0 0 4px 0;">Username</h3>
+      <p id="modal-info-email" style="color: #94a3b8; font-size: 0.8rem; margin: 0 0 12px 0;">email@nexus.com</p>
+      
+      <div id="modal-info-contact-wrap" style="margin-bottom: 14px; display: none;">
+        <span style="font-size: 0.72rem; color: #94a3b8; display: block;">Contact / Phone:</span>
+        <a id="modal-info-contact-link" href="#" target="_blank" style="color: #22c55e; font-size: 0.85rem; font-weight: bold; text-decoration: none;"></a>
+      </div>
+
+      <div id="modal-info-ig-wrap" style="display: none;">
+        <a id="modal-info-ig-link" href="#" target="_blank" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
+          📸 Open Instagram Profile ↗
+        </a>
       </div>
     </div>
   </div>
@@ -478,7 +508,6 @@
       document.getElementById('nav-btn-booking').click();
     }
 
-    // GELİŞMİŞ PROFİL, İLETİŞİM & INSTAGRAM YÖNETİCİSİ
     function setupProfileCard(user) {
       let currentAvatar = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
       const cardAvatar = document.getElementById('prof-card-avatar');
@@ -501,13 +530,11 @@
       const saveBtn = document.getElementById('btn-save-profile');
       const saveStatus = document.getElementById('prof-save-status');
 
-      // Bilgileri Ekrana Bas
       function renderUserDisplay() {
         cardAvatar.src = currentAvatar;
         cardUsername.textContent = user.username;
         cardDetails.textContent = user.email;
 
-        // İletişim Alanı
         if (user.phone && user.phone.trim()) {
           cardContact.textContent = `📞 ${user.phone.trim()}`;
           cardContact.style.display = 'block';
@@ -515,7 +542,6 @@
           cardContact.style.display = 'none';
         }
 
-        // Instagram Rozeti
         if (user.instagram && user.instagram.trim()) {
           let igHandle = user.instagram.trim().replace('@', '');
           let igUrl = igHandle.startsWith('http') ? igHandle : `https://instagram.com/${igHandle}`;
@@ -529,7 +555,6 @@
           badgeIg.style.display = 'none';
         }
 
-        // Form alanlarını doldur
         inputContact.value = user.phone || '';
         inputIg.value = user.instagram || '';
       }
@@ -540,7 +565,6 @@
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
       };
 
-      // Hazır Bot Avatarları
       const botNames = ['Nova', 'Cipher', 'Vortex', 'Shadow', 'Neon', 'Specter', 'Zephyr', 'Orion'];
       presetGrid.innerHTML = '';
       botNames.forEach(b => {
@@ -557,7 +581,6 @@
         presetGrid.appendChild(im);
       });
 
-      // Fotoğraf Yükleme
       triggerBtn.onclick = () => fileInput.click();
 
       fileInput.onchange = (e) => {
@@ -591,7 +614,6 @@
         reader.readAsDataURL(file);
       };
 
-      // Bilgileri Kaydet
       saveBtn.onclick = async () => {
         const newPass = inputPass.value.trim();
         const contactVal = inputContact.value.trim();
@@ -864,6 +886,9 @@
         cdBadge.style.display = 'none';
       }
 
+      // WHO'S IN THE ROOM? (KATILIMCILARI ÇEK VE RENDER ET)
+      loadRoomParticipants(event.id);
+
       const spotWrap = document.getElementById('room-spotify-wrap');
       if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
         let spotEmbed = event.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
@@ -936,6 +961,77 @@
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
+    // WHO'S IN THE ROOM YÜKLEYİCİSİ VE POPUP KARTI
+    async function loadRoomParticipants(eventId) {
+      const row = document.getElementById('room-members-avatars-row');
+      const badge = document.getElementById('room-member-count-badge');
+      row.innerHTML = '<span style="font-size: 0.75rem; color: #94a3b8;">Loading members...</span>';
+
+      const { data: accessList } = await supabase
+        .from('event_access')
+        .select('user_id, users(id, username, email, avatar_url, phone, instagram)')
+        .eq('event_id', eventId);
+
+      const members = (accessList || []).map(a => a.users).filter(Boolean);
+      badge.textContent = `${members.length} Members`;
+      row.innerHTML = '';
+
+      if (members.length === 0) {
+        row.innerHTML = '<span style="font-size: 0.75rem; color: #64748b;">No members assigned yet.</span>';
+        return;
+      }
+
+      members.forEach(u => {
+        const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+        const item = document.createElement('div');
+        item.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex-shrink: 0;';
+        item.innerHTML = `
+          <div style="position: relative;">
+            <img src="${av}" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover; background: #070913; box-shadow: 0 0 8px rgba(0, 242, 254, 0.3); transition: transform 0.15s ease;" alt="${u.username}">
+            ${u.instagram ? '<span style="position: absolute; bottom: -2px; right: -2px; font-size: 10px; background: #cc2366; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;">📸</span>' : ''}
+          </div>
+          <span style="font-size: 0.72rem; color: #f8fafc; font-weight: 500; max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.username}</span>
+        `;
+
+        item.onclick = () => showUserDetailModal(u);
+        row.appendChild(item);
+      });
+    }
+
+    function showUserDetailModal(u) {
+      const modal = document.getElementById('user-info-modal');
+      const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+      
+      document.getElementById('modal-info-avatar').src = av;
+      document.getElementById('modal-info-username').textContent = u.username;
+      document.getElementById('modal-info-email').textContent = u.email;
+
+      const contactWrap = document.getElementById('modal-info-contact-wrap');
+      const contactLink = document.getElementById('modal-info-contact-link');
+      if (u.phone && u.phone.trim()) {
+        const ph = u.phone.trim();
+        contactLink.textContent = ph;
+        contactLink.href = ph.startsWith('+') ? `tel:${ph}` : (ph.startsWith('@') ? `https://t.me/${ph.replace('@','')}` : `tel:${ph}`);
+        contactWrap.style.display = 'block';
+      } else {
+        contactWrap.style.display = 'none';
+      }
+
+      const igWrap = document.getElementById('modal-info-ig-wrap');
+      const igLink = document.getElementById('modal-info-ig-link');
+      if (u.instagram && u.instagram.trim()) {
+        const ig = u.instagram.trim().replace('@', '');
+        igLink.href = ig.startsWith('http') ? ig : `https://instagram.com/${ig}`;
+        igWrap.style.display = 'block';
+      } else {
+        igWrap.style.display = 'none';
+      }
+
+      modal.style.display = 'flex';
+      document.getElementById('btn-close-user-info').onclick = () => modal.style.display = 'none';
+      modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    }
+
     async function openInviteModal(eventId) {
       const modal = document.getElementById('room-members-modal');
       const listEl = document.getElementById('modal-members-list');
@@ -996,6 +1092,7 @@
 
         statusEl.style.color = '#22c55e';
         statusEl.textContent = '✓ Members updated successfully!';
+        loadRoomParticipants(eventId); // Şeridi anında güncelle
         setTimeout(() => {
           modal.style.display = 'none';
           saveBtn.disabled = false;

@@ -51,7 +51,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.25rem;">Welcome</h2>
-            <img id="user-nav-avatar" src="" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ff007f; background: #111;" title="Your Avatar">
+            <img id="user-nav-avatar" src="" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ff007f; background: #111; object-fit: cover;" title="Your Avatar">
           </div>
           <span id="user-role-text" style="font-size: 0.8rem; color: #94a3b8;">NEXUS Member Space</span>
         </div>
@@ -74,6 +74,9 @@
         📱 Show Invite QR
       </button>
     </div>
+
+    <!-- DİNAMİK EKLENTİ YUVASI (DEV.HTML'DEN YÖNETİLEN PROFİL, STATS VB.) -->
+    <div id="dynamic-plugins-zone"></div>
 
     <!-- SEKMELER (MY EVENTS / BOOKING) -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
@@ -179,7 +182,6 @@
             </div>
           </div>
           <div style="display: flex; gap: 8px;">
-            <!-- ODAYA ÜYE EKLEME BUTONU -->
             <button id="btn-room-add-members" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">👥 + Invite</button>
             <button id="btn-close-room" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Close Room</button>
           </div>
@@ -366,7 +368,7 @@
       };
     }
 
-    function setupDashboard(user) {
+    async function setupDashboard(user) {
       document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
       const badge = document.getElementById('booking-user-badge');
       if (badge) badge.textContent = `Booking as: ${user.username} (${user.email})`;
@@ -385,6 +387,14 @@
       };
 
       setupInviteQR();
+
+      // DİNAMİK EKLENTİLERİ YÜKLE (DEV.HTML ÜZERİNDEN YÖNETİLENLER)
+      try {
+        const { loadActivePlugins } = await import('./modules/loader.js');
+        await loadActivePlugins(user.id, 'dynamic-plugins-zone');
+      } catch (e) {
+        console.warn('Plugins loader fallback:', e);
+      }
 
       const secBooking = document.getElementById('section-booking');
       const secEvents = document.getElementById('section-events');
@@ -706,7 +716,6 @@
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // ETKİNLİĞE SONRADAN ÜYE EKLEME FONKSİYONU
     async function openInviteModal(eventId) {
       const modal = document.getElementById('room-members-modal');
       const listEl = document.getElementById('modal-members-list');

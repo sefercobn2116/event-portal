@@ -15,8 +15,22 @@ export async function renderEventGallery(containerId, driveFolderId) {
         <button id="btn-refresh-gal" class="btn" style="padding: 6px 12px; font-size: 0.8rem;">↻ Refresh</button>
         <span id="gal-status" style="font-size: 0.75rem; color: #94a3b8;"></span>
       </div>
-      <div id="gal-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px;">
+      
+      <div id="gal-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px;">
         <span style="color: #64748b; font-size: 0.8rem;">Loading gallery...</span>
+      </div>
+
+      <!-- SAYFA İÇİ TAM EKRAN RESİM ÖNİZLEME (LIGHTBOX) -->
+      <div id="gallery-lightbox" class="lightbox-overlay" style="display: none;">
+        <div class="glass-box" style="max-width: 90vw; max-height: 90vh; text-align: center; position: relative; padding: 12px;">
+          <button id="btn-close-lightbox" style="position: absolute; top: 8px; right: 12px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">✕</button>
+          <img id="lightbox-img" src="" style="max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain; margin-bottom: 12px;">
+          <div>
+            <a id="lightbox-download-btn" href="#" download="event_photo.jpg" class="btn btn-pink" style="padding: 6px 18px; font-size: 0.82rem; text-decoration: none;">
+              ⬇️ Download Photo (İndir)
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -27,7 +41,14 @@ export async function renderEventGallery(containerId, driveFolderId) {
   const statusEl = document.getElementById('gal-status');
   const grid = document.getElementById('gal-grid');
 
+  const lightbox = document.getElementById('gallery-lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxDownload = document.getElementById('lightbox-download-btn');
+  const closeLightbox = document.getElementById('btn-close-lightbox');
+
   triggerBtn.onclick = () => fileInput.click();
+  closeLightbox.onclick = () => lightbox.style.display = 'none';
+  lightbox.onclick = (e) => { if (e.target === lightbox) lightbox.style.display = 'none'; };
 
   async function loadPhotos() {
     if (!driveFolderId) {
@@ -48,15 +69,26 @@ export async function renderEventGallery(containerId, driveFolderId) {
       }
       grid.innerHTML = '';
       data.files.forEach(f => {
-        const item = document.createElement('a');
-        item.href = f.viewUrl || f.url;
-        item.target = '_blank';
-        item.style.cssText = 'display: block; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,242,254,0.3); position: relative; aspect-ratio: 1;';
-        item.innerHTML = `<img src="${f.thumbnail || f.url}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+        const item = document.createElement('div');
+        item.style.cssText = 'border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,242,254,0.3); aspect-ratio: 1; cursor: pointer; position: relative; background: #000;';
+        
+        // Thumbnail URL
+        const thumbUrl = `https://drive.google.com/thumbnail?id=${f.id}&sz=w600`;
+        const fullUrl = `https://drive.google.com/uc?export=view&id=${f.id}`;
+
+        item.innerHTML = `<img src="${thumbUrl}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+        
+        // TIKLANDIĞINDA SAYFA İÇİ LIGHTBOX AÇ
+        item.onclick = () => {
+          lightboxImg.src = thumbUrl;
+          lightboxDownload.href = `https://drive.google.com/uc?export=download&id=${f.id}`;
+          lightbox.style.display = 'flex';
+        };
+
         grid.appendChild(item);
       });
     } catch (err) {
-      grid.innerHTML = '<span style="color: #f43f5e; font-size: 0.78rem;">Failed to load photos. Check Webhook deployment.</span>';
+      grid.innerHTML = '<span style="color: #f43f5e; font-size: 0.78rem;">Failed to load photos.</span>';
     }
   }
 

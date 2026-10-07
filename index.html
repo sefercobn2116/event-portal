@@ -1,623 +1,545 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS — Event Portal</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>NEXUS • Event & Hub</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --cyber-neon: #00f3ff;
-      --cyber-pink: #ff007f;
-      --cyber-bg: #0a0e17;
-      --glass-bg: rgba(16, 24, 39, 0.75);
-      --glass-border: rgba(0, 243, 255, 0.2);
-    }
-    body {
-      background-color: var(--cyber-bg);
-      color: #e2e8f0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      min-height: 100vh;
-    }
-    .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-    .text-cyber { color: var(--cyber-neon) !important; }
-    .btn-cyber {
-      background: transparent;
-      color: var(--cyber-neon);
-      border: 1px solid var(--cyber-neon);
-      transition: all 0.3s;
-    }
-    .btn-cyber:hover {
-      background: var(--cyber-neon);
-      color: #000;
-      box-shadow: 0 0 15px var(--cyber-neon);
-    }
-    .cal-day-cell {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.2s;
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .cal-day-cell:hover {
-      background: rgba(0, 243, 255, 0.15);
-      border-color: var(--cyber-neon);
-    }
-    .cal-day-cell.active-day {
-      border-color: var(--cyber-neon);
-      box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-    }
-  </style>
 </head>
-<body class="p-3 p-md-4">
+<body>
 
-<div class="container-fluid max-w-7xl">
-  <!-- Üst Bar -->
-  <header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
-    <div class="d-flex align-items-center gap-3">
-      <h2 class="m-0 text-cyber fw-bold">NEXUS</h2>
-      <span class="badge bg-dark border border-secondary text-muted">Event Portal Hub</span>
-    </div>
-    <div id="user-nav" class="d-flex align-items-center gap-2"></div>
-  </header>
-
-  <!-- Login Modal / Box (Giriş Yapılmamışsa Görünür) -->
-  <div id="auth-panel" class="row justify-content-center my-5" style="display: none;">
-    <div class="col-md-5">
-      <div class="glass-card p-4 text-center">
-        <h3 class="text-cyber mb-3">Giriş Yap / Kaydol</h3>
-        <input type="text" id="login-username" class="form-control mb-3 bg-dark text-white border-secondary" placeholder="Kullanıcı Adı">
-        <input type="email" id="login-email" class="form-control mb-3 bg-dark text-white border-secondary" placeholder="E-Posta">
-        <button class="btn btn-cyber w-100" onclick="App.login()">Giriş Yap</button>
+  <!-- 1. GİRİŞ & KAYIT -->
+  <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
+    <div class="glass-box" style="text-align: center;">
+      <img src="./icon.svg" style="width: 72px; height: 72px; border-radius: 16px; margin-bottom: 14px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">
+      <h2 id="auth-title" style="color: #00f2fe; margin-bottom: 20px;">Sign In to NEXUS</h2>
+      <input type="text" id="auth-username" class="input-field" placeholder="Username">
+      <div id="auth-register-fields" style="display: none;">
+        <input type="email" id="reg-email" class="input-field" placeholder="Email Address *">
       </div>
+      <input type="password" id="auth-password" class="input-field" placeholder="Password">
+      <button id="btn-auth-submit" class="btn" style="width: 100%; margin-top: 6px;">Sign In</button>
+      <div style="margin-top: 14px;">
+        <a href="#" id="toggle-auth-mode" style="color: #94a3b8; font-size: 0.85rem; text-decoration: none;">Don't have an account? Sign Up</a>
+      </div>
+      <div id="auth-status" style="margin-top: 10px; font-size: 0.82rem;"></div>
     </div>
   </div>
 
-  <!-- Ana İçerik Alanı -->
-  <div id="main-panel" class="row g-4" style="display: none;">
-    
-    <!-- SOL KOLON: Etkinlikler & Akıllı Gerçek Takvim -->
-    <div class="col-lg-5">
-      <!-- Takvim Bölümü -->
-      <div class="glass-card p-3 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <button class="btn btn-sm btn-outline-secondary" onclick="CalendarModule.changeMonth(-1)">&lt;</button>
-          <h5 id="cal-month-title" class="m-0 text-cyber fw-bold"></h5>
-          <button class="btn btn-sm btn-outline-secondary" onclick="CalendarModule.changeMonth(1)">&gt;</button>
-        </div>
-        <div class="d-grid mb-2 text-center text-muted small fw-bold" style="grid-template-columns: repeat(7, 1fr);">
-          <div>Pt</div><div>Sa</div><div>Ça</div><div>Pe</div><div>Cu</div><div>Ct</div><div>Pz</div>
-        </div>
-        <div id="calendar-days-grid" class="d-grid gap-1" style="grid-template-columns: repeat(7, 1fr);"></div>
-
-        <!-- Gün Seçildiğinde Açılan Saat Seçim Paneli -->
-        <div id="slot-picker-drawer" class="mt-3 p-3 rounded bg-black bg-opacity-50 border border-secondary" style="display: none;">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span id="slot-picker-date" class="text-cyber fw-bold small"></span>
-            <button class="btn-close btn-close-white small" onclick="CalendarModule.closeSlotPicker()"></button>
-          </div>
-          <p class="text-muted" style="font-size: 11px;">Müsait olduğun saatlere dokun (Yeşil = Boş/Müsait):</p>
-          <div id="slot-hours-grid" class="d-flex flex-wrap gap-1"></div>
-        </div>
-      </div>
-
-      <!-- Etkinlik Seçimi Listesi -->
-      <div class="glass-card p-3">
-        <h5 class="text-cyber mb-3">📅 Mevcut Etkinlikler</h5>
-        <div id="events-list" class="d-flex flex-column gap-2"></div>
-      </div>
-    </div>
-
-    <!-- SAĞ KOLON: Seçili Etkinlik Odası Paneli -->
-    <div class="col-lg-7">
-      <div id="room-placeholder" class="glass-card p-5 text-center text-muted">
-        <h4>Bir etkinlik seçin</h4>
-        <p>Detayları, sohbeti, görevleri ve katılım listesini görmek için soldan bir etkinliğe tıklayın.</p>
-      </div>
-
-      <div id="room-panel" style="display: none;" class="d-flex flex-column gap-3">
-        
-        <!-- Etkinlik Başlık & Detay Kartı -->
-        <div class="glass-card p-3 d-flex justify-content-between align-items-center">
-          <div>
-            <h4 id="active-event-title" class="text-cyber m-0"></h4>
-            <small id="active-event-meta" class="text-muted"></small>
-          </div>
-          <span class="badge bg-info text-dark" id="active-event-status">Oda Aktif</span>
-        </div>
-
-        <!-- RSVP & Katılımcı Onay Paneli (SADECE ORGANİZATÖR/ADMİN İÇİN DEĞİL CANLI İZLEME İÇİN) -->
-        <div id="rsvp-requests-container" class="glass-card p-3"></div>
-
-        <!-- İki Sütunlu Modül Izgarası -->
-        <div class="row g-3">
-          <!-- Split Bill (Expenses) -->
-          <div class="col-md-6">
-            <div id="expenses-container"></div>
-          </div>
-          <!-- Tasks (Who Brings What) -->
-          <div class="col-md-6">
-            <div id="tasks-container"></div>
-          </div>
-        </div>
-
-        <!-- Alt Bölüm: Live Chat & Suggestions -->
-        <div class="row g-3">
-          <div class="col-md-7">
-            <div id="chat-container"></div>
-          </div>
-          <div class="col-md-5">
-            <div id="suggestions-container"></div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- SCRIPTS & LOGIC -->
-<script src="config.js"></script>
-<script>
-// ==========================================
-// 1. UYGULAMA & AUTH YÖNETİMİ
-// ==========================================
-const App = {
-  currentUser: null,
-  activeEventId: null,
-
-  async init() {
-    const saved = localStorage.getItem('user_session');
-    if (saved) {
-      this.currentUser = JSON.parse(saved);
-      this.showMainPanel();
-    } else {
-      document.getElementById('auth-panel').style.display = 'flex';
-    }
-  },
-
-  async login() {
-    const username = document.getElementById('login-username').value.trim();
-    const email = document.getElementById('login-email').value.trim();
-    if (!username || !email) return alert('Lütfen bilgileri girin.');
-
-    let { data: user } = await supabase.from('users').select('*').eq('email', email).maybeSingle();
-    if (!user) {
-      const { data: newUser, error } = await supabase.from('users').insert({ username, email, role: 'user' }).select().single();
-      if (error) return alert('Giriş hatası: ' + error.message);
-      user = newUser;
-    }
-    this.currentUser = user;
-    localStorage.setItem('user_session', JSON.stringify(user));
-    document.getElementById('auth-panel').style.display = 'none';
-    this.showMainPanel();
-  },
-
-  logout() {
-    localStorage.removeItem('user_session');
-    location.reload();
-  },
-
-  async showMainPanel() {
-    document.getElementById('auth-panel').style.display = 'none';
-    document.getElementById('main-panel').style.display = 'flex';
-    document.getElementById('user-nav').innerHTML = `
-      <span class="text-white small me-2">${this.currentUser.username}</span>
-      <button class="btn btn-sm btn-outline-danger" onclick="App.logout()">Çıkış</button>
-    `;
-
-    CalendarModule.init();
-    this.loadEvents();
-  },
-
-  async loadEvents() {
-    const { data: events } = await supabase.from('events').select('*').order('id', { ascending: false });
-    const list = document.getElementById('events-list');
-    list.innerHTML = '';
-    (events || []).forEach(e => {
-      const item = document.createElement('div');
-      item.className = 'p-2 rounded bg-dark border border-secondary d-flex justify-content-between align-items-center cursor-pointer';
-      item.style.cursor = 'pointer';
-      item.innerHTML = `
+  <!-- 2. ANA PANEL -->
+  <div id="view-dashboard" class="container" style="display: none;">
+    <div class="nav-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="./icon.svg" style="width: 42px; height: 42px; border-radius: 10px;">
         <div>
-          <strong class="text-white d-block">${e.title}</strong>
-          <small class="text-muted">${e.location || 'Konum yok'} | ${e.event_date || ''}</small>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.2rem;">Welcome</h2>
+            <img id="user-nav-avatar" src="" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ff007f; object-fit: cover;">
+          </div>
+          <span id="user-role-text" style="font-size: 0.78rem; color: #94a3b8;">NEXUS Member Space</span>
         </div>
-        <button class="btn btn-sm btn-cyber" onclick="App.selectEvent(${e.id}, '${e.title}', '${e.location || ''}')">Odaya Gir</button>
-      `;
-      list.appendChild(item);
-    });
-  },
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <a id="btn-admin-link" href="admin.html" class="btn btn-pink" style="display: none; padding: 6px 14px; font-size: 0.8rem; text-decoration: none;">⚙️ Admin</a>
+        <button id="btn-logout" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Log Out</button>
+      </div>
+    </div>
 
-  selectEvent(id, title, location) {
-    this.activeEventId = id;
-    document.getElementById('room-placeholder').style.display = 'none';
-    document.getElementById('room-panel').style.display = 'flex';
-    document.getElementById('active-event-title').innerText = title;
-    document.getElementById('active-event-meta').innerText = location;
+    <!-- QR DAVET BANNERI -->
+    <div class="glass-box" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-color: rgba(0, 242, 254, 0.3);">
+      <div>
+        <h4 style="color: #00f2fe; margin: 0 0 2px 0;">✨ Bring Your Friends In</h4>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin: 0;">Scan QR code to join private spaces.</p>
+      </div>
+      <button id="btn-open-invite-qr" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">📱 Show Invite QR</button>
+    </div>
 
-    // Modülleri Başlat
-    RSVPManager.loadRequests(id);
-    ExpensesModule.init(id);
-    TasksModule.init(id);
-    ChatModule.init(id);
-  }
-};
+    <!-- PROFİL KARTI -->
+    <div class="glass-box" style="margin-bottom: 20px; border-color: rgba(0, 242, 254, 0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <img id="prof-card-avatar" src="" style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h4 id="prof-card-username" style="color: #00f2fe; margin: 0;">User</h4>
+              <span id="prof-badge-ig" style="display: none;"></span>
+            </div>
+            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8; display: block; margin-top: 2px;">Loading...</span>
+            <div id="prof-card-contact" style="font-size: 0.76rem; color: #22c55e; margin-top: 4px; display: none;"></div>
+          </div>
+        </div>
+        <button id="btn-toggle-profile-edit" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Edit Profile</button>
+      </div>
 
-// ==========================================
-// 2. İNTERAKTİF GERÇEK TAKVİM & SAAT SEÇİMİ
-// ==========================================
-const CalendarModule = {
-  currentDate: new Date(),
-  selectedDate: null,
-  userSlots: new Set(),
+      <!-- Düzenleme Alanı -->
+      <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
+        <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
+          <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
+          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.78rem;">Choose Profile Picture</button>
+          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">Square auto-crop enabled</div>
+        </div>
+        <div id="prof-preset-grid" style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px;"></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px;">
+          <input type="text" id="prof-contact-input" class="input-field" placeholder="Phone / Telegram (+381...)" style="margin-bottom: 0;">
+          <input type="text" id="prof-ig-input" class="input-field" placeholder="Instagram (username or URL)" style="margin-bottom: 0;">
+        </div>
+        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password (optional)">
+        <button type="button" id="btn-save-profile" class="btn" style="width: 100%;">Save Profile</button>
+        <div id="prof-save-status" style="margin-top: 6px; font-size: 0.78rem; text-align: center;"></div>
+      </div>
+    </div>
 
-  init() {
-    this.renderMonth();
-    this.setupRealtime();
-  },
+    <!-- EKLENTİ YUVASI (SMART MEETUP) -->
+    <div id="dynamic-plugins-zone"></div>
 
-  changeMonth(delta) {
-    this.currentDate.setMonth(this.currentDate.getMonth() + delta);
-    this.renderMonth();
-  },
+    <!-- ETKİNLİKLER ALANI -->
+    <div id="section-events">
+      <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
+        <div class="glass-box">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4 style="color: #00f2fe; margin: 0;">Host Your Own Event</h4>
+            <button id="btn-toggle-create-evt" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">➕ Create Event</button>
+          </div>
 
-  renderMonth() {
-    const year = this.currentDate.getFullYear();
-    const month = this.currentDate.getMonth();
-    const monthTitle = new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(this.currentDate);
-    document.getElementById('cal-month-title').innerText = monthTitle.toUpperCase();
+          <div id="create-evt-form" style="display: none; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+            <input type="text" id="uevt-title" class="input-field" placeholder="Event Title *">
+            <textarea id="uevt-desc" class="input-field" style="height: 50px; resize: none;" placeholder="Description"></textarea>
+            <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Maps URL">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 10px;">
+              <input type="date" id="uevt-date" class="input-field" style="margin-bottom: 0;">
+              <select id="uevt-start-hour" class="input-field" style="margin-bottom: 0;"></select>
+              <select id="uevt-end-hour" class="input-field" style="margin-bottom: 0;"></select>
+            </div>
+            <input type="text" id="uevt-spotify" class="input-field" placeholder="Spotify Playlist URL">
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.82rem; color: #00f2fe; cursor: pointer;">
+              <input type="checkbox" id="uevt-expenses"> Enable Shared Expenses (Split Bill)
+            </label>
+            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event Space</button>
+            <div id="uevt-status" style="margin-top: 6px; font-size: 0.8rem; text-align: center;"></div>
+          </div>
+        </div>
+      </div>
 
-    const grid = document.getElementById('calendar-days-grid');
-    grid.innerHTML = '';
+      <div class="glass-box">
+        <h3 style="color: #00f2fe; margin-bottom: 14px;">All Events</h3>
+        <div id="events-grid-list" style="display: grid; gap: 10px;"></div>
+      </div>
 
-    const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
-    const totalDays = new Date(year, month + 1, 0).getDate();
+      <!-- ETKİNLİK ODASI -->
+      <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+          <div>
+            <h3 id="room-title" style="color: #00f2fe; margin: 0 0 4px 0;">Event Space</h3>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <div id="room-location-wrap" style="display: none;"></div>
+              <div id="room-duration-badge" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;"></div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-mobile-show-attendees" class="btn room-attendees-mobile-btn" style="padding: 4px 10px; font-size: 0.75rem;">👥 Gelenler (<span class="room-member-count-span">0</span>)</button>
+            <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Close Room</button>
+          </div>
+        </div>
 
-    for (let i = 0; i < firstDay; i++) {
-      grid.innerHTML += `<div class="p-2"></div>`;
+        <div class="room-layout-container">
+          <!-- MASAÜSTÜ SOL PANEL -->
+          <div class="room-sidebar-desktop glass-box" style="padding: 12px; background: rgba(0,0,0,0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 0.78rem; color: #00f2fe; font-weight: bold;">👥 GELENLER</span>
+              <span class="room-member-count-span" style="font-size: 0.75rem; color: #94a3b8;">0</span>
+            </div>
+            <div id="room-desktop-attendees-list" style="display: grid; gap: 6px; max-height: 440px; overflow-y: auto;"></div>
+          </div>
+
+          <!-- SAĞ İÇERİK -->
+          <div class="room-main-content">
+            <div id="room-spotify-wrap" style="display: none; margin-bottom: 16px;"></div>
+
+            <!-- Ortak Masraflar -->
+            <div id="room-expenses-section" style="display: none; margin-bottom: 20px;">
+              <h4 style="color: #ff007f; font-size: 0.88rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
+              <div id="room-expenses-container"></div>
+            </div>
+
+            <!-- Görevler -->
+            <div id="room-tasks-section" style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks)</h4>
+              <div id="room-tasks-container"></div>
+            </div>
+
+            <!-- Galeri -->
+            <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">📸 Media Gallery</h4>
+              <div id="room-gallery-container"></div>
+            </div>
+
+            <!-- Öneriler & Oylama -->
+            <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
+              <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea..." style="margin-bottom: 0;">
+                <button id="btn-send-suggestion" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">Post</button>
+              </div>
+              <div id="room-suggestions-list" style="max-height: 160px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Canlı Chat -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
+              <div id="room-chat-messages" style="height: 180px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;"></div>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="chat-input-text" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
+                <button id="btn-send-chat" class="btn" style="padding: 0 20px;">Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBİL GELENLER MODALI -->
+  <div id="mobile-attendees-modal" class="lightbox-overlay" style="display: none;">
+    <div class="glass-box" style="max-width: 320px; width: 90%; position: relative;">
+      <button id="btn-close-mobile-attendees" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin-bottom: 10px; font-size: 1rem;">👥 Etkinliğe Gelenler</h3>
+      <div id="room-mobile-attendees-list" style="display: grid; gap: 6px; max-height: 280px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <!-- QR MODAL -->
+  <div id="qr-modal" class="lightbox-overlay" style="display: none;">
+    <div class="glass-box" style="max-width: 320px; text-align: center; position: relative;">
+      <button id="btn-close-qr" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin-bottom: 12px;">Invite to Portal</h3>
+      <div style="background: #fff; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 12px;">
+        <img id="qr-code-img" src="" style="width: 200px; height: 200px; display: block;">
+      </div>
+      <div><button id="btn-copy-portal-link" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">📋 Copy Link</button></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
+
+    let isRegisterMode = false;
+    let currentOpenEvent = null;
+
+    function getSessionUser() {
+      try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch(e){ return null; }
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    async function startApp() {
+      let user = getSessionUser();
+      if (!user) {
+        document.getElementById('view-auth').style.display = 'block';
+        document.getElementById('view-dashboard').style.display = 'none';
+        setupAuth();
+        return;
+      }
+      try {
+        const { data: latest } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+        if (latest) { user = latest; localStorage.setItem('portal_user', JSON.stringify(latest)); }
+      } catch(e){}
 
-    for (let day = 1; day <= totalDays; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const cell = document.createElement('div');
-      cell.className = `cal-day-cell rounded small ${dateStr === todayStr ? 'border-cyber' : ''}`;
-      cell.innerText = day;
-      cell.onclick = () => this.openSlotPicker(dateStr);
-      grid.appendChild(cell);
+      document.getElementById('view-auth').style.display = 'none';
+      document.getElementById('view-dashboard').style.display = 'block';
+      setupDashboard(user);
     }
-  },
+    startApp();
 
-  async openSlotPicker(dateStr) {
-    this.selectedDate = dateStr;
-    document.getElementById('slot-picker-drawer').style.display = 'block';
-    document.getElementById('slot-picker-date').innerText = `Tarih: ${dateStr}`;
+    function setupAuth() {
+      const toggle = document.getElementById('toggle-auth-mode');
+      const submit = document.getElementById('btn-auth-submit');
+      const reg = document.getElementById('auth-register-fields');
+      const status = document.getElementById('auth-status');
 
-    const { data: slots } = await supabase
-      .from('user_availability')
-      .select('slot_hour')
-      .eq('user_id', App.currentUser.id)
-      .eq('slot_date', dateStr);
+      toggle.onclick = (e) => {
+        e.preventDefault();
+        isRegisterMode = !isRegisterMode;
+        reg.style.display = isRegisterMode ? 'block' : 'none';
+        submit.textContent = isRegisterMode ? 'Sign Up' : 'Sign In';
+        document.getElementById('auth-title').textContent = isRegisterMode ? 'Create Account' : 'Sign In to NEXUS';
+      };
 
-    this.userSlots = new Set((slots || []).map(s => s.slot_hour));
-    this.renderHourButtons();
-  },
+      submit.onclick = async () => {
+        const username = document.getElementById('auth-username').value.trim();
+        const pass = document.getElementById('auth-password').value;
+        status.style.color = '#00f2fe';
+        status.textContent = 'Authenticating...';
 
-  renderHourButtons() {
-    const container = document.getElementById('slot-hours-grid');
-    container.innerHTML = '';
-    for (let h = 8; h <= 23; h++) {
-      const isSelected = this.userSlots.has(h);
-      const btn = document.createElement('button');
-      btn.className = `btn btn-xs py-1 px-2 ${isSelected ? 'btn-success' : 'btn-outline-secondary'}`;
-      btn.innerText = `${String(h).padStart(2, '0')}:00`;
-      btn.onclick = () => this.toggleSlot(h);
-      container.appendChild(btn);
+        try {
+          if (isRegisterMode) {
+            const email = document.getElementById('reg-email').value.trim();
+            const { data: u, error } = await supabase.from('users').insert([{ username, email, password_hash: pass, role: 'user' }]).select().single();
+            if (error) throw error;
+            localStorage.setItem('portal_user', JSON.stringify(u));
+          } else {
+            const { data: u, error } = await supabase.from('users').select('*').eq('username', username).eq('password_hash', pass).maybeSingle();
+            if (error || !u) throw new Error('Invalid credentials');
+            localStorage.setItem('portal_user', JSON.stringify(u));
+          }
+          startApp();
+        } catch(err) {
+          status.style.color = '#f43f5e';
+          status.textContent = err.message;
+        }
+      };
     }
-  },
 
-  async toggleSlot(hour) {
-    if (this.userSlots.has(hour)) {
-      this.userSlots.delete(hour);
-      await supabase.from('user_availability').delete()
-        .eq('user_id', App.currentUser.id)
-        .eq('slot_date', this.selectedDate)
-        .eq('slot_hour', hour);
-    } else {
-      this.userSlots.add(hour);
-      await supabase.from('user_availability').upsert({
-        user_id: App.currentUser.id,
-        slot_date: this.selectedDate,
-        slot_hour: hour,
-        is_booked: false
+    async function setupDashboard(user) {
+      document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
+      const av = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      document.getElementById('user-nav-avatar').src = av;
+
+      if (user.is_admin || user.role === 'admin') {
+        document.getElementById('btn-admin-link').style.display = 'inline-flex';
+        document.getElementById('user-role-text').textContent = 'Administrator';
+      }
+
+      document.getElementById('btn-logout').onclick = () => { localStorage.removeItem('portal_user'); window.location.reload(); };
+
+      setupProfile(user);
+      setupQR();
+
+      // Plugin Yükle
+      try {
+        const { loadActivePlugins } = await import('./modules/loader.js');
+        await loadActivePlugins(user.id, 'dynamic-plugins-zone');
+      } catch(e){}
+
+      if (user.can_create_events || user.is_admin || user.role === 'admin') {
+        document.getElementById('user-create-event-panel').style.display = 'block';
+        setupEventCreate(user);
+      }
+
+      loadEvents(user);
+
+      // Realtime Yeni Etkinlik Dinleyicisi
+      supabase.channel('events_live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+          loadEvents(user);
+        }).subscribe();
+    }
+
+    function setupProfile(user) {
+      let curAv = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      const avImg = document.getElementById('prof-card-avatar');
+      const uName = document.getElementById('prof-card-username');
+      const det = document.getElementById('prof-card-details');
+      const cont = document.getElementById('prof-card-contact');
+      const igBadge = document.getElementById('prof-badge-ig');
+      const form = document.getElementById('prof-edit-form');
+      const fileInput = document.getElementById('prof-file-input');
+
+      function render() {
+        avImg.src = curAv;
+        uName.textContent = user.username;
+        det.textContent = user.email;
+        if (user.phone) { cont.textContent = `📞 ${user.phone}`; cont.style.display = 'block'; } else cont.style.display = 'none';
+        if (user.instagram) {
+          const h = user.instagram.replace('@','').trim();
+          igBadge.innerHTML = `<a href="https://instagram.com/${h}" target="_blank" style="background: linear-gradient(45deg,#f09433,#dc2743,#bc1888); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.7rem; text-decoration:none; font-weight:bold;">📸 @${h} ↗</a>`;
+          igBadge.style.display = 'inline-block';
+        } else igBadge.style.display = 'none';
+      }
+      render();
+
+      document.getElementById('btn-toggle-profile-edit').onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      document.getElementById('btn-trigger-upload').onclick = () => fileInput.click();
+
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = 256; c.height = 256;
+            const min = Math.min(img.width, img.height);
+            c.getContext('2d').drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, 256, 256);
+            curAv = c.toDataURL('image/webp', 0.85);
+            avImg.src = curAv;
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      };
+
+      document.getElementById('btn-save-profile').onclick = async () => {
+        const payload = {
+          avatar_url: curAv,
+          phone: document.getElementById('prof-contact-input').value.trim(),
+          instagram: document.getElementById('prof-ig-input').value.trim()
+        };
+        const pass = document.getElementById('prof-new-pass').value.trim();
+        if (pass) payload.password_hash = pass;
+
+        await supabase.from('users').update(payload).eq('id', user.id);
+        Object.assign(user, payload);
+        localStorage.setItem('portal_user', JSON.stringify(user));
+        render();
+        form.style.display = 'none';
+      };
+    }
+
+    function setupQR() {
+      const modal = document.getElementById('qr-modal');
+      const url = window.location.href.split('#')[0].split('?')[0];
+      document.getElementById('btn-open-invite-qr').onclick = () => {
+        document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+        modal.style.display = 'flex';
+      };
+      document.getElementById('btn-close-qr').onclick = () => modal.style.display = 'none';
+      document.getElementById('btn-copy-portal-link').onclick = () => { navigator.clipboard.writeText(url); alert('Copied!'); };
+    }
+
+    async function setupEventCreate(user) {
+      const form = document.getElementById('create-evt-form');
+      const sH = document.getElementById('uevt-start-hour');
+      const eH = document.getElementById('uevt-end-hour');
+      for (let h = 8; h <= 23; h++) {
+        const val = `${h < 10 ? '0' + h : h}:00`;
+        sH.innerHTML += `<option value="${h}" ${h === 18 ? 'selected' : ''}>${val}</option>`;
+        eH.innerHTML += `<option value="${h + 1}" ${h === 20 ? 'selected' : ''}>${h + 1 < 10 ? '0' + (h + 1) : (h + 1)}:00</option>`;
+      }
+
+      document.getElementById('btn-toggle-create-evt').onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
+
+      document.getElementById('btn-submit-uevt').onclick = async () => {
+        const title = document.getElementById('uevt-title').value.trim();
+        const dateVal = document.getElementById('uevt-date').value;
+        if (!title || !dateVal) return alert('Title and date required');
+
+        let fId = '';
+        try {
+          const res = await fetch(EMAIL_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'create_drive_folder', folderName: title })
+          });
+          const d = await res.json();
+          if (d.status === 'success') fId = d.folderId;
+        } catch(e){}
+
+        const start = parseInt(sH.value);
+        const end = parseInt(eH.value);
+        const { data: newEvt } = await supabase.from('events').insert([{
+          title,
+          description: document.getElementById('uevt-desc').value.trim(),
+          location: document.getElementById('uevt-loc').value.trim(),
+          event_date: dateVal,
+          start_hour: start,
+          end_hour: end,
+          duration_hours: end - start,
+          spotify_url: document.getElementById('uevt-spotify').value.trim(),
+          enable_expenses: document.getElementById('uevt-expenses').checked,
+          drive_folder_url: fId,
+          created_by: user.id
+        }]).select().single();
+
+        await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
+        form.style.display = 'none';
+      };
+    }
+
+    async function loadEvents(user) {
+      const container = document.getElementById('events-grid-list');
+      const { data: events } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      const { data: access } = await supabase.from('event_access').select('event_id').eq('user_id', user.id);
+      const accessSet = new Set((access || []).map(a => a.event_id));
+
+      container.innerHTML = '';
+      (events || []).forEach(evt => {
+        const hasAccess = user.is_admin || user.role === 'admin' || evt.created_by === user.id || accessSet.has(evt.id);
+        const card = document.createElement('div');
+        card.className = 'glass-box';
+        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+        card.innerHTML = `
+          <div>
+            <h4 style="color: ${hasAccess ? '#00f2fe' : '#94a3b8'}; margin: 0;">${hasAccess ? '🟢' : '🔒'} ${evt.title}</h4>
+            <span style="font-size: 0.75rem; color: #64748b;">📅 ${evt.event_date || 'Date TBD'} • ${evt.location || 'Spot'}</span>
+          </div>
+          <button class="btn btn-enter" style="padding: 4px 12px; font-size: 0.78rem;">${hasAccess ? 'Enter Space →' : 'Request Access'}</button>
+        `;
+        card.querySelector('.btn-enter').onclick = () => {
+          if (hasAccess) openRoom(evt, user);
+          else alert('Access request submitted to event host.');
+        };
+        container.appendChild(card);
       });
     }
-    this.renderHourButtons();
-  },
 
-  closeSlotPicker() {
-    document.getElementById('slot-picker-drawer').style.display = 'none';
-  },
+    async function openRoom(event, user) {
+      currentOpenEvent = event;
+      const room = document.getElementById('event-detail-room');
+      document.getElementById('room-title').textContent = event.title;
+      document.getElementById('room-duration-badge').textContent = `⏳ ${event.duration_hours || 2}h Session`;
 
-  setupRealtime() {
-    supabase.channel('public:cal_avail')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_availability' }, () => {
-        if (this.selectedDate) this.openSlotPicker(this.selectedDate);
-      }).subscribe();
-  }
-};
+      loadAttendees(event.id);
 
-// ==========================================
-// 3. KATILIMCI ONAY PANELİ (RSVP MANAGER)
-// ==========================================
-const RSVPManager = {
-  async loadRequests(eventId) {
-    const container = document.getElementById('rsvp-requests-container');
-    const { data: requests } = await supabase
-      .from('event_join_requests')
-      .select('id, status, user_id, users(username, email)')
-      .eq('event_id', eventId);
+      // Spotify
+      const sp = document.getElementById('room-spotify-wrap');
+      if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
+        sp.innerHTML = `<iframe style="border-radius:10px; width:100%; height:80px;" src="${event.spotify_url.replace('open.spotify.com/','open.spotify.com/embed/')}" frameBorder="0"></iframe>`;
+        sp.style.display = 'block';
+      } else sp.style.display = 'none';
 
-    container.innerHTML = `<h6 class="text-cyber mb-2">👥 Katılım Onay Paneli (RSVP)</h6>`;
-    if (!requests || requests.length === 0) {
-      container.innerHTML += `<small class="text-muted">Bekleyen veya kayıtlı katılım isteği yok.</small>`;
-      return;
+      // Masraflar
+      const expSec = document.getElementById('room-expenses-section');
+      if (event.enable_expenses) {
+        expSec.style.display = 'block';
+        try { const { initEventExpenses } = await import('./modules/expenses.js'); initEventExpenses(event.id, 'room-expenses-container'); } catch(e){}
+      } else expSec.style.display = 'none';
+
+      // Görevler
+      try { const { initEventTasks } = await import('./modules/tasks.js'); initEventTasks(event.id, 'room-tasks-container'); } catch(e){}
+
+      // Galeri
+      try { const { renderEventGallery } = await import('./modules/gallery.js'); renderEventGallery('room-gallery-container', event.drive_folder_url); } catch(e){}
+
+      // Chat & Suggestions
+      try {
+        const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
+        initEventChat(event.id, 'room-chat-messages');
+        initEventSuggestions(event.id, 'room-suggestions-list');
+
+        document.getElementById('btn-send-chat').onclick = () => sendChatMessage(event.id, 'chat-input-text');
+        document.getElementById('btn-send-suggestion').onclick = () => sendSuggestion(event.id, 'suggestion-input');
+      } catch(e){}
+
+      document.getElementById('btn-close-room').onclick = () => room.style.display = 'none';
+      document.getElementById('btn-mobile-show-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'flex';
+      document.getElementById('btn-close-mobile-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'none';
+
+      room.style.display = 'block';
+      room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    requests.forEach(r => {
-      const uName = r.users?.username || r.users?.email || 'Anonim';
-      container.innerHTML += `
-        <div class="d-flex justify-content-between align-items-center bg-dark p-2 rounded mb-2 border border-secondary">
-          <span class="small text-white">${uName}</span>
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge ${r.status === 'accepted' ? 'bg-success' : r.status === 'rejected' ? 'bg-danger' : 'bg-warning'}">${r.status}</span>
-            ${r.status === 'pending' ? `
-              <button class="btn btn-sm btn-success py-0 px-2" onclick="RSVPManager.updateStatus(${r.id}, 'accepted',${r.user_id})">Onayla</button>
-              <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="RSVPManager.updateStatus(${r.id}, 'rejected',${r.user_id})">Reddet</button>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    });
+    async function loadAttendees(eventId) {
+      const dList = document.getElementById('room-desktop-attendees-list');
+      const mList = document.getElementById('room-mobile-attendees-list');
+      const spans = document.querySelectorAll('.room-member-count-span');
 
-    supabase.channel('public:rsvp_' + eventId)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests', filter: `event_id=eq.${eventId}` }, () => {
-        this.loadRequests(eventId);
-      }).subscribe();
-  },
+      const { data } = await supabase.from('event_access').select('users(username, avatar_url, phone)').eq('event_id', eventId);
+      const members = (data || []).map(d => d.users).filter(Boolean);
 
-  async updateStatus(id, status, userId) {
-    await supabase.from('event_join_requests').update({ status }).eq('id', id);
-    if (status === 'accepted' && userId) {
-      await supabase.from('event_access').upsert({ event_id: App.activeEventId, user_id: userId });
+      spans.forEach(s => s.textContent = members.length);
+      dList.innerHTML = '';
+      mList.innerHTML = '';
+
+      members.forEach(u => {
+        const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; gap:8px; padding:4px;';
+        row.innerHTML = `<img src="${av}" style="width:28px; height:28px; border-radius:50%;"><strong style="font-size:0.8rem;">${u.username}</strong>`;
+        dList.appendChild(row);
+        mList.appendChild(row.cloneNode(true));
+      });
     }
-    this.loadRequests(App.activeEventId);
-  }
-};
-
-// ==========================================
-// 4. SHARED EXPENSES POOL (SPLIT BILL)
-// ==========================================
-const ExpensesModule = {
-  async init(eventId) {
-    const c = document.getElementById('expenses-container');
-    c.innerHTML = `
-      <div class="glass-card p-3 h-100">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="text-cyber m-0">💸 Split Bill (Masraflar)</h6>
-          <span id="exp-total" class="badge bg-success">0.00 TL</span>
-        </div>
-        <div class="input-group input-group-sm mb-2">
-          <input type="text" id="exp-desc" class="form-control bg-dark text-white border-secondary" placeholder="Açıklama">
-          <input type="number" id="exp-amount" class="form-control bg-dark text-white border-secondary" placeholder="Tutar" style="max-width: 80px;">
-          <button class="btn btn-cyber" onclick="ExpensesModule.add()">Ekle</button>
-        </div>
-        <div id="exp-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 180px;"></div>
-      </div>
-    `;
-    this.load(eventId);
-    supabase.channel('public:exp_' + eventId)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_expenses', filter: `event_id=eq.${eventId}` }, () => this.load(eventId))
-      .subscribe();
-  },
-
-  async load(eventId) {
-    const { data } = await supabase.from('event_expenses').select('*, users(username)').eq('event_id', eventId).order('id', { ascending: false });
-    const list = document.getElementById('exp-list');
-    if (!list) return;
-    let total = 0;
-    list.innerHTML = (data || []).length === 0 ? '<small class="text-muted">Masraf yok.</small>' : '';
-    (data || []).forEach(e => {
-      total += parseFloat(e.amount || 0);
-      list.innerHTML += `
-        <div class="d-flex justify-content-between bg-dark p-1 px-2 rounded border border-secondary small">
-          <span>${e.description} <em class="text-muted">(${e.users?.username || 'Kullanıcı'})</em></span>
-          <strong class="text-cyber">${parseFloat(e.amount).toFixed(2)} TL</strong>
-        </div>
-      `;
-    });
-    document.getElementById('exp-total').innerText = `${total.toFixed(2)} TL`;
-  },
-
-  async add() {
-    const desc = document.getElementById('exp-desc').value.trim();
-    const amount = parseFloat(document.getElementById('exp-amount').value);
-    if (!desc || isNaN(amount)) return;
-    await supabase.from('event_expenses').insert({
-      event_id: App.activeEventId,
-      paid_by: App.currentUser.id,
-      description: desc,
-      amount
-    });
-    document.getElementById('exp-desc').value = '';
-    document.getElementById('exp-amount').value = '';
-  }
-};
-
-// ==========================================
-// 5. WHO BRINGS WHAT? (TASKS)
-// ==========================================
-const TasksModule = {
-  async init(eventId) {
-    const c = document.getElementById('tasks-container');
-    c.innerHTML = `
-      <div class="glass-card p-3 h-100">
-        <h6 class="text-cyber mb-2">🎒 Who Brings What?</h6>
-        <div class="input-group input-group-sm mb-2">
-          <input type="text" id="task-title" class="form-control bg-dark text-white border-secondary" placeholder="Malzeme / Görev">
-          <button class="btn btn-cyber" onclick="TasksModule.add()">Ekle</button>
-        </div>
-        <div id="tasks-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 180px;"></div>
-      </div>
-    `;
-    this.load(eventId);
-    supabase.channel('public:tasks_' + eventId)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${eventId}` }, () => this.load(eventId))
-      .subscribe();
-  },
-
-  async load(eventId) {
-    const { data } = await supabase.from('event_tasks').select('*, users(username)').eq('event_id', eventId).order('id', { ascending: false });
-    const list = document.getElementById('tasks-list');
-    if (!list) return;
-    list.innerHTML = (data || []).length === 0 ? '<small class="text-muted">Görev yok.</small>' : '';
-    (data || []).forEach(t => {
-      const isMine = t.assigned_to === App.currentUser.id;
-      list.innerHTML += `
-        <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary small">
-          <span style="${t.is_completed ? 'text-decoration: line-through; opacity:0.6;' : ''}">
-            <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="TasksModule.toggle(${t.id}, this.checked)"> ${t.title}
-          </span>
-          <div>
-            ${!t.assigned_to ? `<button class="btn btn-xs btn-outline-info py-0" onclick="TasksModule.assign(${t.id})">Al</button>` : ''}
-            ${isMine ? `<button class="btn btn-xs btn-outline-danger py-0" onclick="TasksModule.unassign(${t.id})">Bırak</button>` : `<small class="text-muted">${t.users?.username || ''}</small>`}
-          </div>
-        </div>
-      `;
-    });
-  },
-
-  async add() {
-    const title = document.getElementById('task-title').value.trim();
-    if (!title) return;
-    await supabase.from('event_tasks').insert({ event_id: App.activeEventId, title, is_completed: false });
-    document.getElementById('task-title').value = '';
-  },
-
-  async assign(id) { await supabase.from('event_tasks').update({ assigned_to: App.currentUser.id }).eq('id', id); },
-  async unassign(id) { await supabase.from('event_tasks').update({ assigned_to: null }).eq('id', id); },
-  async toggle(id, is_completed) { await supabase.from('event_tasks').update({ is_completed }).eq('id', id); }
-};
-
-// ==========================================
-// 6. LIVE ROOM CHAT & SUGGESTIONS
-// ==========================================
-const ChatModule = {
-  async init(eventId) {
-    document.getElementById('chat-container').innerHTML = `
-      <div class="glass-card p-3 d-flex flex-column" style="height: 320px;">
-        <h6 class="text-cyber mb-2">💬 Live Room Chat</h6>
-        <div id="chat-msgs" class="flex-grow-1 overflow-auto d-flex flex-column gap-2 mb-2"></div>
-        <div class="input-group input-group-sm">
-          <input type="text" id="chat-input" class="form-control bg-dark text-white border-secondary" placeholder="Mesaj yaz...">
-          <button class="btn btn-cyber" onclick="ChatModule.send()">Gönder</button>
-        </div>
-      </div>
-    `;
-
-    document.getElementById('suggestions-container').innerHTML = `
-      <div class="glass-card p-3 d-flex flex-column" style="height: 320px;">
-        <h6 class="text-cyber mb-2">💡 Live Event Ideas</h6>
-        <div class="input-group input-group-sm mb-2">
-          <input type="text" id="sugg-input" class="form-control bg-dark text-white border-secondary" placeholder="Fikir öner...">
-          <button class="btn btn-cyber" onclick="ChatModule.addSugg()">Ekle</button>
-        </div>
-        <div id="sugg-list" class="flex-grow-1 overflow-auto d-flex flex-column gap-1"></div>
-      </div>
-    `;
-
-    document.getElementById('chat-input').onkeypress = (e) => { if (e.key === 'Enter') ChatModule.send(); };
-
-    this.loadMsgs(eventId);
-    this.loadSuggs(eventId);
-
-    supabase.channel('public:chat_' + eventId)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_chat', filter: `event_id=eq.${eventId}` }, () => this.loadMsgs(eventId))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_suggestions', filter: `event_id=eq.${eventId}` }, () => this.loadSuggs(eventId))
-      .subscribe();
-  },
-
-  async loadMsgs(eventId) {
-    const { data } = await supabase.from('event_chat').select('*, users(username)').eq('event_id', eventId).order('created_at', { ascending: true });
-    const box = document.getElementById('chat-msgs');
-    if (!box) return;
-    box.innerHTML = '';
-    (data || []).forEach(m => {
-      const isMe = m.user_id === App.currentUser.id;
-      box.innerHTML += `
-        <div class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
-          <small class="text-muted" style="font-size:10px;">${m.users?.username || 'Anonim'}</small>
-          <div class="p-2 rounded small ${isMe ? 'bg-info text-dark' : 'bg-dark text-white border border-secondary'}" style="max-width:80%;">
-            ${m.message}
-          </div>
-        </div>
-      `;
-    });
-    box.scrollTop = box.scrollHeight;
-  },
-
-  async send() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if (!msg) return;
-    await supabase.from('event_chat').insert({ event_id: App.activeEventId, user_id: App.currentUser.id, message: msg });
-    input.value = '';
-  },
-
-  async loadSuggs(eventId) {
-    const { data } = await supabase.from('event_suggestions').select('*').eq('event_id', eventId).order('votes', { ascending: false });
-    const list = document.getElementById('sugg-list');
-    if (!list) return;
-    list.innerHTML = (data || []).length === 0 ? '<small class="text-muted">Öneri yok.</small>' : '';
-    (data || []).forEach(s => {
-      list.innerHTML += `
-        <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary small">
-          <span>${s.text}</span>
-          <button class="btn btn-xs btn-outline-cyber py-0" onclick="ChatModule.upvote(${s.id}, ${s.votes || 0})">👍 ${s.votes || 0}</button>
-        </div>
-      `;
-    });
-  },
-
-  async addSugg() {
-    const input = document.getElementById('sugg-input');
-    const text = input.value.trim();
-    if (!text) return;
-    await supabase.from('event_suggestions').insert({ event_id: App.activeEventId, user_id: App.currentUser.id, text, votes: 0 });
-    input.value = '';
-  },
-
-  async upvote(id, current) {
-    await supabase.from('event_suggestions').update({ votes: current + 1 }).eq('id', id);
-  }
-};
-
-// Uygulamayı Başlat
-window.addEventListener('DOMContentLoaded', () => App.init());
-</script>
+  </script>
 </body>
 </html>

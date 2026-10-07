@@ -7,573 +7,526 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
-  <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <!-- ÜST NAVBAR & KULLANICI BİLGİSİ -->
-  <header class="cyber-header">
-    <div class="header-left">
-      <h1 class="logo-text">NEXUS</h1>
-      <span class="sub-badge">HUB PORTAL</span>
+  <!-- ÜST NAVBAR -->
+  <header class="app-header">
+    <div class="header-brand">
+      <h1 class="logo-title">NEXUS</h1>
+      <span class="badge-accent">EVENT PORTAL</span>
     </div>
-    <div class="header-right" id="user-header-box">
-      <!-- Oturum açıldığında dinamik doldurulur -->
-    </div>
+    <div class="header-user" id="header-user-info"></div>
   </header>
 
-  <!-- GİRİŞ & KAYIT ALANI -->
-  <main id="auth-section" class="auth-wrapper" style="display: none;">
-    <div class="glass-card auth-card">
-      <h2 class="neon-title mb-3">Kimlik Doğrulama</h2>
-      <div class="input-group-cyber">
+  <!-- GİRİŞ EKRANI (ORİJİNAL TASARIM) -->
+  <div id="auth-container" class="auth-wrapper" style="display: none;">
+    <div class="glass-panel auth-card">
+      <h2 class="neon-glow mb-4">Giriş Yap / Kaydol</h2>
+      <div class="form-group mb-3">
         <label>Kullanıcı Adı</label>
-        <input type="text" id="auth-username" class="cyber-input" placeholder="Kullanıcı adınız">
+        <input type="text" id="auth-username" class="cyber-input w-100" placeholder="Kullanıcı adınızı girin">
       </div>
-      <div class="input-group-cyber mt-2">
+      <div class="form-group mb-3">
         <label>E-Posta</label>
-        <input type="email" id="auth-email" class="cyber-input" placeholder="mail@ornek.com">
+        <input type="email" id="auth-email" class="cyber-input w-100" placeholder="ornek@nexus.com">
       </div>
-      <div class="input-group-cyber mt-2">
+      <div class="form-group mb-4">
         <label>Şifre</label>
-        <input type="password" id="auth-password" class="cyber-input" placeholder="******">
+        <input type="password" id="auth-password" class="cyber-input w-100" placeholder="******">
       </div>
-      <div class="auth-buttons mt-4 d-flex gap-2">
-        <button class="btn-cyber w-100" onclick="handleAuthLogin()">Giriş Yap</button>
-        <button class="btn-outline-cyber w-100" onclick="handleAuthRegister()">Kayıt Ol</button>
+      <div class="d-flex gap-2">
+        <button class="btn-cyber w-100" onclick="nexusAuth('login')">Giriş Yap</button>
+        <button class="btn-outline-cyber w-100" onclick="nexusAuth('register')">Kayıt Ol</button>
       </div>
     </div>
-  </main>
+  </div>
 
   <!-- ANA PORTAL ALANI -->
-  <main id="portal-section" class="portal-layout" style="display: none;">
+  <div id="app-container" class="portal-grid" style="display: none;">
     
-    <!-- SOL PANEL: Profil Kartı, Akıllı Takvim ve Etkinlikler Listesi -->
-    <aside class="portal-sidebar">
+    <!-- SOL SÜTUN: Profil, Gerçek Takvim & Etkinlik Listesi -->
+    <div class="portal-sidebar-left">
       
       <!-- Kullanıcı Profil Kartı -->
-      <div class="glass-card user-profile-card mb-3">
+      <div class="glass-panel user-card mb-3">
         <div class="d-flex align-items-center gap-3">
-          <img id="user-avatar-img" class="user-avatar-circle" src="icon.svg" alt="Avatar">
+          <div class="avatar-circle">
+            <span id="user-avatar-initial">👤</span>
+          </div>
           <div>
-            <h4 id="user-display-name" class="m-0 text-white">Yükleniyor...</h4>
-            <span id="user-role-badge" class="badge-tag">Gezgin</span>
+            <h4 id="user-name-display" class="m-0 text-white font-weight-bold">Kullanıcı</h4>
+            <span id="user-role-badge" class="badge-role">Gezgin</span>
           </div>
         </div>
       </div>
 
       <!-- İNTERAKTİF GERÇEK TAKVİM & SAAT SEÇİMİ -->
-      <div class="glass-card calendar-card mb-3">
-        <div class="calendar-header-nav d-flex justify-content-between align-items-center mb-2">
-          <button class="btn-nav-cal" onclick="NexusCalendar.navMonth(-1)">&lt;</button>
-          <strong id="calendar-month-label" class="text-cyber">AY YILI</strong>
-          <button class="btn-nav-cal" onclick="NexusCalendar.navMonth(1)">&gt;</button>
+      <div class="glass-panel calendar-box mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <button class="btn-nav" onclick="NexusCalendar.navMonth(-1)">&lt;</button>
+          <strong id="cal-month-title" class="text-accent" style="letter-spacing: 1px;">AY YILI</strong>
+          <button class="btn-nav" onclick="NexusCalendar.navMonth(1)">&gt;</button>
         </div>
-        <div class="calendar-week-days">
-          <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+        <div class="cal-weekdays d-grid" style="grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; opacity: 0.6; margin-bottom: 5px;">
+          <div>Pt</div><div>Sa</div><div>Ça</div><div>Pe</div><div>Cu</div><div>Ct</div><div>Pz</div>
         </div>
-        <div id="calendar-days-container" class="calendar-grid-days mt-1"></div>
+        <div id="cal-days-grid" class="d-grid" style="grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
 
-        <!-- Gün Tıklanınca Açılan Canlı Saat Seçim Çekmecesi -->
-        <div id="cal-slots-drawer" class="mt-3 p-2 rounded glass-inner-panel" style="display: none;">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span id="cal-selected-date-title" class="text-info small fw-bold"></span>
+        <!-- Gün Tıklanınca Açılan Canlı Saat Seçici -->
+        <div id="cal-drawer" class="mt-3 p-2 rounded" style="display:none; background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 243, 255, 0.3);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span id="cal-drawer-date" class="text-accent" style="font-size: 12px; font-weight: bold;"></span>
             <button class="btn-close-sm" onclick="NexusCalendar.closeDrawer()">✕</button>
           </div>
-          <small class="text-muted d-block mb-2" style="font-size: 11px;">Müsait olduğun saatleri yeşil yap (08:00 - 23:00):</small>
-          <div id="cal-hour-buttons-grid" class="d-flex flex-wrap gap-1"></div>
+          <small class="text-muted d-block mb-2" style="font-size: 10px;">Boş saatlerini seç (Yeşil = Müsait):</small>
+          <div id="cal-drawer-slots" class="d-flex flex-wrap gap-1"></div>
         </div>
       </div>
 
       <!-- Etkinlikler Listesi -->
-      <div class="glass-card events-list-card">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="m-0 text-cyber">Etkinlikler</h5>
-          <button id="btn-create-event" class="btn-xs-cyber" style="display:none;" onclick="openCreateEventModal()">+ Yeni</button>
-        </div>
-        <div id="portal-events-container" class="d-flex flex-column gap-2 mt-2"></div>
+      <div class="glass-panel events-box">
+        <h5 class="text-accent mb-2" style="font-size: 14px;">📅 Etkinlikler</h5>
+        <div id="events-list" class="d-flex flex-column gap-2"></div>
       </div>
 
-    </aside>
+    </div>
 
-    <!-- SAĞ PANEL: Etkinlik Odası (Detaylar, Katılımcılar, Görevler, Masraflar, Sohbet) -->
-    <section class="portal-main-room">
+    <!-- SAĞ SÜTUN: Etkinlik Odası Paneli -->
+    <div class="portal-main-content">
       
-      <!-- Boş Durum Bilgisi -->
-      <div id="room-empty-state" class="glass-card empty-room-view p-5 text-center">
-        <h3 class="text-cyber mb-2">Etkinlik Odası</h3>
-        <p class="text-muted">Katılmak veya detaylarını canlı görmek istediğiniz etkinliği soldaki listeden seçin.</p>
+      <!-- Boş Oda Durumu -->
+      <div id="room-empty" class="glass-panel text-center p-5">
+        <h3 class="text-accent">Etkinlik Odası</h3>
+        <p class="text-muted">Detayları ve canlı odayı görmek için soldan bir etkinlik seçin.</p>
       </div>
 
-      <!-- Aktif Etkinlik Odası Paneli -->
-      <div id="room-active-state" class="event-room-wrapper" style="display: none;">
+      <!-- Açık Oda Görünümü -->
+      <div id="room-active" style="display: none;" class="d-flex flex-column gap-3">
         
-        <!-- Üst Başlık & Kontroller -->
-        <div class="glass-card p-3 mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <!-- Oda Üst Başlık & Çıkış -->
+        <div class="glass-panel p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div>
-            <h2 id="room-event-title" class="m-0 text-cyber">Oda Başlığı</h2>
-            <div id="room-event-meta" class="text-muted small mt-1">Konum & Saat Detayları</div>
+            <h2 id="room-title" class="m-0 text-accent font-weight-bold">Etkinlik</h2>
+            <div id="room-meta" class="text-muted small mt-1">Konum & Saat</div>
           </div>
-          <button class="btn-outline-danger btn-sm" onclick="closeEventRoom()">Close Room</button>
+          <button class="btn-close-room" onclick="NexusRoom.close()">Close Room</button>
         </div>
 
-        <div class="room-columns-layout">
+        <div class="room-split-layout d-flex gap-3">
           
-          <!-- Sol Sütun: Gelenler ve Organizatör Onay Bekleyenler (RSVP) -->
-          <div class="room-sidebar-desktop glass-card p-3">
+          <!-- Sol Mini Panel: GELENLER & Katılım Onay Paneli (RSVP) -->
+          <div class="room-sidebar-desktop glass-panel p-3" style="width: 250px; min-width: 250px;">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-cyber fw-bold" style="font-size: 13px;">👥 GELENLER</span>
-              <span id="room-attendees-count" class="badge-tag">0</span>
+              <span class="text-accent font-weight-bold" style="font-size: 12px;">👥 GELENLER</span>
+              <span id="room-attendees-badge" class="badge-role">0</span>
             </div>
-            <div id="room-attendees-list" class="d-flex flex-column gap-2"></div>
+            <div id="room-attendees-list" class="d-flex flex-column gap-2 mb-3"></div>
 
-            <!-- Bekleyen İstekler (RSVP Onay/Ret Paneli) -->
-            <div id="room-rsvp-requests-box" class="mt-4 pt-3 border-top border-secondary">
-              <span class="text-warning fw-bold small d-block mb-2">⏳ Katılım İstekleri</span>
+            <!-- Bekleyen İstekler Onay/Ret Kutusu -->
+            <div id="room-rsvp-box" class="pt-3 border-top border-secondary">
+              <span class="text-warning font-weight-bold d-block mb-2" style="font-size: 12px;">⏳ Katılım İstekleri</span>
               <div id="room-rsvp-list" class="d-flex flex-column gap-2"></div>
             </div>
           </div>
 
-          <!-- Sağ Sütun: Modüller (Masraflar, Görevler, Galeri, Öneriler, Chat) -->
-          <div class="room-content-modules d-flex flex-column gap-3">
+          <!-- Sağ Taraf: Masraflar, Görevler, Galeri, Öneriler ve Chat -->
+          <div class="room-modules-container flex-grow-1 d-flex flex-column gap-3">
             
             <!-- 1. Shared Expenses Pool (Split Bill) -->
-            <div class="glass-card p-3 module-card">
+            <div class="glass-panel p-3">
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-pink fw-bold">💰 Shared Expenses Pool (Split Bill)</span>
-                <span id="pool-total-badge" class="badge bg-success" style="font-size: 13px;">0.00 TL</span>
+                <span class="text-pink font-weight-bold">💰 Shared Expenses Pool (Split Bill)</span>
+                <span id="expenses-total-val" class="badge bg-success" style="font-size: 13px;">0.00 TL</span>
               </div>
-              <div class="input-group-row d-flex gap-2 mb-2">
-                <input type="text" id="expense-desc-input" class="cyber-input flex-grow-1" placeholder="Harcama kalemi (Örn: Mangal eti)">
-                <input type="number" id="expense-amount-input" class="cyber-input" placeholder="Tutar" style="max-width: 90px;">
-                <button class="btn-cyber btn-sm" onclick="RoomModules.addExpense()">Ekle</button>
+              <div class="d-flex gap-2 mb-2">
+                <input type="text" id="expense-in-desc" class="cyber-input flex-grow-1" placeholder="Harcama açıklaması">
+                <input type="number" id="expense-in-amt" class="cyber-input" placeholder="Tutar" style="width: 90px;">
+                <button class="btn-cyber btn-sm" onclick="NexusRoom.addExpense()">Ekle</button>
               </div>
-              <div id="room-expenses-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 140px;"></div>
+              <div id="expenses-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 130px;"></div>
             </div>
 
             <!-- 2. Who Brings What? (Tasks) -->
-            <div class="glass-card p-3 module-card">
-              <span class="text-cyan fw-bold d-block mb-2">📋 Who Brings What? (Tasks)</span>
-              <div class="input-group-row d-flex gap-2 mb-2">
-                <input type="text" id="task-title-input" class="cyber-input flex-grow-1" placeholder="Malzeme veya görev adı...">
-                <button class="btn-cyber btn-sm" onclick="RoomModules.addTask()">Ekle</button>
+            <div class="glass-panel p-3">
+              <span class="text-cyan font-weight-bold d-block mb-2">📋 Who Brings What? (Tasks)</span>
+              <div class="d-flex gap-2 mb-2">
+                <input type="text" id="task-in-title" class="cyber-input flex-grow-1" placeholder="Malzeme veya görev adı...">
+                <button class="btn-cyber btn-sm" onclick="NexusRoom.addTask()">Ekle</button>
               </div>
-              <div id="room-tasks-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 140px;"></div>
+              <div id="tasks-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 130px;"></div>
             </div>
 
             <!-- 3. Media Gallery -->
-            <div class="glass-card p-3 module-card">
-              <span class="text-muted fw-bold d-block mb-2">📷 Media Gallery</span>
-              <div class="d-flex gap-2 mb-3">
-                <input type="file" id="gallery-file-input" accept="image/*" style="display:none;" onchange="RoomModules.uploadGalleryPhoto(event)">
-                <button class="btn-outline-cyber btn-sm" onclick="document.getElementById('gallery-file-input').click()">📷 Upload Photo</button>
-                <button class="btn-outline-secondary btn-sm" onclick="RoomModules.loadGallery()">🔄</button>
+            <div class="glass-panel p-3">
+              <span class="text-muted font-weight-bold d-block mb-2">📷 Media Gallery</span>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn-outline-cyber btn-sm" onclick="alert('Drive yükleme entegrasyonu tetiklendi.')">📷 Upload Photo</button>
               </div>
-              <div id="room-gallery-grid" class="d-flex flex-wrap gap-2"></div>
+              <div id="gallery-grid" class="d-flex flex-wrap gap-2"></div>
             </div>
 
             <!-- 4. Live Event Ideas & Suggestions -->
-            <div class="glass-card p-3 module-card">
-              <span class="text-warning fw-bold d-block mb-2">💡 Live Event Ideas & Suggestions</span>
-              <div class="input-group-row d-flex gap-2 mb-2">
-                <input type="text" id="suggestion-text-input" class="cyber-input flex-grow-1" placeholder="Pitch an idea...">
-                <button class="btn-pink btn-sm" onclick="RoomModules.addSuggestion()">Post</button>
+            <div class="glass-panel p-3">
+              <span class="text-warning font-weight-bold d-block mb-2">💡 Live Event Ideas & Suggestions</span>
+              <div class="d-flex gap-2 mb-2">
+                <input type="text" id="sugg-in-text" class="cyber-input flex-grow-1" placeholder="Pitch an idea...">
+                <button class="btn-pink btn-sm" onclick="NexusRoom.addSuggestion()">Post</button>
               </div>
-              <div id="room-suggestions-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 150px;"></div>
+              <div id="suggestions-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 140px;"></div>
             </div>
 
             <!-- 5. Live Room Chat -->
-            <div class="glass-card p-3 module-card d-flex flex-column" style="min-height: 320px;">
-              <span class="text-white fw-bold d-block mb-2">💬 Live Room Chat</span>
-              <div id="room-chat-messages" class="flex-grow-1 overflow-auto d-flex flex-column gap-2 mb-2 p-2 rounded" style="background: rgba(0,0,0,0.3); max-height: 250px;"></div>
+            <div class="glass-panel p-3 d-flex flex-column" style="min-height: 300px;">
+              <span class="text-white font-weight-bold d-block mb-2">💬 Live Room Chat</span>
+              <div id="chat-messages-box" class="flex-grow-1 overflow-auto d-flex flex-column gap-2 mb-2 p-2 rounded" style="background: rgba(0,0,0,0.3); max-height: 220px;"></div>
               <div class="d-flex gap-2">
-                <input type="text" id="room-chat-input" class="cyber-input flex-grow-1" placeholder="Type a message...">
-                <button class="btn-cyber btn-sm" onclick="RoomModules.sendChatMessage()">Send</button>
+                <input type="text" id="chat-in-msg" class="cyber-input flex-grow-1" placeholder="Type a message...">
+                <button class="btn-cyber btn-sm" onclick="NexusRoom.sendMessage()">Send</button>
               </div>
             </div>
 
           </div>
+
         </div>
 
       </div>
 
-    </section>
+    </div>
 
-  </main>
+  </div>
 
-  <!-- AYARLAR & SUPABASE KONFİGÜRASYONU -->
+  <!-- AYARLAR -->
   <script src="config.js"></script>
 
-  <!-- TEMEL PORTAL VE TÜM REALTIME MODÜL MANTIĞI -->
+  <!-- TÜM SİSTEMİ ÇALIŞTIRAN ENTEGRE SCRİPT -->
   <script>
-    // Global Durum
-    window.currentNexusUser = null;
-    window.currentActiveEventId = null;
-    window.roomRealtimeChannel = null;
+    let activeUser = null;
+    let activeEventId = null;
+    let roomChannel = null;
 
-    // 1. OTURUM & AUTHENTICATION
     document.addEventListener('DOMContentLoaded', () => {
-      checkUserSession();
+      initAppSession();
     });
 
-    function checkUserSession() {
-      const stored = sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user');
-      if (stored) {
-        window.currentNexusUser = JSON.parse(stored);
-        showPortalView();
+    // 1. KULLANICI GİRİŞ/OTURUM İŞLEMLERİ
+    function initAppSession() {
+      const saved = sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user');
+      if (saved) {
+        activeUser = JSON.parse(saved);
+        showApp();
       } else {
-        document.getElementById('auth-section').style.display = 'flex';
-        document.getElementById('portal-section').style.display = 'none';
+        document.getElementById('auth-container').style.display = 'flex';
+        document.getElementById('app-container').style.display = 'none';
       }
     }
 
-    async function handleAuthLogin() {
-      const u = document.getElementById('auth-username').value.trim();
-      const p = document.getElementById('auth-password').value.trim();
-      if (!u || !p) return alert('Kullanıcı adı ve şifre giriniz.');
-
-      const { data: user, error } = await supabase.from('users').select('*').eq('username', u).maybeSingle();
-      if (error || !user) return alert('Kullanıcı bulunamadı veya şifre yanlış.');
-
-      window.currentNexusUser = user;
-      sessionStorage.setItem('nexus_user', JSON.stringify(user));
-      showPortalView();
-    }
-
-    async function handleAuthRegister() {
+    async function nexusAuth(type) {
       const u = document.getElementById('auth-username').value.trim();
       const e = document.getElementById('auth-email').value.trim();
       const p = document.getElementById('auth-password').value.trim();
-      if (!u || !e || !p) return alert('Lütfen tüm alanları doldurun.');
+      if (!u) return alert('Kullanıcı adı giriniz.');
 
-      const { data: user, error } = await supabase.from('users').insert({
-        username: u, email: e, password_hash: p, role: 'user', can_create_events: false
-      }).select().single();
-
-      if (error) return alert('Kayıt başarısız: ' + error.message);
-      window.currentNexusUser = user;
-      sessionStorage.setItem('nexus_user', JSON.stringify(user));
-      showPortalView();
+      if (type === 'login') {
+        const { data, error } = await supabase.from('users').select('*').eq('username', u).maybeSingle();
+        if (error || !data) return alert('Kullanıcı bulunamadı.');
+        activeUser = data;
+      } else {
+        const { data, error } = await supabase.from('users').insert({ username: u, email: e, password_hash: p, role: 'user' }).select().single();
+        if (error) return alert('Kayıt hatası: ' + error.message);
+        activeUser = data;
+      }
+      sessionStorage.setItem('nexus_user', JSON.stringify(activeUser));
+      showApp();
     }
 
-    function logoutUser() {
+    function nexusLogout() {
       sessionStorage.removeItem('nexus_user');
       localStorage.removeItem('nexus_user');
       location.reload();
     }
 
-    function showPortalView() {
-      document.getElementById('auth-section').style.display = 'none';
-      document.getElementById('portal-section').style.display = 'grid';
+    function showApp() {
+      document.getElementById('auth-container').style.display = 'none';
+      document.getElementById('app-container').style.display = 'grid';
 
-      // Navbar ve Profil Kartı
-      const user = window.currentNexusUser;
-      document.getElementById('user-header-box').innerHTML = `
-        <span class="text-cyber small me-2">${user.username}</span>
-        <button class="btn-outline-danger btn-xs" onclick="logoutUser()">Çıkış</button>
+      document.getElementById('header-user-info').innerHTML = `
+        <span class="text-accent small mr-2">${activeUser.username}</span>
+        <button class="btn-outline-danger btn-xs" onclick="nexusLogout()">Çıkış</button>
       `;
-      document.getElementById('user-display-name').innerText = user.username;
-      document.getElementById('user-role-badge').innerText = user.role || 'Üye';
-      if (user.avatar_url) document.getElementById('user-avatar-img').src = user.avatar_url;
+      document.getElementById('user-name-display').innerText = activeUser.username;
+      document.getElementById('user-role-badge').innerText = activeUser.role || 'Üye';
 
       NexusCalendar.init();
-      loadPortalEvents();
+      loadEvents();
     }
 
     // 2. ETKİNLİKLER LİSTESİ
-    async function loadPortalEvents() {
-      const { data: events } = await supabase.from('events').select('*').order('id', { ascending: false });
-      const container = document.getElementById('portal-events-container');
-      container.innerHTML = '';
-
-      (events || []).forEach(e => {
+    async function loadEvents() {
+      const { data } = await supabase.from('events').select('*').order('id', { ascending: false });
+      const list = document.getElementById('events-list');
+      list.innerHTML = '';
+      (data || []).forEach(ev => {
         const item = document.createElement('div');
-        item.className = 'glass-inner-panel p-2 rounded d-flex justify-content-between align-items-center';
+        item.className = 'glass-panel p-2 rounded d-flex justify-content-between align-items-center';
         item.innerHTML = `
           <div>
-            <strong class="text-white d-block" style="font-size: 13px;">${e.title}</strong>
-            <small class="text-muted" style="font-size: 11px;">${e.location || 'Konum yok'} | ${e.event_date || ''}</small>
+            <strong class="text-white d-block" style="font-size: 13px;">${ev.title}</strong>
+            <small class="text-muted" style="font-size: 11px;">${ev.location || 'Konum yok'} | ${ev.event_date || ''}</small>
           </div>
-          <button class="btn-cyber btn-xs" onclick="openEventRoom(${e.id}, '${e.title}', '${e.location || ''}')">Oda</button>
+          <button class="btn-cyber btn-xs" onclick="openRoom(${ev.id}, '${ev.title}', '${ev.location || ''}')">Oda</button>
         `;
-        container.appendChild(item);
+        list.appendChild(item);
       });
     }
 
-    // 3. İNTERAKTİF TAKVİM & SAAT SEÇİCİ
+    // 3. İNTERAKTİF GERÇEK TAKVİM & SAAT SEÇİMİ
     const NexusCalendar = {
       currDate: new Date(),
-      selectedDateStr: null,
+      selDate: null,
       mySlots: new Set(),
 
       init() {
         this.render();
       },
 
-      navMonth(delta) {
-        this.currDate.setMonth(this.currDate.getMonth() + delta);
+      navMonth(d) {
+        this.currDate.setMonth(this.currDate.getMonth() + d);
         this.render();
       },
 
       render() {
-        const year = this.currDate.getFullYear();
-        const month = this.currDate.getMonth();
-        document.getElementById('calendar-month-label').innerText =
+        const y = this.currDate.getFullYear();
+        const m = this.currDate.getMonth();
+        document.getElementById('cal-month-title').innerText =
           new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(this.currDate).toUpperCase();
 
-        const grid = document.getElementById('calendar-days-container');
+        const grid = document.getElementById('cal-days-grid');
         grid.innerHTML = '';
 
-        const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
-        const totalDays = new Date(year, month + 1, 0).getDate();
+        const firstDay = (new Date(y, m, 1).getDay() + 6) % 7;
+        const totalDays = new Date(y, m + 1, 0).getDate();
         const todayStr = new Date().toISOString().split('T')[0];
 
         for (let i = 0; i < firstDay; i++) {
-          grid.innerHTML += `<div class="cal-day-cell cal-empty"></div>`;
+          grid.innerHTML += `<div style="height:32px;"></div>`;
         }
 
         for (let d = 1; d <= totalDays; d++) {
-          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const cell = document.createElement('div');
-          cell.className = `cal-day-cell ${dateStr === todayStr ? 'active-today' : ''}`;
+          cell.className = 'cal-day-cell';
+          if (dateStr === todayStr) cell.style.borderColor = 'var(--cyber-neon)';
+          cell.style.cssText = 'height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:4px; font-size:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);';
           cell.innerText = d;
-          cell.onclick = () => this.openDateSlots(dateStr);
+          cell.onclick = () => this.openDate(dateStr);
           grid.appendChild(cell);
         }
       },
 
-      async openDateSlots(dateStr) {
-        this.selectedDateStr = dateStr;
-        const drawer = document.getElementById('cal-slots-drawer');
-        drawer.style.display = 'block';
-        document.getElementById('cal-selected-date-title').innerText = `${dateStr} Saatlerin:`;
+      async openDate(dateStr) {
+        this.selDate = dateStr;
+        document.getElementById('cal-drawer').style.display = 'block';
+        document.getElementById('cal-drawer-date').innerText = `${dateStr} Saatlerin:`;
 
-        const { data: slots } = await supabase
-          .from('user_availability')
+        const { data } = await supabase.from('user_availability')
           .select('slot_hour')
-          .eq('user_id', window.currentNexusUser.id)
+          .eq('user_id', activeUser.id)
           .eq('slot_date', dateStr);
 
-        this.mySlots = new Set((slots || []).map(s => s.slot_hour));
-        this.renderSlotButtons();
+        this.mySlots = new Set((data || []).map(s => s.slot_hour));
+        this.renderSlots();
       },
 
-      renderSlotButtons() {
-        const box = document.getElementById('cal-hour-buttons-grid');
+      renderSlots() {
+        const box = document.getElementById('cal-drawer-slots');
         box.innerHTML = '';
         for (let h = 8; h <= 23; h++) {
-          const isSet = this.mySlots.has(h);
+          const set = this.mySlots.has(h);
           const btn = document.createElement('button');
-          btn.className = `btn btn-xs ${isSet ? 'btn-success' : 'btn-outline-secondary'} py-1 px-2`;
+          btn.style.cssText = `padding: 2px 6px; font-size:10px; border-radius:3px; cursor:pointer; border:none; ${set ? 'background:#28a745; color:#fff;' : 'background:#222; color:#aaa;'}`;
           btn.innerText = `${String(h).padStart(2, '0')}:00`;
-          btn.onclick = () => this.toggleSlot(h);
+          btn.onclick = () => this.toggle(h);
           box.appendChild(btn);
         }
       },
 
-      async toggleSlot(hour) {
-        const uid = window.currentNexusUser.id;
-        if (this.mySlots.has(hour)) {
-          this.mySlots.delete(hour);
-          await supabase.from('user_availability').delete()
-            .eq('user_id', uid)
-            .eq('slot_date', this.selectedDateStr)
-            .eq('slot_hour', hour);
+      async toggle(h) {
+        if (this.mySlots.has(h)) {
+          this.mySlots.delete(h);
+          await supabase.from('user_availability').delete().eq('user_id', activeUser.id).eq('slot_date', this.selDate).eq('slot_hour', h);
         } else {
-          this.mySlots.add(hour);
-          await supabase.from('user_availability').upsert({
-            user_id: uid,
-            slot_date: this.selectedDateStr,
-            slot_hour: hour,
-            is_booked: false
-          });
+          this.mySlots.add(h);
+          await supabase.from('user_availability').upsert({ user_id: activeUser.id, slot_date: this.selDate, slot_hour: h, is_booked: false });
         }
-        this.renderSlotButtons();
+        this.renderSlots();
       },
 
       closeDrawer() {
-        document.getElementById('cal-slots-drawer').style.display = 'none';
+        document.getElementById('cal-drawer').style.display = 'none';
       }
     };
 
-    // 4. ETKİNLİK ODASI & TÜM CANLI MODÜLLER
-    function openEventRoom(eventId, title, meta) {
-      window.currentActiveEventId = eventId;
-      document.getElementById('room-empty-state').style.display = 'none';
-      document.getElementById('room-active-state').style.display = 'block';
+    // 4. ODA VE CANLI MODÜLLERİN YÖNETİMİ
+    function openRoom(id, title, meta) {
+      activeEventId = id;
+      document.getElementById('room-empty').style.display = 'none';
+      document.getElementById('room-active').style.display = 'flex';
+      document.getElementById('room-title').innerText = title;
+      document.getElementById('room-meta').innerText = meta;
 
-      document.getElementById('room-event-title').innerText = title;
-      document.getElementById('room-event-meta').innerText = meta;
-
-      // Enter Tuşu Bağlantısı
-      document.getElementById('room-chat-input').onkeypress = (e) => {
-        if (e.key === 'Enter') RoomModules.sendChatMessage();
+      document.getElementById('chat-in-msg').onkeypress = (e) => {
+        if (e.key === 'Enter') NexusRoom.sendMessage();
       };
 
-      RoomModules.initAll(eventId);
+      NexusRoom.init(id);
     }
 
-    function closeEventRoom() {
-      if (window.roomRealtimeChannel) {
-        supabase.removeChannel(window.roomRealtimeChannel);
-        window.roomRealtimeChannel = null;
-      }
-      window.currentActiveEventId = null;
-      document.getElementById('room-active-state').style.display = 'none';
-      document.getElementById('room-empty-state').style.display = 'block';
-    }
+    const NexusRoom = {
+      id: null,
 
-    const RoomModules = {
-      eventId: null,
-
-      initAll(eventId) {
-        this.eventId = eventId;
+      init(id) {
+        this.id = id;
         this.loadAttendees();
-        this.loadRSVPRequests();
+        this.loadRSVP();
         this.loadExpenses();
         this.loadTasks();
-        this.loadGallery();
         this.loadSuggestions();
         this.loadChat();
 
-        this.bindRealtimeSubscription();
+        this.listenRealtime();
       },
 
-      // --- KATILIMCILAR & RSVP İSTEKLERİ ---
+      close() {
+        if (roomChannel) supabase.removeChannel(roomChannel);
+        roomChannel = null;
+        activeEventId = null;
+        document.getElementById('room-active').style.display = 'none';
+        document.getElementById('room-empty').style.display = 'block';
+      },
+
+      // KATILIMCILAR
       async loadAttendees() {
-        const { data: access } = await supabase.from('event_access').select('user_id').eq('event_id', this.eventId);
-        const userIds = (access || []).map(a => a.user_id);
+        const { data: access } = await supabase.from('event_access').select('user_id').eq('event_id', this.id);
+        const uIds = (access || []).map(a => a.user_id);
+        document.getElementById('room-attendees-badge').innerText = uIds.length;
 
-        const listEl = document.getElementById('room-attendees-list');
-        const countEl = document.getElementById('room-attendees-count');
-        if (countEl) countEl.innerText = userIds.length;
-
-        if (userIds.length === 0) {
-          listEl.innerHTML = `<small class="text-muted">Katılımcı yok.</small>`;
+        const list = document.getElementById('room-attendees-list');
+        if (uIds.length === 0) {
+          list.innerHTML = `<small class="text-muted">Katılımcı yok.</small>`;
           return;
         }
 
-        const { data: users } = await supabase.from('users').select('id, username, avatar_url').in('id', userIds);
-        listEl.innerHTML = (users || []).map(u => `
-          <div class="d-flex align-items-center gap-2 p-1 rounded bg-black bg-opacity-30">
-            <span style="font-size: 14px;">🤖</span>
-            <span class="text-white small">${u.username}</span>
+        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
+        list.innerHTML = (users || []).map(u => `
+          <div class="d-flex align-items-center gap-2 p-1 rounded" style="background: rgba(0,0,0,0.3); font-size:12px;">
+            <span>🤖</span>
+            <span class="text-white">${u.username}</span>
           </div>
         `).join('');
       },
 
-      async loadRSVPRequests() {
+      // RSVP İSTEK ONAY/RET PANELİ
+      async loadRSVP() {
         const box = document.getElementById('room-rsvp-list');
-        if (!box) return;
-
-        const { data: reqs } = await supabase.from('event_join_requests')
-          .select('*')
-          .eq('event_id', this.eventId)
-          .eq('status', 'pending');
+        const { data: reqs } = await supabase.from('event_join_requests').select('*').eq('event_id', this.id).eq('status', 'pending');
 
         if (!reqs || reqs.length === 0) {
-          box.innerHTML = `<small class="text-muted" style="font-size: 11px;">Bekleyen istek yok.</small>`;
+          box.innerHTML = `<small class="text-muted" style="font-size:11px;">Bekleyen istek yok.</small>`;
           return;
         }
 
         const uIds = reqs.map(r => r.user_id);
-        const { data: uList } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((uList || []).map(u => [u.id, u.username]));
+        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
+        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
 
         box.innerHTML = reqs.map(r => `
           <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-warning" style="font-size: 11px;">
             <span class="text-white">${map[r.user_id] || 'Kullanıcı #' + r.user_id}</span>
             <div class="d-flex gap-1">
-              <button class="btn-xs btn-success py-0 px-2" onclick="RoomModules.respondRSVP(${r.id}, 'accepted', ${r.user_id})">✓ Onayla</button>
-              <button class="btn-xs btn-danger py-0 px-2" onclick="RoomModules.respondRSVP(${r.id}, 'rejected', ${r.user_id})">✕ Reddet</button>
+              <button class="btn btn-xs btn-success py-0 px-2" onclick="NexusRoom.resolveRSVP(${r.id}, 'accepted', ${r.user_id})">✓</button>
+              <button class="btn btn-xs btn-danger py-0 px-2" onclick="NexusRoom.resolveRSVP(${r.id}, 'rejected', ${r.user_id})">✕</button>
             </div>
           </div>
         `).join('');
       },
 
-      async respondRSVP(requestId, newStatus, targetUserId) {
-        await supabase.from('event_join_requests').update({ status: newStatus }).eq('id', requestId);
-        if (newStatus === 'accepted') {
-          await supabase.from('event_access').upsert({ event_id: this.eventId, user_id: targetUserId });
+      async resolveRSVP(reqId, status, targetUid) {
+        await supabase.from('event_join_requests').update({ status }).eq('id', reqId);
+        if (status === 'accepted') {
+          await supabase.from('event_access').upsert({ event_id: this.id, user_id: targetUid });
         }
-        this.loadRSVPRequests();
+        this.loadRSVP();
         this.loadAttendees();
       },
 
-      // --- SHARED EXPENSES POOL ---
+      // EXPENSES (SPLIT BILL)
       async loadExpenses() {
-        const { data: exps } = await supabase.from('event_expenses').select('*').eq('event_id', this.eventId).order('id', { ascending: false });
-        const listEl = document.getElementById('room-expenses-list');
-        const badge = document.getElementById('pool-total-badge');
+        const { data } = await supabase.from('event_expenses').select('*').eq('event_id', this.id).order('id', { ascending: false });
+        const list = document.getElementById('expenses-list');
+        const totalBadge = document.getElementById('expenses-total-val');
         let total = 0;
 
-        if (!exps || exps.length === 0) {
-          listEl.innerHTML = `<small class="text-muted" style="font-size:11px;">Harcama eklenmemiş.</small>`;
-          badge.innerText = `0.00 TL`;
+        if (!data || data.length === 0) {
+          list.innerHTML = `<small class="text-muted" style="font-size:11px;">Masraf yok.</small>`;
+          totalBadge.innerText = '0.00 TL';
           return;
         }
 
-        const uIds = [...new Set(exps.map(e => e.paid_by))];
-        const { data: uList } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((uList || []).map(u => [u.id, u.username]));
+        const uIds = [...new Set(data.map(d => d.paid_by))];
+        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
+        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
 
-        listEl.innerHTML = exps.map(e => {
+        list.innerHTML = data.map(e => {
           total += parseFloat(e.amount || 0);
           return `
             <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary" style="font-size: 11px;">
               <span>${e.description} <small class="text-muted">(${map[e.paid_by] || 'Bilinmiyor'})</small></span>
-              <strong class="text-cyber">${parseFloat(e.amount).toFixed(2)} TL</strong>
+              <strong class="text-accent">${parseFloat(e.amount).toFixed(2)} TL</strong>
             </div>
           `;
         }).join('');
-        badge.innerText = `${total.toFixed(2)} TL`;
+        totalBadge.innerText = `${total.toFixed(2)} TL`;
       },
 
       async addExpense() {
-        const desc = document.getElementById('expense-desc-input').value.trim();
-        const amt = parseFloat(document.getElementById('expense-amount-input').value);
-        if (!desc || isNaN(amt) || amt <= 0) return alert('Geçerli bir harcama girin.');
+        const d = document.getElementById('expense-in-desc').value.trim();
+        const a = parseFloat(document.getElementById('expense-in-amt').value);
+        if (!d || isNaN(a) || a <= 0) return alert('Açıklama ve tutar girin.');
 
-        await supabase.from('event_expenses').insert({
-          event_id: this.eventId,
-          paid_by: window.currentNexusUser.id,
-          description: desc,
-          amount: amt
-        });
-
-        document.getElementById('expense-desc-input').value = '';
-        document.getElementById('expense-amount-input').value = '';
+        await supabase.from('event_expenses').insert({ event_id: this.id, paid_by: activeUser.id, description: d, amount: a });
+        document.getElementById('expense-in-desc').value = '';
+        document.getElementById('expense-in-amt').value = '';
         this.loadExpenses();
       },
 
-      // --- WHO BRINGS WHAT? (TASKS) ---
+      // TASKS
       async loadTasks() {
-        const { data: tasks } = await supabase.from('event_tasks').select('*').eq('event_id', this.eventId).order('id', { ascending: false });
-        const listEl = document.getElementById('room-tasks-list');
+        const { data } = await supabase.from('event_tasks').select('*').eq('event_id', this.id).order('id', { ascending: false });
+        const list = document.getElementById('tasks-list');
 
-        if (!tasks || tasks.length === 0) {
-          listEl.innerHTML = `<small class="text-muted" style="font-size:11px;">Görev atanmamış.</small>`;
+        if (!data || data.length === 0) {
+          list.innerHTML = `<small class="text-muted" style="font-size:11px;">Görev yok.</small>`;
           return;
         }
 
-        const uIds = [...new Set(tasks.map(t => t.assigned_to).filter(Boolean))];
-        const { data: uList } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((uList || []).map(u => [u.id, u.username]));
-        const myId = window.currentNexusUser.id;
+        const uIds = [...new Set(data.map(d => d.assigned_to).filter(Boolean))];
+        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
+        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
 
-        listEl.innerHTML = tasks.map(t => {
-          const isMine = t.assigned_to === myId;
+        list.innerHTML = data.map(t => {
+          const isMine = t.assigned_to === activeUser.id;
           return `
             <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary" style="font-size: 11px;">
               <div>
-                <input type="checkbox" class="form-check-input me-1" ${t.is_completed ? 'checked' : ''} onchange="RoomModules.toggleTask(${t.id}, this.checked)">
+                <input type="checkbox" class="form-check-input me-1" ${t.is_completed ? 'checked' : ''} onchange="NexusRoom.toggleTask(${t.id}, this.checked)">
                 <span style="${t.is_completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${t.title}</span>
                 <small class="text-muted ms-1">(${map[t.assigned_to] || 'Boşta'})</small>
               </div>
               <div>
-                ${!t.assigned_to ? `<button class="btn-xs btn-outline-info py-0 px-1" onclick="RoomModules.claimTask(${t.id})">Al</button>` : ''}
-                ${isMine ? `<button class="btn-xs btn-outline-danger py-0 px-1" onclick="RoomModules.unclaimTask(${t.id})">Bırak</button>` : ''}
+                ${!t.assigned_to ? `<button class="btn btn-xs btn-outline-info py-0 px-1" onclick="NexusRoom.assignTask(${t.id})">Al</button>` : ''}
+                ${isMine ? `<button class="btn btn-xs btn-outline-danger py-0 px-1" onclick="NexusRoom.unassignTask(${t.id})">Bırak</button>` : ''}
               </div>
             </div>
           `;
@@ -581,103 +534,65 @@
       },
 
       async addTask() {
-        const title = document.getElementById('task-title-input').value.trim();
-        if (!title) return;
-        await supabase.from('event_tasks').insert({ event_id: this.eventId, title: title, is_completed: false });
-        document.getElementById('task-title-input').value = '';
+        const val = document.getElementById('task-in-title').value.trim();
+        if (!val) return;
+        await supabase.from('event_tasks').insert({ event_id: this.id, title: val, is_completed: false });
+        document.getElementById('task-in-title').value = '';
         this.loadTasks();
       },
 
-      async claimTask(taskId) {
-        await supabase.from('event_tasks').update({ assigned_to: window.currentNexusUser.id }).eq('id', taskId);
-        this.loadTasks();
-      },
+      async assignTask(id) { await supabase.from('event_tasks').update({ assigned_to: activeUser.id }).eq('id', id); this.loadTasks(); },
+      async unassignTask(id) { await supabase.from('event_tasks').update({ assigned_to: null }).eq('id', id); this.loadTasks(); },
+      async toggleTask(id, val) { await supabase.from('event_tasks').update({ is_completed: val }).eq('id', id); this.loadTasks(); },
 
-      async unclaimTask(taskId) {
-        await supabase.from('event_tasks').update({ assigned_to: null }).eq('id', taskId);
-        this.loadTasks();
-      },
-
-      async toggleTask(taskId, isCompleted) {
-        await supabase.from('event_tasks').update({ is_completed: isCompleted }).eq('id', taskId);
-        this.loadTasks();
-      },
-
-      // --- MEDIA GALLERY ---
-      async loadGallery() {
-        const grid = document.getElementById('room-gallery-grid');
-        grid.innerHTML = '<small class="text-muted" style="font-size:11px;">Fotoğraflar yükleniyor...</small>';
-
-        const { data: event } = await supabase.from('events').select('drive_folder_url').eq('id', this.eventId).maybeSingle();
-        grid.innerHTML = `
-          <div class="gallery-thumbnail-box p-2 rounded border border-secondary" style="width: 80px; height: 80px; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.5);">
-            <span style="font-size: 24px;">🖼️</span>
-          </div>
-        `;
-      },
-
-      async uploadGalleryPhoto(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        alert('Fotoğraf Google Drive webhook entegrasyonuyla yükleniyor...');
-      },
-
-      // --- LIVE IDEAS & SUGGESTIONS ---
+      // SUGGESTIONS
       async loadSuggestions() {
-        const { data: suggs } = await supabase.from('event_suggestions').select('*').eq('event_id', this.eventId).order('votes', { ascending: false });
-        const listEl = document.getElementById('room-suggestions-list');
+        const { data } = await supabase.from('event_suggestions').select('*').eq('event_id', this.id).order('votes', { ascending: false });
+        const list = document.getElementById('suggestions-list');
 
-        if (!suggs || suggs.length === 0) {
-          listEl.innerHTML = `<small class="text-muted" style="font-size:11px;">Öneri girilmemiş.</small>`;
+        if (!data || data.length === 0) {
+          list.innerHTML = `<small class="text-muted" style="font-size:11px;">Öneri yok.</small>`;
           return;
         }
 
-        listEl.innerHTML = suggs.map(s => `
+        list.innerHTML = data.map(s => `
           <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary" style="font-size: 11px;">
             <span class="text-white">${s.text}</span>
-            <button class="btn-xs btn-outline-info py-0 px-2" onclick="RoomModules.upvoteSuggestion(${s.id}, ${s.votes || 0})">👍 ${s.votes || 0}</button>
+            <button class="btn btn-xs btn-outline-info py-0 px-2" onclick="NexusRoom.upvoteSugg(${s.id}, ${s.votes || 0})">👍 ${s.votes || 0}</button>
           </div>
         `).join('');
       },
 
       async addSuggestion() {
-        const input = document.getElementById('suggestion-text-input');
-        const txt = input.value.trim();
+        const txt = document.getElementById('sugg-in-text').value.trim();
         if (!txt) return;
-
-        await supabase.from('event_suggestions').insert({
-          event_id: this.eventId,
-          user_id: window.currentNexusUser.id,
-          text: txt,
-          votes: 0
-        });
-        input.value = '';
+        await supabase.from('event_suggestions').insert({ event_id: this.id, user_id: activeUser.id, text: txt, votes: 0 });
+        document.getElementById('sugg-in-text').value = '';
         this.loadSuggestions();
       },
 
-      async upvoteSuggestion(suggId, currVotes) {
-        await supabase.from('event_suggestions').update({ votes: currVotes + 1 }).eq('id', suggId);
+      async upvoteSugg(id, cur) {
+        await supabase.from('event_suggestions').update({ votes: cur + 1 }).eq('id', id);
         this.loadSuggestions();
       },
 
-      // --- LIVE ROOM CHAT ---
+      // CHAT
       async loadChat() {
-        const { data: msgs } = await supabase.from('event_chat').select('*').eq('event_id', this.eventId).order('created_at', { ascending: true });
-        const box = document.getElementById('room-chat-messages');
+        const { data } = await supabase.from('event_chat').select('*').eq('event_id', this.id).order('created_at', { ascending: true });
+        const box = document.getElementById('chat-messages-box');
         box.innerHTML = '';
 
-        if (!msgs || msgs.length === 0) {
-          box.innerHTML = `<small class="text-muted text-center my-auto" style="font-size:11px;">Sohbet odası hazır. İlk mesajı yazın!</small>`;
+        if (!data || data.length === 0) {
+          box.innerHTML = `<small class="text-muted text-center my-auto" style="font-size:11px;">Sohbet hazır, mesaj yazın!</small>`;
           return;
         }
 
-        const uIds = [...new Set(msgs.map(m => m.user_id))];
-        const { data: uList } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((uList || []).map(u => [u.id, u.username]));
-        const myId = window.currentNexusUser.id;
+        const uIds = [...new Set(data.map(d => d.user_id))];
+        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
+        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
 
-        msgs.forEach(m => {
-          const isMe = m.user_id === myId;
+        data.forEach(m => {
+          const isMe = m.user_id === activeUser.id;
           box.innerHTML += `
             <div class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
               <small class="text-muted" style="font-size: 9px;">${map[m.user_id] || 'Bilinmiyor'}</small>
@@ -690,43 +605,38 @@
         box.scrollTop = box.scrollHeight;
       },
 
-      async sendChatMessage() {
-        const input = document.getElementById('room-chat-input');
+      async sendMessage() {
+        const input = document.getElementById('chat-in-msg');
         const txt = input.value.trim();
         if (!txt) return;
 
-        await supabase.from('event_chat').insert({
-          event_id: this.eventId,
-          user_id: window.currentNexusUser.id,
-          message: txt,
-          created_at: new Date().toISOString()
-        });
+        await supabase.from('event_chat').insert({ event_id: this.id, user_id: activeUser.id, message: txt });
         input.value = '';
         this.loadChat();
       },
 
-      // --- 5. REALTIME WEBSOCKET SUBSCRIPTION (SAYFA YENİLEMEYE GEREK YOK) ---
-      bindRealtimeSubscription() {
-        if (window.roomRealtimeChannel) supabase.removeChannel(window.roomRealtimeChannel);
+      // REALTIME WEBSOCKET (SAYFA YENİLEMESİZ SENKRONİZASYON)
+      listenRealtime() {
+        if (roomChannel) supabase.removeChannel(roomChannel);
 
-        window.roomRealtimeChannel = supabase.channel('room_channel_' + this.eventId)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests', filter: `event_id=eq.${this.eventId}` }, () => {
-            this.loadRSVPRequests();
+        roomChannel = supabase.channel('nexus_room_' + this.id)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests', filter: `event_id=eq.${this.id}` }, () => {
+            this.loadRSVP();
             this.loadAttendees();
           })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_access', filter: `event_id=eq.${this.eventId}` }, () => {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_access', filter: `event_id=eq.${this.id}` }, () => {
             this.loadAttendees();
           })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_expenses', filter: `event_id=eq.${this.eventId}` }, () => {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_expenses', filter: `event_id=eq.${this.id}` }, () => {
             this.loadExpenses();
           })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${this.eventId}` }, () => {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${this.id}` }, () => {
             this.loadTasks();
           })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_suggestions', filter: `event_id=eq.${this.eventId}` }, () => {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_suggestions', filter: `event_id=eq.${this.id}` }, () => {
             this.loadSuggestions();
           })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_chat', filter: `event_id=eq.${this.eventId}` }, () => {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_chat', filter: `event_id=eq.${this.id}` }, () => {
             this.loadChat();
           })
           .subscribe();

@@ -3,539 +3,273 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Admin Dashboard • NEXUS</title>
+  <title>NEXUS • Control Center & Admin</title>
   
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
-  <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
-  <style>
-    .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 12px; overflow-x: auto; }
-    .admin-tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: 700; cursor: pointer; padding: 8px 16px; border-bottom: 3px solid transparent; }
-    .admin-tab-btn.active { color: #00f2fe; border-bottom-color: #00f2fe; }
-    .user-item, .event-item { background: rgba(18, 24, 43, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-  </style>
 </head>
 <body>
-
-  <div class="container">
+  <div class="container" style="max-width: 900px; margin-top: 20px;">
+    
+    <!-- ÜST BAR -->
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="./icon.svg" alt="NEXUS" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);">
+        <img src="./icon.svg" alt="NEXUS" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);">
         <div>
-          <h2 id="admin-title" style="color: #00f2fe; margin: 0;">Admin Dashboard</h2>
-          <span style="font-size: 0.85rem; color: #ff007f;">Management Suite</span>
+          <h2 style="color: #ff007f; margin: 0; font-size: 1.25rem;">NEXUS Master Control</h2>
+          <span style="font-size: 0.8rem; color: #94a3b8;">User Directory, Bookings & Event Authority</span>
         </div>
       </div>
       <div style="display: flex; gap: 10px;">
-        <a href="index.html" class="btn" style="text-decoration: none; padding: 6px 16px; font-size: 0.85rem;">← Back to Portal</a>
-        <button id="btn-admin-logout" class="btn" style="padding: 6px 16px; font-size: 0.85rem;">Log Out</button>
+        <a href="index.html" class="btn" style="padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">← Back to App</a>
+        <a href="dev.html" class="btn btn-pink" style="padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">⚡ Dev Engine</a>
       </div>
     </div>
 
-    <!-- TABS -->
-    <div class="admin-tabs">
-      <button class="admin-tab-btn active" data-tab="calendar">📅 Manage Hours & Slots</button>
-      <button class="admin-tab-btn" data-tab="bookings">📋 Bookings & Cancellation</button>
-      <button class="admin-tab-btn" data-tab="events">🎉 Event Manager</button>
-      <button class="admin-tab-btn" data-tab="assignments">👥 User Permissions & Roles</button>
+    <!-- SEKMELER -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button id="tab-users-btn" class="btn" style="flex: 1; border-color: #00f2fe;">👥 Users & Profiles</button>
+      <button id="tab-bookings-btn" class="btn btn-pink" style="flex: 1;">📅 Master Bookings</button>
+      <button id="tab-events-btn" class="btn" style="flex: 1;">🎉 All Events</button>
     </div>
 
-    <!-- TAB 1: CALENDAR & SLOTS -->
-    <div id="tab-calendar" class="admin-tab-content">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div class="glass-box">
-          <div class="cal-top-bar">
-            <button id="adm-cal-prev" class="cal-nav-btn">‹</button>
-            <div style="display: flex; gap: 6px;">
-              <select id="adm-month-sel" class="cal-dropdown"></select>
-              <select id="adm-year-sel" class="cal-dropdown"></select>
-            </div>
-            <button id="adm-cal-next" class="cal-nav-btn">›</button>
-          </div>
-          <div class="cal-weekdays">
-            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-          </div>
-          <div class="cal-days-grid" id="adm-calendar-days"></div>
-        </div>
+    <!-- 1. KULLANICILAR VE PROFİLLER LİSTESİ -->
+    <div id="admin-sec-users" class="glass-box" style="margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="color: #00f2fe; margin: 0;">Registered Members Directory</h3>
+        <input type="text" id="admin-user-search" class="input-field" placeholder="🔍 Search member..." style="max-width: 250px; margin-bottom: 0;">
+      </div>
 
-        <div class="glass-box">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 id="adm-slot-heading" style="color: #00f2fe; margin: 0;">Select a Date</h4>
-            <div id="adm-bulk-btns" style="display: none; gap: 6px;">
-              <button id="btn-adm-all" class="btn" style="padding: 4px 8px; font-size: 0.75rem;">Select All</button>
-              <button id="btn-adm-clear" class="btn btn-pink" style="padding: 4px 8px; font-size: 0.75rem;">Clear</button>
-            </div>
-          </div>
-          <div id="adm-slot-matrix" class="slot-matrix" style="display: none; max-height: 380px; overflow-y: auto;"></div>
-          <button id="btn-adm-save-slots" class="btn" style="width: 100%; display: none; margin-top: 14px;">💾 Save Available Hours</button>
-          <div id="adm-save-status" style="margin-top: 10px; font-size: 0.85rem; text-align: center;"></div>
-        </div>
+      <div id="admin-users-table-wrap" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(0, 242, 254, 0.3); color: #00f2fe;">
+              <th style="padding: 10px 8px;">User / Avatar</th>
+              <th style="padding: 10px 8px;">Contact & IG</th>
+              <th style="padding: 10px 8px;">Event Host Role</th>
+              <th style="padding: 10px 8px; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-tbody">
+            <tr><td colspan="4" style="padding: 14px; text-align: center; color: #94a3b8;">Loading user directory...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- TAB 2: BOOKINGS -->
-    <div id="tab-bookings" class="admin-tab-content" style="display: none;">
-      <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 16px;">Scheduled Appointments</h3>
-        <div id="adm-bookings-list" style="display: grid; gap: 12px;"></div>
+    <!-- 2. RANDEVULAR LİSTESİ -->
+    <div id="admin-sec-bookings" class="glass-box" style="display: none; margin-bottom: 20px;">
+      <h3 style="color: #ff007f; margin-bottom: 14px;">Master Appointment Schedule</h3>
+      <div id="admin-bookings-list" style="display: grid; gap: 10px;">
+        <p style="color: #94a3b8;">Loading bookings...</p>
       </div>
     </div>
 
-    <!-- TAB 3: EVENT MANAGER -->
-    <div id="tab-events" class="admin-tab-content" style="display: none;">
-      <div class="glass-box" style="margin-bottom: 20px;">
-        <h3 style="color: #ff007f; margin-bottom: 12px;">Create New Event (Auto Drive Folder)</h3>
-        <input type="text" id="new-evt-title" class="input-field" placeholder="Event Title *">
-        <textarea id="new-evt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
-        <input type="text" id="new-evt-loc" class="input-field" placeholder="Location / Maps link (Optional)">
-        
-        <div style="margin-bottom: 12px;">
-          <label for="new-evt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">
-            📅 Event Date & Time
-          </label>
-          <input type="datetime-local" id="new-evt-date" class="input-field" style="margin-bottom: 0;">
-        </div>
-
-        <input type="text" id="new-evt-spotify" class="input-field" placeholder="Spotify Playlist URL (Optional)">
-        
-        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.85rem; color: #00f2fe; cursor: pointer;">
-          <input type="checkbox" id="new-evt-expenses"> Enable Shared Expenses (Split Bill)
-        </label>
-
-        <button id="btn-adm-create-evt" class="btn btn-pink" style="width: 100%;">Create Event & Auto-Generate Drive</button>
-        <div id="adm-create-evt-status" style="margin-top: 8px; font-size: 0.85rem; text-align: center;"></div>
-      </div>
-      <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 16px;">Active Events</h3>
-        <div id="adm-events-list"></div>
+    <!-- 3. TÜM ETKİNLİKLER LİSTESİ -->
+    <div id="admin-sec-events" class="glass-box" style="display: none; margin-bottom: 20px;">
+      <h3 style="color: #00f2fe; margin-bottom: 14px;">All System Events</h3>
+      <div id="admin-events-list" style="display: grid; gap: 10px;">
+        <p style="color: #94a3b8;">Loading events...</p>
       </div>
     </div>
 
-    <!-- TAB 4: ACCESS CONTROL & ROLES -->
-    <div id="tab-assignments" class="admin-tab-content" style="display: none;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div class="glass-box">
-          <h3 style="color: #00f2fe; margin-bottom: 12px;">Registered Users</h3>
-          <input type="text" id="search-user-input" class="input-field" placeholder="🔍 Search user by name or email..." style="margin-bottom: 12px;">
-          <div id="adm-users-list" style="max-height: 420px; overflow-y: auto;"></div>
-        </div>
-
-        <div class="glass-box">
-          <h3 style="color: #ff007f; margin-bottom: 14px;">User Permissions & Visibility</h3>
-          <p id="adm-selected-user-name" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Pick a user from the left panel</p>
-          
-          <div id="user-role-toggles" style="display: none; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(0, 242, 254, 0.2);">
-            <label style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #00f2fe; cursor: pointer;">
-              <input type="checkbox" id="perm-can-create-events" style="width: 18px; height: 18px; cursor: pointer;">
-              <strong>Allow User to Create Events (Host Space)</strong>
-            </label>
-          </div>
-
-          <h4 style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 8px;">Allowed Events for this User:</h4>
-          <div id="adm-event-checks" style="display: grid; gap: 8px; margin-bottom: 16px; max-height: 200px; overflow-y: auto;"></div>
-          <button id="btn-adm-save-perms" class="btn" style="width: 100%;" disabled>Save Permissions</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script type="module">
-    import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
-    import { getSessionUser, clearSession } from './modules/auth.js';
-    import { monthNames } from './modules/calendar.js';
+    import { supabase } from './config.js';
 
-    let currentCal = new Date();
-    let selectedDate = null;
-    let activeSlots = new Set();
-    let bookedSlots = new Set();
-    let selectedUserForPerms = null;
-    let allUsersCache = [];
+    let allUsers = [];
 
-    const HOURS_24 = [];
-    for (let h = 0; h < 24; h++) {
-      const s = String(h).padStart(2, '0') + ':00';
-      const e = String((h + 1) % 24).padStart(2, '0') + ':00';
-      HOURS_24.push(`${s} - ${e}`);
-    }
-
-    window.addEventListener('load', () => {
-      const user = getSessionUser();
-      if (!user || (!user.is_admin && user.role !== 'admin')) {
-        window.location.href = 'index.html';
-        return;
-      }
-      document.getElementById('admin-title').textContent = `Admin - ${user.username}`;
-      setupTabs();
-      initAdminCal();
-      loadBookings();
-      loadEvents();
-      loadUsers();
-    });
-
-    document.getElementById('btn-admin-logout').onclick = () => {
-      clearSession();
+    // Güvenlik: Admin kontrolü
+    const loggedUser = JSON.parse(localStorage.getItem('portal_user') || 'null');
+    if (!loggedUser || (!loggedUser.is_admin && loggedUser.role !== 'admin')) {
+      alert('Access Denied: Administrator privileges required.');
       window.location.href = 'index.html';
+    }
+
+    // Sekme Geçişleri
+    const secUsers = document.getElementById('admin-sec-users');
+    const secBookings = document.getElementById('admin-sec-bookings');
+    const secEvents = document.getElementById('admin-sec-events');
+
+    document.getElementById('tab-users-btn').onclick = () => {
+      secUsers.style.display = 'block';
+      secBookings.style.display = 'none';
+      secEvents.style.display = 'none';
+      loadUsers();
     };
 
-    function setupTabs() {
-      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
-        btn.onclick = () => {
-          document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
-          document.getElementById(`tab-${btn.dataset.tab}`).style.display = 'block';
-        };
-      });
-    }
-
-    function initAdminCal() {
-      const mSel = document.getElementById('adm-month-sel');
-      const ySel = document.getElementById('adm-year-sel');
-      mSel.innerHTML = '';
-      monthNames.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.textContent = m; mSel.appendChild(o); });
-      ySel.innerHTML = '';
-      for (let y = 2026; y < 2032; y++) { const o = document.createElement('option'); o.value = y; o.textContent = y; ySel.appendChild(o); }
-      mSel.value = currentCal.getMonth();
-      ySel.value = currentCal.getFullYear();
-
-      mSel.onchange = () => { currentCal.setMonth(parseInt(mSel.value)); renderAdminCal(); };
-      ySel.onchange = () => { currentCal.setFullYear(parseInt(ySel.value)); renderAdminCal(); };
-      document.getElementById('adm-cal-prev').onclick = () => { currentCal.setMonth(currentCal.getMonth() - 1); mSel.value = currentCal.getMonth(); ySel.value = currentCal.getFullYear(); renderAdminCal(); };
-      document.getElementById('adm-cal-next').onclick = () => { currentCal.setMonth(currentCal.getMonth() + 1); mSel.value = currentCal.getMonth(); ySel.value = currentCal.getFullYear(); renderAdminCal(); };
-
-      renderAdminCal();
-    }
-
-    async function renderAdminCal() {
-      const grid = document.getElementById('adm-calendar-days');
-      grid.innerHTML = '';
-      const yr = currentCal.getFullYear(), mo = currentCal.getMonth();
-      const total = new Date(yr, mo + 1, 0).getDate();
-      let start = new Date(yr, mo, 1).getDay() - 1;
-      if (start === -1) start = 6;
-
-      const sStr = `${yr}-${String(mo + 1).padStart(2, '0')}-01`;
-      const eStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(total).padStart(2, '0')}`;
-
-      const { data: slots } = await supabase.from('availability_slots').select('slot_date').gte('slot_date', sStr).lte('slot_date', eStr).eq('is_active', true);
-      const sMap = {};
-      (slots || []).forEach(s => { sMap[s.slot_date] = (sMap[s.slot_date] || 0) + 1; });
-
-      for (let i = 0; i < start; i++) {
-        const emp = document.createElement('div');
-        emp.className = 'cal-day-cell empty';
-        grid.appendChild(emp);
-      }
-
-      for (let d = 1; d <= total; d++) {
-        const dStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        const cnt = sMap[dStr] || 0;
-        const cell = document.createElement('div');
-        cell.className = `cal-day-cell ${cnt > 0 ? 'available' : ''} ${selectedDate === dStr ? 'selected' : ''}`;
-        cell.innerHTML = `<span>${d}</span>${cnt > 0 ? `<span class="cal-badge-hours">${cnt}h</span>` : ''}`;
-        cell.onclick = () => {
-          document.querySelectorAll('#adm-calendar-days .cal-day-cell').forEach(c => c.classList.remove('selected'));
-          cell.classList.add('selected');
-          selectDayForSlots(dStr);
-        };
-        grid.appendChild(cell);
-      }
-    }
-
-    async function selectDayForSlots(dateStr) {
-      selectedDate = dateStr;
-      activeSlots.clear();
-      bookedSlots.clear();
-
-      document.getElementById('adm-slot-heading').textContent = `Manage Slots: ${dateStr}`;
-      document.getElementById('adm-bulk-btns').style.display = 'flex';
-      document.getElementById('adm-slot-matrix').style.display = 'grid';
-      document.getElementById('btn-adm-save-slots').style.display = 'block';
-
-      const { data: slots } = await supabase.from('availability_slots').select('*').eq('slot_date', dateStr);
-      (slots || []).forEach(s => {
-        if (s.is_booked) bookedSlots.add(s.hour_slot);
-        else if (s.is_active) activeSlots.add(s.hour_slot);
-      });
-
-      renderSlotButtons();
-    }
-
-    function renderSlotButtons() {
-      const cont = document.getElementById('adm-slot-matrix');
-      cont.innerHTML = '';
-      HOURS_24.forEach(h => {
-        const btn = document.createElement('div');
-        btn.className = 'slot-btn';
-        btn.textContent = h;
-
-        if (bookedSlots.has(h)) {
-          btn.classList.add('booked');
-          btn.title = 'Slot is already booked';
-        } else {
-          if (activeSlots.has(h)) btn.classList.add('active');
-          btn.onclick = () => {
-            if (activeSlots.has(h)) { activeSlots.delete(h); btn.classList.remove('active'); }
-            else { activeSlots.add(h); btn.classList.add('active'); }
-          };
-        }
-        cont.appendChild(btn);
-      });
-    }
-
-    document.getElementById('btn-adm-all').onclick = () => {
-      HOURS_24.forEach(h => { if (!bookedSlots.has(h)) activeSlots.add(h); });
-      renderSlotButtons();
-    };
-    document.getElementById('btn-adm-clear').onclick = () => {
-      activeSlots.clear();
-      renderSlotButtons();
+    document.getElementById('tab-bookings-btn').onclick = () => {
+      secUsers.style.display = 'none';
+      secBookings.style.display = 'block';
+      secEvents.style.display = 'none';
+      loadBookings();
     };
 
-    document.getElementById('btn-adm-save-slots').onclick = async () => {
-      if (!selectedDate) return;
-      const status = document.getElementById('adm-save-status');
-      status.style.color = '#00f2fe';
-      status.textContent = 'Saving changes...';
-
-      await supabase.from('availability_slots').delete().eq('slot_date', selectedDate).eq('is_booked', false);
-      if (activeSlots.size > 0) {
-        const payload = Array.from(activeSlots).map(h => ({
-          slot_date: selectedDate,
-          hour_slot: h,
-          is_active: true,
-          is_booked: false
-        }));
-        await supabase.from('availability_slots').insert(payload);
-      }
-
-      status.style.color = '#22c55e';
-      status.textContent = '✓ Available slots updated successfully!';
-      renderAdminCal();
+    document.getElementById('tab-events-btn').onclick = () => {
+      secUsers.style.display = 'none';
+      secBookings.style.display = 'none';
+      secEvents.style.display = 'block';
+      loadEvents();
     };
 
-    async function loadBookings() {
-      const list = document.getElementById('adm-bookings-list');
-      const { data: bookings } = await supabase.from('appointments').select('*').order('appointment_date', { ascending: false });
-      list.innerHTML = '';
+    // 1. KULLANICILARI ÇEK VE LİSTELE
+    async function loadUsers() {
+      const tbody = document.getElementById('admin-users-tbody');
+      const { data: users, error } = await supabase.from('users').select('*').order('id', { ascending: true });
 
-      if (!bookings || bookings.length === 0) {
-        list.innerHTML = '<p style="color: #94a3b8;">No bookings scheduled yet.</p>';
+      if (error || !users) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color: #f43f5e; padding: 10px;">Error: ${error?.message}</td></tr>`;
         return;
       }
 
+      allUsers = users;
+      renderUsersTable(allUsers);
+    }
+
+    function renderUsersTable(list) {
+      const tbody = document.getElementById('admin-users-tbody');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color: #94a3b8; padding: 14px; text-align: center;">No users match search.</td></tr>';
+        return;
+      }
+
+      list.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+
+        const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+        const isHost = u.can_create_events || u.is_admin || u.role === 'admin';
+        const igHandle = (u.instagram || '').replace('@', '').trim();
+
+        tr.innerHTML = `
+          <td style="padding: 10px 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="${av}" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #00f2fe; object-fit: cover; background: #070913;" alt="Avatar">
+              <div>
+                <strong style="color: #f8fafc; font-size: 0.9rem;">${u.username}</strong>
+                <span style="display: block; font-size: 0.72rem; color: #94a3b8;">${u.email}</span>
+              </div>
+            </div>
+          </td>
+          <td style="padding: 10px 8px;">
+            <div>${u.phone ? `<span style="color: #22c55e;">📞 ${u.phone}</span>` : '<span style="color: #64748b;">No phone</span>'}</div>
+            <div style="margin-top: 2px;">
+              ${igHandle ? `<a href="${igHandle.startsWith('http') ? igHandle : 'https://instagram.com/' + igHandle}" target="_blank" style="color: #ff007f; text-decoration: none; font-size: 0.75rem;">📸 @${igHandle} ↗</a>` : '<span style="color: #64748b; font-size: 0.75rem;">No IG</span>'}
+            </div>
+          </td>
+          <td style="padding: 10px 8px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: ${isHost ? '#00f2fe' : '#94a3b8'};">
+              <input type="checkbox" class="host-toggle-chk" data-id="${u.id}" ${isHost ? 'checked' : ''}>
+              <span>Host Events</span>
+            </label>
+          </td>
+          <td style="padding: 10px 8px; text-align: right;">
+            <button class="btn-del-user" data-id="${u.id}" data-name="${u.username}" style="background: rgba(244,63,94,0.15); border: 1px solid #f43f5e; color: #f43f5e; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer;">Delete</button>
+          </td>
+        `;
+
+        // Host Yetkisi Değişimi
+        tr.querySelector('.host-toggle-chk').onchange = async (e) => {
+          const val = e.target.checked;
+          await supabase.from('users').update({ can_create_events: val }).eq('id', u.id);
+        };
+
+        // Kullanıcı Silme
+        tr.querySelector('.btn-del-user').onclick = async () => {
+          if (!confirm(`Are you sure you want to permanently delete user "${u.username}"?`)) return;
+          await supabase.from('users').delete().eq('id', u.id);
+          loadUsers();
+        };
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Arama Filtresi
+    document.getElementById('admin-user-search').oninput = (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = allUsers.filter(u => 
+        u.username.toLowerCase().includes(q) || 
+        u.email.toLowerCase().includes(q) ||
+        (u.phone && u.phone.toLowerCase().includes(q))
+      );
+      renderUsersTable(filtered);
+    };
+
+    // 2. RANDEVULARI YÜKLE
+    async function loadBookings() {
+      const wrap = document.getElementById('admin-bookings-list');
+      wrap.innerHTML = '<p style="color: #94a3b8;">Loading bookings...</p>';
+
+      const { data: bookings, error } = await supabase.from('bookings').select('*').order('date', { ascending: false });
+
+      if (error || !bookings || bookings.length === 0) {
+        wrap.innerHTML = '<p style="color: #64748b;">No bookings found.</p>';
+        return;
+      }
+
+      wrap.innerHTML = '';
       bookings.forEach(b => {
         const card = document.createElement('div');
-        card.className = 'glass-box';
-        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+        card.style.cssText = 'background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
         card.innerHTML = `
           <div>
-            <strong style="color: #00f2fe;">${b.appointment_date}</strong> (${(b.selected_slots || []).join(', ')})
-            <p style="margin: 4px 0;"><strong>${b.client_name}</strong> - ${b.client_email} / ${b.client_contact}</p>
-            <p style="color: #94a3b8; font-size: 0.85rem;">Note: ${b.activity_plan}</p>
+            <strong style="color: #00f2fe; font-size: 0.95rem;">${b.name || 'Anonymous Guest'}</strong>
+            <span style="color: #94a3b8; font-size: 0.8rem; display: block;">📅 Date: ${b.date} • Hours: ${(b.slots || []).join(', ')}</span>
+            <span style="color: #22c55e; font-size: 0.78rem;">📞 ${b.contact || 'No contact provided'}</span>
+            <p style="color: #e2e8f0; font-size: 0.8rem; margin: 4px 0 0 0;">📝 ${b.plan || 'No note'}</p>
           </div>
-          <button class="btn btn-pink btn-cancel-b" style="padding: 6px 12px; font-size: 0.8rem;">❌ Cancel & Release Slot</button>
+          <button class="btn-del-booking" data-id="${b.id}" style="background: rgba(244,63,94,0.15); border: 1px solid #f43f5e; color: #f43f5e; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer;">Cancel</button>
         `;
 
-        card.querySelector('.btn-cancel-b').onclick = async () => {
-          if (!confirm(`Cancel booking for ${b.client_name} and reopen slots?`)) return;
-          await supabase.from('appointments').delete().eq('id', b.id);
-          if (b.selected_slots && b.selected_slots.length > 0) {
-            await supabase.from('availability_slots').update({ is_booked: false }).eq('slot_date', b.appointment_date).in('hour_slot', b.selected_slots);
-          }
-          alert('Booking cancelled and slot reopened.');
+        card.querySelector('.btn-del-booking').onclick = async () => {
+          if (!confirm('Cancel and delete this booking?')) return;
+          await supabase.from('bookings').delete().eq('id', b.id);
           loadBookings();
-          renderAdminCal();
         };
 
-        list.appendChild(card);
+        wrap.appendChild(card);
       });
     }
 
+    // 3. ETKİNLİKLERİ YÜKLE
     async function loadEvents() {
-      const list = document.getElementById('adm-events-list');
-      const { data: events } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-      list.innerHTML = '';
-      (events || []).forEach(evt => {
-        const row = document.createElement('div');
-        row.className = 'event-item';
-        row.innerHTML = `
+      const wrap = document.getElementById('admin-events-list');
+      wrap.innerHTML = '<p style="color: #94a3b8;">Loading events...</p>';
+
+      const { data: events, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+
+      if (error || !events || events.length === 0) {
+        wrap.innerHTML = '<p style="color: #64748b;">No events found.</p>';
+        return;
+      }
+
+      wrap.innerHTML = '';
+      events.forEach(evt => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
+        card.innerHTML = `
           <div>
-            <strong style="color: #00f2fe;">${evt.title}</strong>
-            <p style="color: #94a3b8; font-size: 0.8rem; margin: 2px 0;">📍 ${evt.location || 'No location'}</p>
-            <p style="color: #64748b; font-size: 0.75rem;">📁 Drive ID: ${evt.drive_folder_url || 'Auto'}</p>
+            <strong style="color: #00f2fe; font-size: 0.95rem;">${evt.title}</strong>
+            <span style="color: #94a3b8; font-size: 0.8rem; display: block;">📍 ${evt.location || 'No location'} • 📅 ${evt.event_date || 'No date set'}</span>
           </div>
-          <button class="btn btn-pink btn-del-evt" style="padding: 4px 10px; font-size: 0.75rem;">Delete</button>
+          <button class="btn-del-evt" data-id="${evt.id}" style="background: rgba(244,63,94,0.15); border: 1px solid #f43f5e; color: #f43f5e; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer;">Delete Event</button>
         `;
-        row.querySelector('.btn-del-evt').onclick = async () => {
-          if (!confirm(`Delete "${evt.title}"?`)) return;
+
+        card.querySelector('.btn-del-evt').onclick = async () => {
+          if (!confirm(`Delete event "${evt.title}" and all related chats/expenses?`)) return;
           await supabase.from('events').delete().eq('id', evt.id);
           loadEvents();
         };
-        list.appendChild(row);
+
+        wrap.appendChild(card);
       });
     }
 
-    document.getElementById('btn-adm-create-evt').onclick = async () => {
-      const title = document.getElementById('new-evt-title').value.trim();
-      const desc = document.getElementById('new-evt-desc').value.trim();
-      const loc = document.getElementById('new-evt-loc').value.trim();
-      const evtDate = document.getElementById('new-evt-date').value || null;
-      const spotify = document.getElementById('new-evt-spotify').value.trim();
-      const enableExpenses = document.getElementById('new-evt-expenses').checked;
-      const statusEl = document.getElementById('adm-create-evt-status');
-
-      if (!title) return alert('Event title is required!');
-
-      statusEl.style.color = '#00f2fe';
-      statusEl.textContent = 'Auto-generating Google Drive folder...';
-
-      let autoDriveUrl = '';
-      try {
-        const res = await fetch(EMAIL_WEBHOOK_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'create_drive_folder', folderName: title })
-        });
-        const d = await res.json();
-        if (d.status === 'success') {
-          autoDriveUrl = d.folderId;
-        }
-      } catch (e) {
-        console.warn('Auto drive fallback:', e);
-      }
-
-      const user = getSessionUser();
-      await supabase.from('events').insert([{
-        title,
-        description: desc,
-        drive_folder_url: autoDriveUrl,
-        location: loc,
-        event_date: evtDate,
-        spotify_url: spotify,
-        enable_expenses: enableExpenses,
-        created_by: user.id
-      }]);
-
-      statusEl.style.color = '#22c55e';
-      statusEl.textContent = '✓ Event created with automated Google Drive folder!';
-      setTimeout(() => statusEl.textContent = '', 4000);
-
-      document.getElementById('new-evt-title').value = '';
-      document.getElementById('new-evt-desc').value = '';
-      document.getElementById('new-evt-loc').value = '';
-      document.getElementById('new-evt-date').value = '';
-      document.getElementById('new-evt-spotify').value = '';
-      document.getElementById('new-evt-expenses').checked = false;
-      loadEvents();
-    };
-
-    async function loadUsers() {
-      const { data: users } = await supabase.from('users').select('*');
-      allUsersCache = users || [];
-      renderUserList(allUsersCache);
-    }
-
-    function renderUserList(users) {
-      const list = document.getElementById('adm-users-list');
-      list.innerHTML = '';
-      if (!users.length) {
-        list.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No matching users found.</p>';
-        return;
-      }
-
-      users.forEach(u => {
-        const item = document.createElement('div');
-        item.className = 'user-item';
-        item.style.cursor = 'pointer';
-        item.innerHTML = `
-          <div>
-            <strong>${u.username}</strong>
-            <div style="font-size: 0.75rem; color: #94a3b8;">${u.email}</div>
-          </div>
-          <div style="text-align: right;">
-            <span style="font-size: 0.75rem; color: #00f2fe; display: block;">${u.role || 'user'}</span>
-            ${(u.can_create_events || u.role === 'admin' || u.is_admin) ? '<span style="font-size: 0.7rem; color: #22c55e; font-weight: bold;">✓ Can Create</span>' : ''}
-          </div>
-        `;
-        item.onclick = () => {
-          selectedUserForPerms = u;
-          document.getElementById('adm-selected-user-name').textContent = `Target: ${u.username} (${u.email})`;
-          document.getElementById('user-role-toggles').style.display = 'block';
-          document.getElementById('perm-can-create-events').checked = !!u.can_create_events;
-          loadUserPerms(u.id);
-        };
-        list.appendChild(item);
-      });
-    }
-
-    document.getElementById('search-user-input').oninput = (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      const filtered = allUsersCache.filter(u => 
-        (u.username && u.username.toLowerCase().includes(q)) || 
-        (u.email && u.email.toLowerCase().includes(q))
-      );
-      renderUserList(filtered);
-    };
-
-    async function loadUserPerms(userId) {
-      const container = document.getElementById('adm-event-checks');
-      container.innerHTML = '';
-      const [{ data: events }, { data: access }] = await Promise.all([
-        supabase.from('events').select('*'),
-        supabase.from('event_access').select('event_id').eq('user_id', userId)
-      ]);
-
-      const allowedIds = (access || []).map(a => a.event_id);
-      (events || []).forEach(evt => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display: flex; gap: 8px; align-items: center;';
-        row.innerHTML = `
-          <input type="checkbox" id="perm-${evt.id}" data-id="${evt.id}" ${allowedIds.includes(evt.id) ? 'checked' : ''}>
-          <label for="perm-${evt.id}">${evt.title}</label>
-        `;
-        container.appendChild(row);
-      });
-
-      document.getElementById('btn-adm-save-perms').disabled = false;
-    }
-
-    document.getElementById('btn-adm-save-perms').onclick = async () => {
-      if (!selectedUserForPerms) return;
-      const saveBtn = document.getElementById('btn-adm-save-perms');
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'Saving permissions...';
-
-      const checkedBoxes = Array.from(document.querySelectorAll('#adm-event-checks input[type="checkbox"]:checked'));
-      const eventIds = checkedBoxes.map(cb => parseInt(cb.dataset.id));
-      const canCreate = document.getElementById('perm-can-create-events').checked;
-
-      try {
-        const { error: userErr } = await supabase
-          .from('users')
-          .update({ can_create_events: canCreate })
-          .eq('id', selectedUserForPerms.id);
-
-        if (userErr) throw userErr;
-
-        await supabase.from('event_access').delete().eq('user_id', selectedUserForPerms.id);
-        if (eventIds.length > 0) {
-          const records = eventIds.map(eId => ({
-            user_id: selectedUserForPerms.id,
-            event_id: eId,
-            granted_at: new Date().toISOString()
-          }));
-          await supabase.from('event_access').insert(records);
-        }
-
-        alert(`✓ Permissions successfully updated for ${selectedUserForPerms.username}!`);
-        await loadUsers();
-      } catch (err) {
-        alert('Failed to save permissions: ' + err.message);
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save Permissions';
-      }
-    };
+    loadUsers();
   </script>
 </body>
 </html>

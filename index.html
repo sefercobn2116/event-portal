@@ -7,6 +7,37 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .nav-tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .nav-tab-btn.active {
+      background: rgba(0, 242, 254, 0.15);
+      border-color: #00f2fe;
+      color: #00f2fe;
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+    }
+    .hour-chip {
+      padding: 10px 8px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+    }
+  </style>
 </head>
 <body>
 
@@ -30,6 +61,8 @@
 
   <!-- 2. ANA PANEL -->
   <div id="view-dashboard" class="container" style="display: none;">
+    
+    <!-- ÜST NAVİGASYON -->
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
         <img src="./icon.svg" style="width: 42px; height: 42px; border-radius: 10px;">
@@ -47,54 +80,59 @@
       </div>
     </div>
 
-    <!-- QR DAVET BANNERI -->
-    <div class="glass-box" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-color: rgba(0, 242, 254, 0.3);">
-      <div>
-        <h4 style="color: #00f2fe; margin: 0 0 2px 0;">✨ Bring Your Friends In</h4>
-        <p style="color: #94a3b8; font-size: 0.8rem; margin: 0;">Scan QR code to join private spaces.</p>
-      </div>
-      <button id="btn-open-invite-qr" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">📱 Show Invite QR</button>
+    <!-- SEKMELER (NAV TABS) -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button id="tab-events-view" class="nav-tab-btn active">🎉 Etkinlikler & Odalar</button>
+      <button id="tab-schedule-view" class="nav-tab-btn">🗓️ Randevularım & Takvimim</button>
     </div>
 
-    <!-- PROFİL KARTI -->
-    <div class="glass-box" style="margin-bottom: 20px; border-color: rgba(0, 242, 254, 0.25);">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 14px;">
-          <img id="prof-card-avatar" src="" style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover;">
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <h4 id="prof-card-username" style="color: #00f2fe; margin: 0;">User</h4>
-              <span id="prof-badge-ig" style="display: none;"></span>
+    <!-- ========================================================
+         SEKME A: ETKİNLİKLER & ODALAR
+         ======================================================== -->
+    <div id="panel-events-view">
+      
+      <!-- QR DAVET BANNERI -->
+      <div class="glass-box" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-color: rgba(0, 242, 254, 0.3);">
+        <div>
+          <h4 style="color: #00f2fe; margin: 0 0 2px 0;">✨ Bring Your Friends In</h4>
+          <p style="color: #94a3b8; font-size: 0.8rem; margin: 0;">Scan QR code to join private spaces.</p>
+        </div>
+        <button id="btn-open-invite-qr" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">📱 Show Invite QR</button>
+      </div>
+
+      <!-- PROFİL KARTI -->
+      <div class="glass-box" style="margin-bottom: 20px; border-color: rgba(0, 242, 254, 0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <img id="prof-card-avatar" src="" style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h4 id="prof-card-username" style="color: #00f2fe; margin: 0;">User</h4>
+                <span id="prof-badge-ig" style="display: none;"></span>
+              </div>
+              <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8; display: block; margin-top: 2px;">Loading...</span>
+              <div id="prof-card-contact" style="font-size: 0.76rem; color: #22c55e; margin-top: 4px; display: none;"></div>
             </div>
-            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8; display: block; margin-top: 2px;">Loading...</span>
-            <div id="prof-card-contact" style="font-size: 0.76rem; color: #22c55e; margin-top: 4px; display: none;"></div>
           </div>
+          <button id="btn-toggle-profile-edit" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Edit Profile</button>
         </div>
-        <button id="btn-toggle-profile-edit" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Edit Profile</button>
+
+        <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
+          <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
+            <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
+            <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.78rem;">Choose Profile Picture</button>
+            <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">Square auto-crop enabled</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px;">
+            <input type="text" id="prof-contact-input" class="input-field" placeholder="Phone / Telegram (+381...)" style="margin-bottom: 0;">
+            <input type="text" id="prof-ig-input" class="input-field" placeholder="Instagram (username or URL)" style="margin-bottom: 0;">
+          </div>
+          <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password (optional)">
+          <button type="button" id="btn-save-profile" class="btn" style="width: 100%;">Save Profile</button>
+        </div>
       </div>
 
-      <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
-        <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
-          <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
-          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.78rem;">Choose Profile Picture</button>
-          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">Square auto-crop enabled</div>
-        </div>
-        <div id="prof-preset-grid" style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px;"></div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px;">
-          <input type="text" id="prof-contact-input" class="input-field" placeholder="Phone / Telegram (+381...)" style="margin-bottom: 0;">
-          <input type="text" id="prof-ig-input" class="input-field" placeholder="Instagram (username or URL)" style="margin-bottom: 0;">
-        </div>
-        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password (optional)">
-        <button type="button" id="btn-save-profile" class="btn" style="width: 100%;">Save Profile</button>
-        <div id="prof-save-status" style="margin-top: 6px; font-size: 0.78rem; text-align: center;"></div>
-      </div>
-    </div>
-
-    <!-- DİNAMİK PLUGİNLER (SMART MEETUP) -->
-    <div id="dynamic-plugins-zone"></div>
-
-    <!-- ETKİNLİKLER ALANI -->
-    <div id="section-events">
+      <!-- ETKİNLİK OLUŞTURMA ALANI -->
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -116,11 +154,11 @@
               <input type="checkbox" id="uevt-expenses" checked> Enable Shared Expenses (Split Bill)
             </label>
             <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event Space</button>
-            <div id="uevt-status" style="margin-top: 6px; font-size: 0.8rem; text-align: center;"></div>
           </div>
         </div>
       </div>
 
+      <!-- ETKİNLİK LİSTESİ -->
       <div class="glass-box">
         <h3 style="color: #00f2fe; margin-bottom: 14px;">All Events</h3>
         <div id="events-grid-list" style="display: grid; gap: 10px;"></div>
@@ -128,7 +166,6 @@
 
       <!-- ETKİNLİK ODASI -->
       <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
-        
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
           <div>
             <h3 id="room-title" style="color: #00f2fe; margin: 0 0 4px 0;">Event Space</h3>
@@ -143,14 +180,13 @@
           </div>
         </div>
 
-        <!-- KATILMAK İSTEYENLER PANELİ -->
         <div id="room-join-requests-panel" style="display: none; background: rgba(255, 0, 127, 0.1); border: 1px solid #ff007f; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
           <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.88rem;">🔔 Katılmak İsteyenler (Pending Requests):</h4>
           <div id="room-join-requests-list" style="display: grid; gap: 6px;"></div>
         </div>
 
         <div class="room-layout-container">
-          <!-- MASAÜSTÜ SOL PANEL (GELENLER) -->
+          <!-- MASAÜSTÜ SOL PANEL -->
           <div class="room-sidebar-desktop glass-box" style="padding: 12px; background: rgba(0,0,0,0.35);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
               <span style="font-size: 0.78rem; color: #00f2fe; font-weight: bold;">👥 GELENLER</span>
@@ -163,7 +199,7 @@
           <div class="room-main-content">
             <div id="room-spotify-wrap" style="display: none; margin-bottom: 16px;"></div>
 
-            <!-- 1. ORTAK HESAP (SPLIT BILL) -->
+            <!-- 1. ORTAK HESAP -->
             <div id="room-expenses-section" style="margin-bottom: 20px;">
               <h4 style="color: #ff007f; font-size: 0.88rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
               <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin-bottom: 10px;">
@@ -177,7 +213,7 @@
               <div id="inline-expenses-list" style="display: grid; gap: 6px;"></div>
             </div>
 
-            <!-- 2. GÖREVLER (TASKS & CHECKLIST) -->
+            <!-- 2. GÖREVLER -->
             <div id="room-tasks-section" style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
@@ -187,13 +223,13 @@
               <div id="inline-tasks-list" style="display: grid; gap: 6px;"></div>
             </div>
 
-            <!-- 3. MEDYA GALERİSİ -->
+            <!-- 3. GALERİ -->
             <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">📸 Media Gallery</h4>
               <div id="room-gallery-container"></div>
             </div>
 
-            <!-- 4. CANLI ÖNERİLER & OYLAMA -->
+            <!-- 4. CANLI ÖNERİLER (EN ÇOK OY ALAN ÜSTTE) -->
             <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
@@ -216,6 +252,47 @@
         </div>
       </div>
     </div>
+
+    <!-- ========================================================
+         SEKME B: RANDEVULARIM & KİŞİSEL TAKVİMİM
+         ======================================================== -->
+    <div id="panel-schedule-view" style="display: none;">
+      
+      <!-- ONAYLI BULUŞMALAR & İPTAL YÖNETİMİ -->
+      <div class="glass-box" style="border-color: rgba(34, 197, 94, 0.35);">
+        <h4 style="color: #22c55e; margin: 0 0 6px 0; font-size: 1rem;">🗓️ Onaylanmış Randevularım (Active Hangouts)</h4>
+        <span style="font-size: 0.76rem; color: #94a3b8; display: block; margin-bottom: 12px;">İptal ettiğinde her iki tarafın takvimindeki saat otomatik olarak açılır.</span>
+        <div id="my-confirmed-hangouts-list" style="display: grid; gap: 8px;"></div>
+      </div>
+
+      <!-- AKILLI TAKVİM & GÜNLÜK PROGRAM -->
+      <div class="glass-box" style="border-color: rgba(0, 242, 254, 0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h4 style="color: #00f2fe; margin: 0; font-size: 1.05rem;">📅 Günlük Takvim & Neredeyim?</h4>
+            <span style="font-size: 0.76rem; color: #94a3b8;">Günü seç; o günkü etkinliklerini, randevularını ve boş saatlerini gör.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="font-size: 0.8rem; color: #00f2fe; font-weight: bold;">Tarih Seç:</label>
+            <input type="date" id="schedule-date-picker" class="input-field" style="max-width: 160px; margin-bottom: 0; padding: 6px 10px; font-size: 0.82rem;">
+          </div>
+        </div>
+
+        <!-- Renk Açıklaması -->
+        <div style="display: flex; gap: 16px; margin-bottom: 14px; font-size: 0.72rem; color: #94a3b8; flex-wrap: wrap;">
+          <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e; display: inline-block;"></span> Boş / Müsait</span>
+          <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #f43f5e; display: inline-block;"></span> Dolu (Etkinlik / Randevu)</span>
+          <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.1); display: inline-block;"></span> Kapalı / Belirtilmemiş</span>
+        </div>
+
+        <!-- Saat Izgarası -->
+        <div id="schedule-hours-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 8px;"></div>
+      </div>
+
+      <!-- 1-ON-1 BULUŞMA TALEP MERKEZİ -->
+      <div id="dynamic-plugins-zone"></div>
+    </div>
+
   </div>
 
   <!-- MOBİL GELENLER MODALI -->
@@ -245,7 +322,6 @@
     let isRegisterMode = false;
     let currentOpenEvent = null;
     let roomLiveChannel = null;
-
     let userNamesMap = new Map();
 
     function getSessionUser() {
@@ -325,10 +401,27 @@
       setupProfile(user);
       setupQR();
 
-      // Kullanıcı adlarını önbelleğe al
+      // Sekmeler Arası Geçiş
+      const tabEvt = document.getElementById('tab-events-view');
+      const tabSch = document.getElementById('tab-schedule-view');
+      const panelEvt = document.getElementById('panel-events-view');
+      const panelSch = document.getElementById('panel-schedule-view');
+
+      tabEvt.onclick = () => {
+        tabEvt.classList.add('active'); tabSch.classList.remove('active');
+        panelEvt.style.display = 'block'; panelSch.style.display = 'none';
+      };
+      tabSch.onclick = () => {
+        tabSch.classList.add('active'); tabEvt.classList.remove('active');
+        panelSch.style.display = 'block'; panelEvt.style.display = 'none';
+        initScheduleView(user);
+      };
+
+      // Kullanıcı listesi
       const { data: allUsers } = await supabase.from('users').select('id, username');
       (allUsers || []).forEach(u => userNamesMap.set(Number(u.id), u.username));
 
+      // Smart Meetup Eklentisi
       try {
         const { loadActivePlugins } = await import('./modules/loader.js');
         await loadActivePlugins(user.id, 'dynamic-plugins-zone');
@@ -467,6 +560,18 @@
         if (error) return alert('Event creation error: ' + error.message);
 
         await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
+        
+        // Etkinlik sahibinin takvimini kilitle
+        for (let h = start; h < end; h++) {
+          await supabase.from('user_availability').upsert([{
+            user_id: user.id,
+            slot_date: dateVal,
+            slot_hour: h,
+            is_booked: true,
+            locked_reason: `🎉 Host: ${title}`
+          }], { onConflict: 'user_id,slot_date,slot_hour' });
+        }
+
         form.style.display = 'none';
         loadEvents(user);
       };
@@ -501,7 +606,7 @@
         card.innerHTML = `
           <div>
             <h4 style="color: ${hasAccess ? '#00f2fe' : '#94a3b8'}; margin: 0;">${hasAccess ? '🟢' : '🔒'} ${evt.title}</h4>
-            <span style="font-size: 0.75rem; color: #64748b;">📅 ${evt.event_date || 'Date TBD'} • ${evt.location || 'Private Spot'}</span>
+            <span style="font-size: 0.75rem; color: #64748b;">📅 ${evt.event_date || 'Date TBD'} (${evt.start_hour || 18}:00 - ${evt.end_hour || 20}:00) • ${evt.location || 'Spot'}</span>
           </div>
           <div style="display: flex; gap: 6px; align-items: center;">
             ${hasAccess ? `
@@ -548,7 +653,7 @@
 
       const isHostOrAdmin = user.is_admin || user.role === 'admin' || Number(event.created_by) === Number(user.id);
       if (isHostOrAdmin) {
-        loadJoinRequests(targetEventId);
+        loadJoinRequests(targetEventId, event);
       } else {
         document.getElementById('room-join-requests-panel').style.display = 'none';
       }
@@ -563,15 +668,11 @@
       // Galeri
       try { const { renderEventGallery } = await import('./modules/gallery.js'); renderEventGallery('room-gallery-container', event.drive_folder_url); } catch(e){}
 
-      // ----------------------------------------------------
-      // 1. CANLI ORTAK HARCAMALAR (SPLIT BILL)
-      // ----------------------------------------------------
+      // 1. HARCAMALAR
       async function loadInlineExpenses() {
         const list = document.getElementById('inline-expenses-list');
         const badge = document.getElementById('inline-exp-total-badge');
-        const { data: exps, error } = await supabase.from('event_expenses').select('*').eq('event_id', targetEventId).order('created_at', { ascending: false });
-
-        if (error) console.error('Expenses read error:', error);
+        const { data: exps } = await supabase.from('event_expenses').select('*').eq('event_id', targetEventId).order('created_at', { ascending: false });
 
         let sum = 0;
         list.innerHTML = '';
@@ -606,7 +707,6 @@
         const amt = parseFloat(a.value);
         if (!desc || isNaN(amt) || amt <= 0) return alert('Enter description & amount');
         
-        // Hem yeni paid_by hem de eski payer_name kolonunu besler (NOT NULL hatasını önler)
         const { error } = await supabase.from('event_expenses').insert([{ 
           event_id: targetEventId, 
           paid_by: Number(user.id),
@@ -615,24 +715,20 @@
           amount: amt 
         }]);
 
-        if (error) return alert('Expense insert error: ' + error.message);
+        if (error) return alert('Expense error: ' + error.message);
         d.value = ''; a.value = '';
         loadInlineExpenses();
       };
       loadInlineExpenses();
 
-      // ----------------------------------------------------
-      // 2. CANLI GÖREVLER (TASKS & CHECKLIST)
-      // ----------------------------------------------------
+      // 2. GÖREVLER
       async function loadInlineTasks() {
         const list = document.getElementById('inline-tasks-list');
-        const { data: tasks, error } = await supabase.from('event_tasks').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
-
-        if (error) console.error('Tasks read error:', error);
+        const { data: tasks } = await supabase.from('event_tasks').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
 
         list.innerHTML = '';
         if (!tasks || tasks.length === 0) {
-          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No items yet. Add what you or others should bring!</span>';
+          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No items yet. Add what to bring!</span>';
           return;
         }
 
@@ -675,7 +771,6 @@
         const txt = inp.value.trim();
         if (!txt) return;
 
-        // Hem title hem task_title besler (NOT NULL hatasını önler)
         const { error } = await supabase.from('event_tasks').insert([{ 
           event_id: targetEventId, 
           title: txt,
@@ -684,24 +779,20 @@
           is_completed: false
         }]);
 
-        if (error) return alert('Task insert error: ' + error.message);
+        if (error) return alert('Task error: ' + error.message);
         inp.value = '';
         loadInlineTasks();
       };
       loadInlineTasks();
 
-      // ----------------------------------------------------
-      // 3. CANLI ÖNERİLER & OYLAMA
-      // ----------------------------------------------------
+      // 3. CANLI ÖNERİLER (EN ÇOK OY ALAN ÜSTTE)
       async function loadInlineSuggestions() {
         const list = document.getElementById('inline-suggestions-list');
-        const { data: sugs, error } = await supabase.from('event_suggestions').select('*').eq('event_id', targetEventId).order('votes', { ascending: false }).order('created_at', { ascending: false });
-
-        if (error) console.error('Suggestions read error:', error);
+        const { data: sugs } = await supabase.from('event_suggestions').select('*').eq('event_id', targetEventId).order('votes', { ascending: false }).order('created_at', { ascending: false });
 
         list.innerHTML = '';
         if (!sugs || sugs.length === 0) {
-          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No ideas submitted yet. Pitch one above!</span>';
+          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No ideas submitted yet. Pitch one!</span>';
           return;
         }
 
@@ -729,7 +820,7 @@
         const txt = inp.value.trim();
         if (!txt) return;
 
-        // String(user.id) gönderir (UUID/BigInt tipi fark etmeksizin uyumlu)
+        // user_id String olarak gönderilir (UUID/Integer uyumlu)
         const { error } = await supabase.from('event_suggestions').insert([{ 
           event_id: targetEventId, 
           user_id: String(user.id), 
@@ -737,15 +828,13 @@
           votes: 0 
         }]);
 
-        if (error) return alert('Suggestion insert error: ' + error.message);
+        if (error) return alert('Suggestion error: ' + error.message);
         inp.value = '';
         loadInlineSuggestions();
       };
       loadInlineSuggestions();
 
-      // ----------------------------------------------------
       // 4. CANLI CHAT
-      // ----------------------------------------------------
       async function loadInlineChat() {
         const box = document.getElementById('inline-chat-messages');
         const { data: msgs } = await supabase.from('event_chat').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
@@ -772,15 +861,13 @@
           message: txt 
         }]);
 
-        if (error) return alert('Chat send error: ' + error.message);
+        if (error) return alert('Chat error: ' + error.message);
         inp.value = '';
         loadInlineChat();
       };
       loadInlineChat();
 
-      // ----------------------------------------------------
-      // REALTIME WEBSOCKET DİNLEYİCİSİ (ODAYA ÖZEL)
-      // ----------------------------------------------------
+      // REALTIME ODA DİNLEYİCİSİ
       if (roomLiveChannel) supabase.removeChannel(roomLiveChannel);
 
       roomLiveChannel = supabase.channel(`nexus_live_room_${targetEventId}`)
@@ -797,7 +884,7 @@
           if (Number(p.new?.event_id || p.old?.event_id) === targetEventId) loadInlineChat();
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests' }, (p) => {
-          if (Number(p.new?.event_id || p.old?.event_id) === targetEventId && isHostOrAdmin) loadJoinRequests(targetEventId);
+          if (Number(p.new?.event_id || p.old?.event_id) === targetEventId && isHostOrAdmin) loadJoinRequests(targetEventId, event);
         })
         .subscribe();
 
@@ -812,8 +899,8 @@
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // KATILMAK İSTEYENLER (PENDING JOIN REQUESTS)
-    async function loadJoinRequests(eventId) {
+    // KATILMA İSTEKLERİ VE KABUL EDİLDİĞİNDE TAKVİMİ KİLİTLEME
+    async function loadJoinRequests(eventId, eventObj) {
       const panel = document.getElementById('room-join-requests-panel');
       const list = document.getElementById('room-join-requests-list');
 
@@ -852,13 +939,29 @@
         row.querySelector('.btn-acc-j').onclick = async () => {
           await supabase.from('event_access').insert([{ event_id: eventId, user_id: r.user_id }]);
           await supabase.from('event_join_requests').update({ status: 'accepted' }).eq('id', r.id);
+
+          // Katılan kişinin takviminde etkinlik saatlerini otomatik KİLİTLE
+          if (eventObj && eventObj.event_date && eventObj.start_hour) {
+            const sH = eventObj.start_hour;
+            const eH = eventObj.end_hour || (sH + 2);
+            for (let h = sH; h < eH; h++) {
+              await supabase.from('user_availability').upsert([{
+                user_id: r.user_id,
+                slot_date: eventObj.event_date,
+                slot_hour: h,
+                is_booked: true,
+                locked_reason: `🎉 Event: ${eventObj.title}`
+              }], { onConflict: 'user_id,slot_date,slot_hour' });
+            }
+          }
+
           loadAttendees(eventId);
-          loadJoinRequests(eventId);
+          loadJoinRequests(eventId, eventObj);
         };
 
         row.querySelector('.btn-rej-j').onclick = async () => {
           await supabase.from('event_join_requests').update({ status: 'rejected' }).eq('id', r.id);
-          loadJoinRequests(eventId);
+          loadJoinRequests(eventId, eventObj);
         };
 
         list.appendChild(row);
@@ -886,6 +989,143 @@
         dList.appendChild(row);
         mList.appendChild(row.cloneNode(true));
       });
+    }
+
+    // ========================================================
+    // AKILLI TAKVİM & RANDEVULARIM (SEKME B)
+    // ========================================================
+    async function initScheduleView(user) {
+      const datePicker = document.getElementById('schedule-date-picker');
+      const today = new Date().toISOString().split('T')[0];
+      if (!datePicker.value) datePicker.value = today;
+
+      loadMyConfirmedHangouts(user);
+      renderScheduleGrid(user, datePicker.value);
+
+      datePicker.onchange = () => renderScheduleGrid(user, datePicker.value);
+    }
+
+    // ONAYLANMIŞ BULUŞMALAR
+    async function loadMyConfirmedHangouts(user) {
+      const list = document.getElementById('my-confirmed-hangouts-list');
+      const { data: hangouts } = await supabase
+        .from('meetup_requests')
+        .select('*')
+        .or(`target_user_id.eq.${user.id},requester_id.eq.${user.id}`)
+        .eq('status', 'accepted')
+        .order('slot_date', { ascending: true });
+
+      list.innerHTML = '';
+      if (!hangouts || hangouts.length === 0) {
+        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Aktif onaylanmış birebir buluşmanız bulunmuyor.</span>';
+        return;
+      }
+
+      hangouts.forEach(h => {
+        const otherUserId = h.requester_id === user.id ? h.target_user_id : h.requester_id;
+        const otherName = userNamesMap.get(Number(otherUserId)) || 'Member';
+        const timeStr = `${h.slot_hour < 10 ? '0' + h.slot_hour : h.slot_hour}:00 - ${(h.slot_hour+1) < 10 ? '0' + (h.slot_hour+1) : (h.slot_hour+1)}:00`;
+
+        const card = document.createElement('div');
+        card.style.cssText = 'background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
+        card.innerHTML = `
+          <div>
+            <strong style="color: #22c55e; font-size: 0.88rem;">☕ Buluşma: ${otherName}</strong>
+            <span style="display: block; font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">📅 ${h.slot_date} (⏰ ${timeStr}) • 📝 ${h.note || 'Hangout'}</span>
+          </div>
+          <button class="btn btn-cancel-hangout" style="padding: 4px 10px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Randevuyu İptal Et</button>
+        `;
+
+        card.querySelector('.btn-cancel-hangout').onclick = async () => {
+          if (!confirm(`Randevuyu iptal etmek istediğinize emin misiniz? Her iki tarafın saatleri tekrar açılacaktır.`)) return;
+          
+          // Slotları boşalt
+          await supabase.from('user_availability')
+            .update({ is_booked: false, locked_reason: null })
+            .in('user_id', [h.requester_id, h.target_user_id])
+            .eq('slot_date', h.slot_date)
+            .eq('slot_hour', h.slot_hour);
+
+          await supabase.from('meetup_requests').update({ status: 'cancelled' }).eq('id', h.id);
+          
+          alert('✓ Randevu iptal edildi. Takviminiz güncellendi.');
+          loadMyConfirmedHangouts(user);
+          renderScheduleGrid(user, document.getElementById('schedule-date-picker').value);
+        };
+
+        list.appendChild(card);
+      });
+    }
+
+    // GÜNLÜK SAAT IZGARASI & NEREDEYİM MOTORU
+    async function renderScheduleGrid(user, selectedDate) {
+      const grid = document.getElementById('schedule-hours-grid');
+      
+      // Kullanıcının müsaitlik tablosunu çek
+      const { data: slots } = await supabase
+        .from('user_availability')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('slot_date', selectedDate);
+
+      const slotMap = new Map((slots || []).map(s => [s.slot_hour, s]));
+
+      grid.innerHTML = '';
+      for (let h = 8; h <= 23; h++) {
+        const slot = slotMap.get(h);
+        const isBooked = slot && slot.is_booked;
+        const isFree = slot && !slot.is_booked;
+        const hourLabel = `${h < 10 ? '0' + h : h}:00`;
+
+        const chip = document.createElement('div');
+        chip.className = 'hour-chip';
+
+        if (isBooked) {
+          chip.style.background = 'rgba(244, 63, 94, 0.15)';
+          chip.style.border = '1px solid rgba(244, 63, 94, 0.4)';
+          chip.style.color = '#f43f5e';
+          chip.innerHTML = `
+            <span style="font-weight: bold; font-size: 0.78rem;">${hourLabel}</span>
+            <span style="font-size: 0.62rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" title="${slot.locked_reason || 'Dolu'}">
+              🔒 ${slot.locked_reason ? slot.locked_reason.substring(0, 10) + '..' : 'Dolu'}
+            </span>
+          `;
+          chip.onclick = () => alert(`📅 Saat: ${hourLabel}\nDurum: DOLU\nDetay: ${slot.locked_reason || 'Planlanmış Program'}`);
+        } else if (isFree) {
+          chip.style.background = 'rgba(34, 197, 94, 0.2)';
+          chip.style.border = '1px solid #22c55e';
+          chip.style.color = '#22c55e';
+          chip.innerHTML = `
+            <span style="font-weight: bold; font-size: 0.78rem;">${hourLabel}</span>
+            <span style="font-size: 0.65rem; margin-top: 2px;">✓ Müsait</span>
+          `;
+          chip.onclick = async () => {
+            // Tıklayınca müsaitliği kapat
+            await supabase.from('user_availability').delete().eq('id', slot.id);
+            renderScheduleGrid(user, selectedDate);
+          };
+        } else {
+          chip.style.background = 'rgba(255, 255, 255, 0.03)';
+          chip.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+          chip.style.color = '#64748b';
+          chip.innerHTML = `
+            <span style="font-size: 0.78rem;">${hourLabel}</span>
+            <span style="font-size: 0.62rem; margin-top: 2px;">Kapalı</span>
+          `;
+          chip.onclick = async () => {
+            // Tıklayınca müsait (Free) yap
+            await supabase.from('user_availability').insert([{
+              user_id: user.id,
+              slot_date: selectedDate,
+              slot_hour: h,
+              is_booked: false
+            }]);
+            renderScheduleGrid(user, selectedDate);
+          };
+        }
+
+        grid.appendChild(chip);
+      }
     }
   </script>
 </body>

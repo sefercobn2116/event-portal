@@ -1,175 +1,153 @@
-// modules/calendar.js
-import { supabase } from '../config.js';
+// modules/calendar.js - İnteraktif & Canlı Takvim Modülü
+window.CalendarModule = {
+  currentDate: new Date(),
+  selectedDate: null,
+  userSlots: new Set(),
 
-export const monthNames = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
+  async init(containerId = 'calendar-container') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-let currentDate = new Date();
-export let selectedSlotDate = null;
-export let selectedSlots = new Set();
+    this.renderCalendarUI(container);
+    await this.loadMonthData();
+    this.setupRealtime();
+  },
 
-export async function initCalendar() {
-  const mSelect = document.getElementById('cal-month-select');
-  const ySelect = document.getElementById('cal-year-select');
+  renderCalendarUI(container) {
+    container.innerHTML = `
+      <div class="calendar-wrapper glass-card p-4">
+        <div class="calendar-header d-flex justify-content-between align-items-center mb-3">
+          <button class="btn btn-sm btn-outline-cyber" id="cal-prev">&lt;</button>
+          <h4 id="cal-month-title" class="neon-title m-0"></h4>
+          <button class="btn btn-sm btn-outline-cyber" id="cal-next">&gt;</button>
+        </div>
+        <div class="calendar-grid-weekdays d-grid" style="grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; opacity: 0.7;">
+          <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
+        </div>
+        <div id="calendar-days-grid" class="calendar-grid-days d-grid mt-2" style="grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
 
-  if (mSelect && ySelect) {
-    mSelect.innerHTML = '';
-    monthNames.forEach((m, idx) => {
-      const opt = document.createElement('option');
-      opt.value = idx;
-      opt.textContent = m;
-      mSelect.appendChild(opt);
-    });
-
-    ySelect.innerHTML = '';
-    for (let yr = 2026; yr <= 2032; yr++) {
-      const opt = document.createElement('option');
-      opt.value = yr;
-      opt.textContent = yr;
-      ySelect.appendChild(opt);
-    }
-
-    mSelect.value = currentDate.getMonth();
-    ySelect.value = currentDate.getFullYear();
-
-    mSelect.onchange = () => {
-      currentDate.setMonth(parseInt(mSelect.value));
-      renderCalendar();
-    };
-
-    ySelect.onchange = () => {
-      currentDate.setFullYear(parseInt(ySelect.value));
-      renderCalendar();
-    };
-
-    const prevBtn = document.getElementById('cal-prev-month');
-    const nextBtn = document.getElementById('cal-next-month');
-    if (prevBtn) prevBtn.onclick = () => {
-      currentDate.setMonth(currentDate.getMonth() - 1);
-      mSelect.value = currentDate.getMonth();
-      ySelect.value = currentDate.getFullYear();
-      renderCalendar();
-    };
-    if (nextBtn) nextBtn.onclick = () => {
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      mSelect.value = currentDate.getMonth();
-      ySelect.value = currentDate.getFullYear();
-      renderCalendar();
-    };
-  }
-
-  await renderCalendar();
-}
-
-export async function renderCalendar() {
-  const grid = document.getElementById('calendar-days-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-
-  const yr = currentDate.getFullYear();
-  const mo = currentDate.getMonth();
-  const totalDays = new Date(yr, mo + 1, 0).getDate();
-  
-  let startDay = new Date(yr, mo, 1).getDay() - 1;
-  if (startDay === -1) startDay = 6;
-
-  const startIso = `${yr}-${String(mo + 1).padStart(2, '0')}-01`;
-  const endIso = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(totalDays).padStart(2, '0')}`;
-
-  const { data: slots } = await supabase
-    .from('availability_slots')
-    .select('slot_date, is_active, is_booked')
-    .gte('slot_date', startIso)
-    .lte('slot_date', endIso)
-    .eq('is_active', true);
-
-  const slotCountMap = {};
-  (slots || []).forEach(s => {
-    if (!s.is_booked) {
-      slotCountMap[s.slot_date] = (slotCountMap[s.slot_date] || 0) + 1;
-    }
-  });
-
-  for (let i = 0; i < startDay; i++) {
-    const emptyCell = document.createElement('div');
-    emptyCell.className = 'cal-day-cell empty';
-    grid.appendChild(emptyCell);
-  }
-
-  for (let d = 1; d <= totalDays; d++) {
-    const dStr = `${yr}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const availableCount = slotCountMap[dStr] || 0;
-
-    const cell = document.createElement('div');
-    cell.className = `cal-day-cell ${availableCount > 0 ? 'available' : ''} ${selectedSlotDate === dStr ? 'selected' : ''}`;
-    
-    cell.innerHTML = `
-      <span>${d}</span>
-      ${availableCount > 0 ? `<span class="cal-badge-hours">${availableCount}h</span>` : ''}
+        <!-- Saat Seçim Modal / Paneli -->
+        <div id="slot-picker-drawer" class="mt-4 p-3 rounded glass-panel" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 id="slot-picker-date" class="m-0 text-cyber"></h5>
+            <button class="btn btn-sm btn-outline-secondary" onclick="CalendarModule.closeSlotPicker()">Kapat ✕</button>
+          </div>
+          <p class="small text-muted mb-3">Müsait olduğun saatleri yeşile çevirmek için dokun:</p>
+          <div id="slot-hours-grid" class="d-flex flex-wrap gap-2"></div>
+        </div>
+      </div>
     `;
 
-    cell.onclick = () => {
-      document.querySelectorAll('#calendar-days-grid .cal-day-cell').forEach(c => c.classList.remove('selected'));
-      cell.classList.add('selected');
-      loadHourlySlotsForDay(dStr);
-    };
+    document.getElementById('cal-prev').onclick = () => this.changeMonth(-1);
+    document.getElementById('cal-next').onclick = () => this.changeMonth(1);
+  },
 
-    grid.appendChild(cell);
-  }
-}
+  changeMonth(delta) {
+    this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+    this.loadMonthData();
+  },
 
-async function loadHourlySlotsForDay(dateStr) {
-  selectedSlotDate = dateStr;
-  selectedSlots.clear();
+  async loadMonthData() {
+    const year = this.currentDate.getFullYear();
+    const month = this.currentDate.getMonth();
+    const monthTitle = new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(this.currentDate);
+    document.getElementById('cal-month-title').innerText = monthTitle.toUpperCase();
 
-  const wrap = document.getElementById('selected-day-slots-wrap');
-  const heading = document.getElementById('selected-date-heading');
-  const container = document.getElementById('hourly-slots-container');
-  const formWrap = document.getElementById('booking-form-wrap');
+    const grid = document.getElementById('calendar-days-grid');
+    grid.innerHTML = '';
 
-  if (wrap) wrap.style.display = 'block';
-  if (heading) heading.textContent = `Available Hours: ${dateStr}`;
-  if (container) container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem;">Loading hours...</p>';
-  if (formWrap) formWrap.style.display = 'none';
+    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+    const totalDays = new Date(year, month + 1, 0).getDate();
 
-  const { data: slots } = await supabase
-    .from('availability_slots')
-    .select('*')
-    .eq('slot_date', dateStr)
-    .order('hour_slot', { ascending: true });
-
-  if (!slots || slots.length === 0) {
-    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No available slots set for this day.</p>';
-    return;
-  }
-
-  container.innerHTML = '';
-  slots.forEach(slot => {
-    const btn = document.createElement('div');
-    btn.className = 'slot-btn';
-    btn.textContent = slot.hour_slot;
-
-    if (slot.is_booked) {
-      btn.classList.add('booked');
-      btn.title = 'Already booked';
-    } else {
-      btn.onclick = () => {
-        if (selectedSlots.has(slot.hour_slot)) {
-          selectedSlots.delete(slot.hour_slot);
-          btn.classList.remove('active');
-        } else {
-          selectedSlots.add(slot.hour_slot);
-          btn.classList.add('active');
-        }
-
-        if (formWrap) {
-          formWrap.style.display = selectedSlots.size > 0 ? 'block' : 'none';
-        }
-      };
+    // Boşlukları doldur
+    for (let i = 0; i < firstDayIndex; i++) {
+      grid.innerHTML += `<div class="cal-empty-day p-2"></div>`;
     }
 
-    container.appendChild(btn);
-  });
-}
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    for (let day = 1; day <= totalDays; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isToday = dateStr === todayStr;
+
+      const dayCell = document.createElement('div');
+      dayCell.className = `cal-day-cell text-center p-2 rounded cursor-pointer ${isToday ? 'border-cyber' : ''}`;
+      dayCell.style.cursor = 'pointer';
+      dayCell.innerHTML = `<span>${day}</span>`;
+
+      dayCell.onclick = () => this.openSlotPicker(dateStr);
+      grid.appendChild(dayCell);
+    }
+  },
+
+  async openSlotPicker(dateStr) {
+    this.selectedDate = dateStr;
+    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
+    if (!currentUser.id) return alert('Lütfen giriş yapın.');
+
+    document.getElementById('slot-picker-drawer').style.display = 'block';
+    document.getElementById('slot-picker-date').innerText = `Tarih: ${dateStr}`;
+
+    const { data: slots } = await supabase
+      .from('user_availability')
+      .select('slot_hour, is_booked')
+      .eq('user_id', currentUser.id)
+      .eq('slot_date', dateStr);
+
+    this.userSlots = new Set((slots || []).map(s => s.slot_hour));
+    this.renderHourSlots();
+  },
+
+  renderHourSlots() {
+    const container = document.getElementById('slot-hours-grid');
+    container.innerHTML = '';
+
+    for (let h = 8; h <= 23; h++) {
+      const isSelected = this.userSlots.has(h);
+      const btn = document.createElement('button');
+      btn.className = `btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-secondary'}`;
+      btn.innerText = `${String(h).padStart(2, '0')}:00`;
+      btn.onclick = () => this.toggleSlot(h);
+      container.appendChild(btn);
+    }
+  },
+
+  async toggleSlot(hour) {
+    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
+    const isSelected = this.userSlots.has(hour);
+
+    if (isSelected) {
+      this.userSlots.delete(hour);
+      await supabase
+        .from('user_availability')
+        .delete()
+        .eq('user_id', currentUser.id)
+        .eq('slot_date', this.selectedDate)
+        .eq('slot_hour', hour);
+    } else {
+      this.userSlots.add(hour);
+      await supabase
+        .from('user_availability')
+        .upsert({
+          user_id: currentUser.id,
+          slot_date: this.selectedDate,
+          slot_hour: hour,
+          is_booked: false
+        });
+    }
+    this.renderHourSlots();
+  },
+
+  closeSlotPicker() {
+    document.getElementById('slot-picker-drawer').style.display = 'none';
+  },
+
+  setupRealtime() {
+    supabase
+      .channel('public:user_availability')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_availability' }, () => {
+        if (this.selectedDate) this.openSlotPicker(this.selectedDate);
+      })
+      .subscribe();
+  }
+};

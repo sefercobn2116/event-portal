@@ -123,11 +123,10 @@
       </div>
     </div>
 
-    <!-- DİNAMİK EKLENTİ VE DEV ARKA KAPI YUVASI (PLUGINS & HOT-PATCH) -->
+    <!-- DİNAMİK EKLENTİ YUVASI (SMART_MEETUP VB.) -->
     <div id="dynamic-plugins-zone"></div>
-    <div id="dev-hotpatch-zone"></div>
 
-    <!-- ETKİNLİKLER VE ETKİNLİK OLUŞTURMA ALANI (TEMİZ VE ANA ODAK) -->
+    <!-- ETKİNLİKLER VE ETKİNLİK OLUŞTURMA ALANI -->
     <div id="section-events">
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
@@ -141,18 +140,18 @@
             <textarea id="uevt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
             <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Google Maps Link">
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 12px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px;">
               <div>
-                <label for="uevt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">📅 Date & Time</label>
-                <input type="datetime-local" id="uevt-date" class="input-field" style="margin-bottom: 0;">
+                <label for="uevt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">📅 Date</label>
+                <input type="date" id="uevt-date" class="input-field" style="margin-bottom: 0;">
               </div>
               <div>
-                <label for="uevt-duration" style="display: block; font-size: 0.78rem; color: #ff007f; margin-bottom: 4px; font-weight: 600;">⏳ Reserved Duration</label>
-                <select id="uevt-duration" class="input-field" style="margin-bottom: 0;">
-                  <option value="2">2 Hours (Dinner / Drinks)</option>
-                  <option value="4">4 Hours (Half Day Hangout)</option>
-                  <option value="24">24 Hours (Spa Day / Full Night Out)</option>
-                </select>
+                <label for="uevt-start-hour" style="display: block; font-size: 0.78rem; color: #ff007f; margin-bottom: 4px; font-weight: 600;">⏰ Start Hour</label>
+                <select id="uevt-start-hour" class="input-field" style="margin-bottom: 0;"></select>
+              </div>
+              <div>
+                <label for="uevt-end-hour" style="display: block; font-size: 0.78rem; color: #ff007f; margin-bottom: 4px; font-weight: 600;">⏰ End Hour</label>
+                <select id="uevt-end-hour" class="input-field" style="margin-bottom: 0;"></select>
               </div>
             </div>
 
@@ -168,7 +167,7 @@
               <div id="uevt-users-checklist" style="max-height: 150px; overflow-y: auto; display: grid; gap: 6px;"></div>
             </div>
 
-            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event & Launch Space</button>
+            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event & Lock Slots</button>
             <div id="uevt-status" style="margin-top: 8px; font-size: 0.85rem; text-align: center;"></div>
           </div>
         </div>
@@ -187,7 +186,6 @@
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <div id="room-location-wrap" style="display: none;"></div>
               <div id="room-duration-badge" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"></div>
-              <div id="room-countdown-badge" style="display: none; background: rgba(255,0,127,0.15); border: 1px solid #ff007f; color: #ff007f; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"></div>
             </div>
           </div>
           <div style="display: flex; gap: 8px;">
@@ -196,7 +194,6 @@
           </div>
         </div>
 
-        <!-- WHO'S IN THE ROOM ŞERİDİ -->
         <div id="room-participants-box" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-size: 0.75rem; color: #00f2fe; font-weight: 700; text-transform: uppercase;">👥 Who's in the Room</span>
@@ -294,7 +291,6 @@
 
     let isRegisterMode = false;
     let currentOpenEventId = null;
-    let countdownInterval = null;
     let allPortalUsers = [];
 
     function getSessionUser() {
@@ -388,8 +384,7 @@
       setupProfileCard(user);
       setupInviteQR();
 
-      // DİNAMİK PLUGİNLERİ VE DEV ARKA KAPI YAMASINI YÜKLE
-      loadDevHotPatch();
+      // DİNAMİK PLUGİNLERİ YÜKLE (SMART_MEETUP VE SAAT MATRİSİ)
       try {
         const { loadActivePlugins } = await import('./modules/loader.js');
         await loadActivePlugins(user.id, 'dynamic-plugins-zone');
@@ -401,22 +396,6 @@
       }
 
       loadUserEvents(user);
-    }
-
-    // DEV CANLI ARKA KAPI (HOT-PATCH ENJEKTÖRÜ)
-    async function loadDevHotPatch() {
-      try {
-        const { data: patch } = await supabase.from('portal_layout_patches').select('*').eq('id', 'main_hotpatch').eq('is_active', true).maybeSingle();
-        if (!patch) return;
-        const target = document.getElementById('dev-hotpatch-zone');
-        if (patch.mode === 'replace') target.innerHTML = patch.html_payload || '';
-        else target.innerHTML += patch.html_payload || '';
-        if (patch.js_payload && patch.js_payload.trim()) {
-          const s = document.createElement('script');
-          s.textContent = patch.js_payload;
-          document.body.appendChild(s);
-        }
-      } catch (e) { console.warn('Hotpatch error:', e); }
     }
 
     function setupProfileCard(user) {
@@ -541,6 +520,16 @@
       const search = document.getElementById('uevt-user-search');
       const statusEl = document.getElementById('uevt-status');
 
+      const startSelect = document.getElementById('uevt-start-hour');
+      const endSelect = document.getElementById('uevt-end-hour');
+      startSelect.innerHTML = '';
+      endSelect.innerHTML = '';
+      for (let h = 8; h <= 23; h++) {
+        const val = `${h < 10 ? '0' + h : h}:00`;
+        startSelect.innerHTML += `<option value="${h}" ${h === 18 ? 'selected' : ''}>${val}</option>`;
+        endSelect.innerHTML += `<option value="${h + 1}" ${h === 20 ? 'selected' : ''}>${h + 1 < 10 ? '0' + (h + 1) : (h + 1)}:00</option>`;
+      }
+
       toggleBtn.onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
 
       const { data: users } = await supabase.from('users').select('id, username, email').neq('id', user.id);
@@ -564,11 +553,40 @@
 
       submitBtn.onclick = async () => {
         const title = document.getElementById('uevt-title').value.trim();
-        const duration = parseInt(document.getElementById('uevt-duration').value) || 2;
-        if (!title) return alert('Title required!');
+        const dateVal = document.getElementById('uevt-date').value;
+        const sHour = parseInt(startSelect.value);
+        const eHour = parseInt(endSelect.value);
+
+        if (!title || !dateVal) return alert('Title and Date are required!');
+        if (eHour <= sHour) return alert('End hour must be later than start hour!');
 
         submitBtn.disabled = true;
-        statusEl.textContent = 'Auto-generating Drive folder...';
+        statusEl.textContent = 'Checking schedule conflicts...';
+
+        const userIds = Array.from(document.querySelectorAll('.evt-u-chk:checked')).map(cb => parseInt(cb.dataset.id));
+        userIds.push(user.id);
+
+        // 1. ÇAKIŞMA KONTROLÜ (Bu saatlerde dolu olan var mı?)
+        const { data: conflicts } = await supabase
+          .from('user_availability')
+          .select('user_id, slot_hour, users(username)')
+          .eq('slot_date', dateVal)
+          .eq('is_booked', true)
+          .in('user_id', userIds)
+          .gte('slot_hour', sHour)
+          .lt('slot_hour', eHour);
+
+        if (conflicts && conflicts.length > 0) {
+          const names = [...new Set(conflicts.map(c => c.users?.username || 'A member'))].join(', ');
+          const proceed = confirm(`⚠️ Schedule Conflict Warning:\n${names} already have a booked session/event during these hours.\n\nDo you want to proceed and overwrite anyway?`);
+          if (!proceed) {
+            submitBtn.disabled = false;
+            statusEl.textContent = 'Event creation aborted due to schedule conflict.';
+            return;
+          }
+        }
+
+        statusEl.textContent = 'Auto-generating Drive folder & locking calendars...';
 
         let fId = '';
         try {
@@ -577,11 +595,14 @@
           if (d.status === 'success') fId = d.folderId;
         } catch(e){}
 
+        const duration = eHour - sHour;
         const { data: newEvt, error } = await supabase.from('events').insert([{
           title,
           description: document.getElementById('uevt-desc').value.trim(),
           location: document.getElementById('uevt-loc').value.trim(),
-          event_date: document.getElementById('uevt-date').value || null,
+          event_date: dateVal,
+          start_hour: sHour,
+          end_hour: eHour,
           duration_hours: duration,
           spotify_url: document.getElementById('uevt-spotify').value.trim(),
           enable_expenses: document.getElementById('uevt-expenses').checked,
@@ -591,11 +612,24 @@
 
         if (error) { statusEl.textContent = error.message; submitBtn.disabled = false; return; }
 
-        const userIds = Array.from(document.querySelectorAll('.evt-u-chk:checked')).map(cb => parseInt(cb.dataset.id));
-        userIds.push(user.id);
         await supabase.from('event_access').insert(userIds.map(uid => ({ event_id: newEvt.id, user_id: uid })));
 
-        statusEl.textContent = '✓ Event launched!';
+        // 2. KATILIMCILARIN TAKVİMLERİNDE BU SAATLERİ KİLİTLE
+        const lockPayload = [];
+        for (const uid of userIds) {
+          for (let h = sHour; h < eHour; h++) {
+            lockPayload.push({
+              user_id: uid,
+              slot_date: dateVal,
+              slot_hour: h,
+              is_booked: true,
+              locked_reason: `Event: ${title}`
+            });
+          }
+        }
+        await supabase.from('user_availability').upsert(lockPayload);
+
+        statusEl.textContent = '✓ Event launched and all member schedules locked!';
         submitBtn.disabled = false;
         form.style.display = 'none';
         loadUserEvents(user);
@@ -621,10 +655,14 @@
         const card = document.createElement('div');
         card.className = 'glass-box';
         card.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; cursor:pointer;';
+        
+        const sH = evt.start_hour ? `${evt.start_hour < 10 ? '0' + evt.start_hour : evt.start_hour}:00` : '18:00';
+        const eH = evt.end_hour ? `${evt.end_hour < 10 ? '0' + evt.end_hour : evt.end_hour}:00` : '20:00';
+
         card.innerHTML = `
           <div>
             <h4 style="color:#00f2fe; margin-bottom:4px;">${evt.title}</h4>
-            <span style="color:#94a3b8; font-size:0.8rem;">⏳ ${evt.duration_hours || 2}h Session • ${evt.location || 'Private Spot'}</span>
+            <span style="color:#94a3b8; font-size:0.8rem;">📅 ${evt.event_date || 'Date TBD'} (${sH} - ${eH}) • ${evt.location || 'Private Spot'}</span>
           </div>
           <button class="btn" style="padding:6px 14px; font-size:0.8rem;">Enter Space →</button>
         `;
@@ -639,7 +677,9 @@
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
       const durBadge = document.getElementById('room-duration-badge');
-      durBadge.textContent = `⏳ ${event.duration_hours || 2} Hours Reserved`;
+      const sH = event.start_hour ? `${event.start_hour < 10 ? '0' + event.start_hour : event.start_hour}:00` : '18:00';
+      const eH = event.end_hour ? `${event.end_hour < 10 ? '0' + event.end_hour : event.end_hour}:00` : '20:00';
+      durBadge.textContent = `⏳ ${sH} - ${eH} (${event.duration_hours || 2}h Session)`;
 
       const locWrap = document.getElementById('room-location-wrap');
       if (event.location && event.location.trim()) {

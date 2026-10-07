@@ -26,7 +26,6 @@
       box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
     }
 
-    /* Oda İçi Sekmeler */
     .room-sub-tab {
       padding: 8px 12px;
       border-radius: 6px;
@@ -37,6 +36,7 @@
       background: rgba(0, 0, 0, 0.3);
       color: #94a3b8;
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .room-sub-tab.active {
       border-color: #00f2fe;
@@ -44,7 +44,6 @@
       color: #00f2fe;
     }
 
-    /* Aylık Takvim Izgarası */
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -120,7 +119,7 @@
     .debt-badge {
       background: rgba(255, 0, 127, 0.12);
       border: 1px solid #ff007f;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       font-size: 0.8rem;
       margin-bottom: 8px;
@@ -128,7 +127,7 @@
     .credit-badge {
       background: rgba(34, 197, 94, 0.12);
       border: 1px solid #22c55e;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       font-size: 0.8rem;
       margin-bottom: 8px;
@@ -137,7 +136,7 @@
 </head>
 <body>
 
-  <!-- 1. GİRİŞ EKRANI -->
+  <!-- 1. AUTH VIEW -->
   <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
     <div class="glass-box" style="text-align: center;">
       <img src="./icon.svg" style="width: 72px; height: 72px; border-radius: 16px; margin-bottom: 14px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">
@@ -155,10 +154,9 @@
     </div>
   </div>
 
-  <!-- 2. ANA PANEL -->
+  <!-- 2. MAIN DASHBOARD VIEW -->
   <div id="view-dashboard" class="container" style="display: none;">
     
-    <!-- ÜST NAVİGASYON -->
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
         <img src="./icon.svg" style="width: 42px; height: 42px; border-radius: 10px;">
@@ -176,18 +174,18 @@
       </div>
     </div>
 
-    <!-- SEKMELER (NAV TABS) -->
+    <!-- TABS -->
     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-      <button id="tab-events-view" class="nav-tab-btn active">🎉 Etkinlikler & Odalar</button>
-      <button id="tab-schedule-view" class="nav-tab-btn">🗓️ Randevularım & Akıllı Takvim</button>
+      <button id="tab-events-view" class="nav-tab-btn active">🎉 Spaces & Events</button>
+      <button id="tab-schedule-view" class="nav-tab-btn">🗓️ My Schedule & Calendar</button>
     </div>
 
     <!-- ========================================================
-         SEKME A: ETKİNLİKLER & ODALAR
+         TAB A: EVENTS & SPACES
          ======================================================== -->
     <div id="panel-events-view">
       
-      <!-- QR DAVET BANNERI -->
+      <!-- QR BANNER -->
       <div class="glass-box" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-color: rgba(0, 242, 254, 0.3);">
         <div>
           <h4 style="color: #00f2fe; margin: 0 0 2px 0;">✨ Bring Your Friends In</h4>
@@ -196,7 +194,7 @@
         <button id="btn-open-invite-qr" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">📱 Show Invite QR</button>
       </div>
 
-      <!-- PROFİL KARTI -->
+      <!-- PROFILE CARD -->
       <div class="glass-box" style="margin-bottom: 20px; border-color: rgba(0, 242, 254, 0.25);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 14px;">
@@ -227,7 +225,7 @@
         </div>
       </div>
 
-      <!-- ETKİNLİK OLUŞTURMA ALANI -->
+      <!-- CREATE EVENT PANEL -->
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -253,15 +251,13 @@
         </div>
       </div>
 
-      <!-- ETKİNLİK LİSTESİ -->
+      <!-- ALL EVENTS LIST -->
       <div class="glass-box">
         <h3 style="color: #00f2fe; margin-bottom: 14px;">All Events</h3>
         <div id="events-grid-list" style="display: grid; gap: 10px;"></div>
       </div>
 
-      <!-- ========================================================
-           YENİ NESİL MODÜLER ETKİNLİK ODASI (SEKMELİ YAPI)
-           ======================================================== -->
+      <!-- MODULAR EVENT SPACE -->
       <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
           <div>
@@ -272,43 +268,43 @@
             </div>
           </div>
           <div style="display: flex; gap: 6px;">
-            <button id="btn-delete-this-event" class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: #f43f5e; color: #f43f5e; display: none;">🗑️ Etkinliği Sil</button>
-            <button id="btn-mobile-show-attendees" class="btn room-attendees-mobile-btn" style="padding: 4px 10px; font-size: 0.75rem;">👥 Gelenler (<span class="room-member-count-span">0</span>)</button>
+            <button id="btn-delete-this-event" class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: #f43f5e; color: #f43f5e; display: none;">🗑️ Delete Event</button>
+            <button id="btn-mobile-show-attendees" class="btn room-attendees-mobile-btn" style="padding: 4px 10px; font-size: 0.75rem;">👥 Attendees (<span class="room-member-count-span">0</span>)</button>
             <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Close Room</button>
           </div>
         </div>
 
         <div id="room-join-requests-panel" style="display: none; background: rgba(255, 0, 127, 0.1); border: 1px solid #ff007f; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
-          <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.88rem;">🔔 Katılmak İsteyenler (Pending Requests):</h4>
+          <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.88rem;">🔔 Pending Join Requests:</h4>
           <div id="room-join-requests-list" style="display: grid; gap: 6px;"></div>
         </div>
 
-        <!-- ODA İÇİ SEKMELER -->
+        <!-- SUB TABS -->
         <div style="display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px;">
-          <button class="room-sub-tab active" data-target="rtab-chat">💬 Canlı Sohbet</button>
-          <button class="room-sub-tab" data-target="rtab-expenses">💰 Harcamalar & Hesap Özeti</button>
-          <button class="room-sub-tab" data-target="rtab-tasks">📋 Kim Ne Getirecek?</button>
-          <button class="room-sub-tab" data-target="rtab-gallery">📸 Medya Galeri</button>
-          <button class="room-sub-tab" data-target="rtab-ideas">💡 Fikirler & Oylama</button>
+          <button class="room-sub-tab active" data-target="rtab-chat">💬 Live Chat</button>
+          <button class="room-sub-tab" data-target="rtab-expenses">💰 Split Bill & Expenses</button>
+          <button class="room-sub-tab" data-target="rtab-tasks">📋 Who Brings What?</button>
+          <button class="room-sub-tab" data-target="rtab-gallery">📸 Media Gallery</button>
+          <button class="room-sub-tab" data-target="rtab-ideas">💡 Ideas & Voting</button>
         </div>
 
         <div class="room-layout-container">
-          <!-- MASAÜSTÜ SOL PANEL (GELENLER) -->
+          <!-- DESKTOP ATTENDEES SIDEBAR -->
           <div class="room-sidebar-desktop glass-box" style="padding: 12px; background: rgba(0,0,0,0.35);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span style="font-size: 0.78rem; color: #00f2fe; font-weight: bold;">👥 GELENLER</span>
+              <span style="font-size: 0.78rem; color: #00f2fe; font-weight: bold;">👥 ATTENDEES</span>
               <span class="room-member-count-span" style="font-size: 0.75rem; color: #94a3b8;">0</span>
             </div>
             <div id="room-desktop-attendees-list" style="display: grid; gap: 6px; max-height: 440px; overflow-y: auto;"></div>
           </div>
 
-          <!-- SAĞ İÇERİK (SEKME PANELLERİ) -->
+          <!-- RIGHT TAB PANES -->
           <div class="room-main-content">
             <div id="room-spotify-wrap" style="display: none; margin-bottom: 16px;"></div>
 
-            <!-- 1. CHAT SEKME -->
+            <!-- 1. LIVE CHAT -->
             <div id="rtab-chat" class="room-tab-pane">
-              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💬 Odaya Özel Canlı Sohbet</h4>
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💬 Room Live Chat</h4>
               <div id="inline-chat-messages" style="height: 240px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;"></div>
               <div style="display: flex; gap: 8px;">
                 <input type="text" id="inline-chat-input" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
@@ -316,54 +312,52 @@
               </div>
             </div>
 
-            <!-- 2. HARCAMALAR & KİMİN KİME NE KADAR BORCU VAR SEKME -->
+            <!-- 2. EXPENSES & SPLIT BILL -->
             <div id="rtab-expenses" class="room-tab-pane" style="display: none;">
-              <h4 style="color: #ff007f; font-size: 0.95rem; margin-bottom: 8px;">💰 Akıllı Harcama & Borç Taksim Raporu</h4>
+              <h4 style="color: #ff007f; font-size: 0.95rem; margin-bottom: 8px;">💰 Smart Split Bill & Settlement Report</h4>
               
-              <!-- KİŞİSEL BORÇ / ALACAK VURGULAYICI KUTU -->
               <div id="my-personal-debt-status" style="margin-bottom: 12px;"></div>
 
               <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin-bottom: 10px;">
-                <input type="text" id="inline-exp-desc" class="input-field" placeholder="Harcama açıklaması..." style="margin-bottom: 0;">
-                <input type="number" id="inline-exp-amount" class="input-field" placeholder="Tutar €" step="0.5" style="margin-bottom: 0;">
-                <button id="inline-btn-add-exp" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">+ Harcama Ekle</button>
+                <input type="text" id="inline-exp-desc" class="input-field" placeholder="Description (e.g. Pizza, Taxi)..." style="margin-bottom: 0;">
+                <input type="number" id="inline-exp-amount" class="input-field" placeholder="Amount €" step="0.5" style="margin-bottom: 0;">
+                <button id="inline-btn-add-exp" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">+ Add Expense</button>
               </div>
 
-              <!-- GENEL BORÇ KAPAMA RAPORU -->
               <div class="glass-box" style="padding: 12px; background: rgba(0,0,0,0.4); margin-bottom: 12px; border-color: rgba(0, 242, 254, 0.2);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
-                  <strong style="color: #00f2fe; font-size: 0.85rem;">📊 Kim Kime Ne Kadar Ödemeli?</strong>
-                  <span id="inline-exp-total-badge" style="color: #22c55e; font-size: 0.82rem; font-weight: bold;">Toplam: 0.00 € (Kişi Başı: 0.00 €)</span>
+                  <strong style="color: #00f2fe; font-size: 0.85rem;">📊 Settlement Breakdown:</strong>
+                  <span id="inline-exp-total-badge" style="color: #22c55e; font-size: 0.82rem; font-weight: bold;">Pool: 0.00 € (Per Person: 0.00 €)</span>
                 </div>
                 <div id="split-bill-settlement-list" style="display: grid; gap: 6px;"></div>
               </div>
 
-              <h5 style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 6px;">Harcama Geçmişi:</h5>
+              <h5 style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 6px;">Transaction History:</h5>
               <div id="inline-expenses-list" style="display: grid; gap: 6px; max-height: 180px; overflow-y: auto;"></div>
             </div>
 
-            <!-- 3. GÖREVLER SEKME -->
+            <!-- 3. TASKS -->
             <div id="rtab-tasks" class="room-tab-pane" style="display: none;">
-              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Kim Ne Getirecek? (Görev Listesi)</h4>
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Task List)</h4>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <input type="text" id="inline-task-input" class="input-field" placeholder="Getirilecek eşya veya görev..." style="margin-bottom: 0;">
-                <button id="inline-btn-add-task" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem; white-space: nowrap;">+ Ekle</button>
+                <input type="text" id="inline-task-input" class="input-field" placeholder="Item or task to assign..." style="margin-bottom: 0;">
+                <button id="inline-btn-add-task" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem; white-space: nowrap;">+ Add</button>
               </div>
               <div id="inline-tasks-list" style="display: grid; gap: 6px;"></div>
             </div>
 
-            <!-- 4. GALERİ SEKME -->
+            <!-- 4. GALLERY -->
             <div id="rtab-gallery" class="room-tab-pane" style="display: none;">
-              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">📸 Ortak Fotoğraf Galerisi</h4>
+              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">📸 Shared Media Gallery</h4>
               <div id="room-gallery-container"></div>
             </div>
 
-            <!-- 5. ÖNERİLER SEKME -->
+            <!-- 5. IDEAS & SUGGESTIONS -->
             <div id="rtab-ideas" class="room-tab-pane" style="display: none;">
-              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Etkinlik İçi Fikirler & Canlı Oylama</h4>
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <input type="text" id="inline-sug-input" class="input-field" placeholder="Mekan veya aktivite öner..." style="margin-bottom: 0;">
-                <button id="inline-btn-add-sug" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">Paylaş</button>
+                <input type="text" id="inline-sug-input" class="input-field" placeholder="Pitch a spot or activity..." style="margin-bottom: 0;">
+                <button id="inline-btn-add-sug" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">Pitch</button>
               </div>
               <div id="inline-suggestions-list" style="max-height: 220px; overflow-y: auto; display: grid; gap: 6px;"></div>
             </div>
@@ -374,56 +368,56 @@
     </div>
 
     <!-- ========================================================
-         SEKME B: RANDEVULARIM & AKILLI TAKVİM
+         TAB B: MY SCHEDULE & SMART CALENDAR
          ======================================================== -->
     <div id="panel-schedule-view" style="display: none;">
       
-      <!-- 1-ON-1 RANDEVU PLANLAYICI -->
+      <!-- 1-ON-1 MATCHER -->
       <div class="glass-box" style="border-color: rgba(255, 0, 127, 0.3); margin-bottom: 20px;">
-        <h4 style="color: #ff007f; margin: 0 0 10px 0; font-size: 1rem;">⚡ 1-on-1 Buluşma Planla (Ortak Boş Saat Eşleştirici)</h4>
+        <h4 style="color: #ff007f; margin: 0 0 10px 0; font-size: 1rem;">⚡ 1-on-1 Hangout Matcher (Mutual Free Hours)</h4>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px;">
-          <select id="hangout-target-user" class="input-field" style="margin-bottom: 0;"><option value="">Arkadaşını Seç...</option></select>
+          <select id="hangout-target-user" class="input-field" style="margin-bottom: 0;"><option value="">Pick a friend...</option></select>
           <input type="date" id="hangout-date-input" class="input-field" style="margin-bottom: 0;">
         </div>
-        <button id="btn-find-mutual-slots" class="btn btn-pink" style="width: 100%; padding: 8px; font-size: 0.85rem;">🔍 Ortak Boş Saatleri Tara</button>
+        <button id="btn-find-mutual-slots" class="btn btn-pink" style="width: 100%; padding: 8px; font-size: 0.85rem;">🔍 Scan Mutual Free Slots</button>
 
         <div id="mutual-results-wrapper" style="display: none; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
-          <h5 style="color: #22c55e; margin: 0 0 8px 0; font-size: 0.82rem;">🟢 İkinizin de Boş Olduğu Saatler:</h5>
+          <h5 style="color: #22c55e; margin: 0 0 8px 0; font-size: 0.82rem;">🟢 Mutual Open Hours:</h5>
           <div id="mutual-slots-container" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
         </div>
 
         <div id="booking-proposal-card" style="display: none; margin-top: 12px; background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.4); border-radius: 8px; padding: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <h5 style="color: #00f2fe; margin: 0; font-size: 0.85rem;">Buluşma Teklifi Gönder</h5>
+            <h5 style="color: #00f2fe; margin: 0; font-size: 0.85rem;">Send Hangout Proposal</h5>
             <span id="selected-hour-badge" style="color: #00f2fe; font-size: 0.75rem; font-weight: bold;"></span>
           </div>
-          <input type="text" id="proposal-plan-input" class="input-field" placeholder="Plan ne? (Örn: Kahve, Akşam Yemeği)..." style="margin-bottom: 8px;">
+          <input type="text" id="proposal-plan-input" class="input-field" placeholder="Agenda (e.g. Coffee, Dinner)..." style="margin-bottom: 8px;">
           <div style="display: flex; gap: 6px;">
-            <button id="btn-send-meetup-request" class="btn" style="flex: 2; padding: 6px; font-size: 0.78rem;">Talebi Gönder</button>
-            <button id="btn-cancel-proposal" class="btn" style="flex: 1; padding: 6px; font-size: 0.78rem;">İptal</button>
+            <button id="btn-send-meetup-request" class="btn" style="flex: 2; padding: 6px; font-size: 0.78rem;">Send Request</button>
+            <button id="btn-cancel-proposal" class="btn" style="flex: 1; padding: 6px; font-size: 0.78rem;">Cancel</button>
           </div>
         </div>
       </div>
 
-      <!-- ONAYLI BULUŞMALAR & İPTAL YÖNETİMİ -->
+      <!-- CONFIRMED BOOKINGS -->
       <div class="glass-box" style="border-color: rgba(34, 197, 94, 0.35); margin-bottom: 20px;">
-        <h4 style="color: #22c55e; margin: 0 0 6px 0; font-size: 1rem;">🗓️ Onaylanmış Randevularım (Confirmed Hangouts)</h4>
-        <span style="font-size: 0.76rem; color: #94a3b8; display: block; margin-bottom: 12px;">İptal ettiğinde her iki tarafın takvimindeki saat otomatik açılır.</span>
+        <h4 style="color: #22c55e; margin: 0 0 6px 0; font-size: 1rem;">🗓️ Confirmed Hangouts (Manage & Cancel)</h4>
+        <span style="font-size: 0.76rem; color: #94a3b8; display: block; margin-bottom: 12px;">Canceling reopens both members' free slots automatically.</span>
         <div id="my-confirmed-hangouts-list" style="display: grid; gap: 8px;"></div>
       </div>
 
-      <!-- BEKLEYEN TALEPLERİM -->
+      <!-- PENDING REQUESTS -->
       <div class="glass-box" style="border-color: rgba(0, 242, 254, 0.35); margin-bottom: 20px;">
-        <h4 style="color: #00f2fe; margin: 0 0 6px 0; font-size: 1rem;">📩 Bekleyen Buluşma Talepleri</h4>
+        <h4 style="color: #00f2fe; margin: 0 0 6px 0; font-size: 1rem;">📩 Pending Hangout Requests</h4>
         <div id="my-pending-hangouts-list" style="display: grid; gap: 8px;"></div>
       </div>
 
-      <!-- PROFESYONEL AYLIK / YILLIK TAKVİM DASHBOARD -->
+      <!-- PROFESSIONAL MONTHLY CALENDAR DASHBOARD -->
       <div class="glass-box" style="border-color: rgba(0, 242, 254, 0.3);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; align-items: center; gap: 8px;">
             <button id="cal-prev-month" class="btn" style="padding: 4px 10px; font-size: 0.8rem;">◀</button>
-            <h3 id="cal-month-year-label" style="color: #00f2fe; margin: 0; font-size: 1.15rem; min-width: 150px; text-align: center;">Ekim 2026</h3>
+            <h3 id="cal-month-year-label" style="color: #00f2fe; margin: 0; font-size: 1.15rem; min-width: 160px; text-align: center;">October 2026</h3>
             <button id="cal-next-month" class="btn" style="padding: 4px 10px; font-size: 0.8rem;">▶</button>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
@@ -433,27 +427,27 @@
         </div>
 
         <div style="display: flex; gap: 14px; margin-bottom: 12px; font-size: 0.72rem; color: #94a3b8; flex-wrap: wrap;">
-          <span style="display: flex; align-items: center; gap: 5px;"><span class="dot-indicator" style="background: #22c55e;"></span> Boş / Müsait Saat</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span class="dot-indicator" style="background: #f43f5e;"></span> Dolu (Etkinlik / Randevu)</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span style="color: #00f2fe; font-weight: bold;">Seçili Gün (Aşağıda Listelenir)</span></span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span class="dot-indicator" style="background: #22c55e;"></span> Free Hour Open</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span class="dot-indicator" style="background: #f43f5e;"></span> Booked (Event / Hangout)</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="color: #00f2fe; font-weight: bold;">Selected Day (Detailed Below)</span></span>
         </div>
 
         <div class="calendar-grid" style="margin-bottom: 4px;">
-          <div class="calendar-weekday">Pzt</div>
-          <div class="calendar-weekday">Sal</div>
-          <div class="calendar-weekday">Çar</div>
-          <div class="calendar-weekday">Per</div>
-          <div class="calendar-weekday">Cum</div>
-          <div class="calendar-weekday">Cmt</div>
-          <div class="calendar-weekday">Paz</div>
+          <div class="calendar-weekday">Mon</div>
+          <div class="calendar-weekday">Tue</div>
+          <div class="calendar-weekday">Wed</div>
+          <div class="calendar-weekday">Thu</div>
+          <div class="calendar-weekday">Fri</div>
+          <div class="calendar-weekday">Sat</div>
+          <div class="calendar-weekday">Sun</div>
         </div>
 
         <div id="calendar-days-container" class="calendar-grid" style="margin-bottom: 20px;"></div>
 
         <div id="selected-day-schedule-panel" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
-            <h4 id="selected-date-heading" style="color: #00f2fe; margin: 0; font-size: 0.95rem;">📅 Günlük Saat Dağılımı</h4>
-            <span style="font-size: 0.72rem; color: #94a3b8;">Saat kutucuklarına tıklayarak boş/kapalı durumunu anında değiştirebilirsiniz.</span>
+            <h4 id="selected-date-heading" style="color: #00f2fe; margin: 0; font-size: 0.95rem;">📅 Daily Hourly Breakdown</h4>
+            <span style="font-size: 0.72rem; color: #94a3b8;">Click hours to toggle open/off status instantly.</span>
           </div>
           <div id="schedule-hours-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px;"></div>
         </div>
@@ -463,11 +457,11 @@
 
   </div>
 
-  <!-- MOBİL GELENLER MODALI -->
+  <!-- MOBILE ATTENDEES MODAL -->
   <div id="mobile-attendees-modal" class="lightbox-overlay" style="display: none;">
     <div class="glass-box" style="max-width: 320px; width: 90%; position: relative;">
       <button id="btn-close-mobile-attendees" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer;">✕</button>
-      <h3 style="color: #00f2fe; margin-bottom: 10px; font-size: 1rem;">👥 Etkinliğe Gelenler</h3>
+      <h3 style="color: #00f2fe; margin-bottom: 10px; font-size: 1rem;">👥 Attendees</h3>
       <div id="room-mobile-attendees-list" style="display: grid; gap: 6px; max-height: 280px; overflow-y: auto;"></div>
     </div>
   </div>
@@ -493,13 +487,12 @@
     let scheduleLiveChannel = null;
     let userNamesMap = new Map();
 
-    // Takvim Durumu
     let currentCalDate = new Date();
     let selectedActiveDateStr = new Date().toISOString().split('T')[0];
 
-    const monthNamesTr = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    const monthNamesEn = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
     function getSessionUser() {
@@ -579,7 +572,7 @@
       setupProfile(user);
       setupQR();
 
-      // Sekmeler Arası Geçiş
+      // Navigation Tabs
       const tabEvt = document.getElementById('tab-events-view');
       const tabSch = document.getElementById('tab-schedule-view');
       const panelEvt = document.getElementById('panel-events-view');
@@ -595,7 +588,7 @@
         initScheduleDashboard(user);
       };
 
-      // Kullanıcı listesi
+      // Cache usernames
       const { data: allUsers } = await supabase.from('users').select('id, username');
       (allUsers || []).forEach(u => userNamesMap.set(Number(u.id), u.username));
 
@@ -606,7 +599,7 @@
 
       loadEvents(user);
 
-      // Etkinlik Odası Alt Sekmeleri
+      // Room Sub Tabs
       document.querySelectorAll('.room-sub-tab').forEach(btn => {
         btn.onclick = () => {
           document.querySelectorAll('.room-sub-tab').forEach(b => b.classList.remove('active'));
@@ -616,7 +609,7 @@
         };
       });
 
-      // Realtime Etkinlik Dinleyicisi
+      // Global Events Realtime
       supabase.channel('events_live_dashboard')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
           loadEvents(user);
@@ -712,16 +705,16 @@
       document.getElementById('btn-submit-uevt').onclick = async () => {
         const title = document.getElementById('uevt-title').value.trim();
         const dateVal = document.getElementById('uevt-date').value;
-        if (!title || !dateVal) return alert('Başlık ve tarih zorunludur!');
+        if (!title || !dateVal) return alert('Title and date required!');
 
         const start = parseInt(sH.value);
         const end = parseInt(eH.value);
 
-        // ÇAKIŞMA KONTROLÜ (Host Takvimi)
+        // Host Conflict Warning
         const { data: mySlots } = await supabase.from('user_availability').select('*').eq('user_id', user.id).eq('slot_date', dateVal);
         const conflicting = (mySlots || []).filter(s => s.slot_hour >= start && s.slot_hour < end && s.is_booked);
         if (conflicting.length > 0) {
-          alert(`⚠️ BİLGİLENDİRME: Seçtiğiniz saatlerde (${start}:00 - ${end}:00) daha önceden planlanmış bir randevunuz/etkinliğiniz var! Etkinlik oluşturuldu ancak takviminizde çakışma olabilir.`);
+          alert(`⚠️ NOTICE: You already have a booked hangout/event on your calendar between ${start}:00 - ${end}:00. Event space created, but please be aware of the overlap!`);
         }
 
         let fId = '';
@@ -749,11 +742,11 @@
           created_by: user.id
         }]).select().single();
 
-        if (error) return alert('Etkinlik oluşturma hatası: ' + error.message);
+        if (error) return alert('Event creation error: ' + error.message);
 
         await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
         
-        // Hostun saatlerini takvimde kilitle
+        // Lock calendar slots for host
         for (let h = start; h < end; h++) {
           await supabase.from('user_availability').upsert([{
             user_id: user.id,
@@ -804,9 +797,9 @@
             ${hasAccess ? `
               <button class="btn btn-enter" style="padding: 4px 12px; font-size: 0.78rem;">Enter Space →</button>
             ` : (reqStatus === 'pending' ? `
-              <span style="color: #ff007f; font-size: 0.75rem; font-weight: bold; background: rgba(255,0,127,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid #ff007f;">⏳ Katılma İsteği Gönderildi</span>
+              <span style="color: #ff007f; font-size: 0.75rem; font-weight: bold; background: rgba(255,0,127,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid #ff007f;">⏳ Request Sent</span>
             ` : `
-              <button class="btn btn-pink btn-req-join" style="padding: 4px 12px; font-size: 0.78rem;">🙋 Katılma İsteği Gönder</button>
+              <button class="btn btn-pink btn-req-join" style="padding: 4px 12px; font-size: 0.78rem;">🙋 Request to Join</button>
             `)}
           </div>
         `;
@@ -817,21 +810,20 @@
           const reqBtn = card.querySelector('.btn-req-join');
           if (reqBtn) {
             reqBtn.onclick = async () => {
-              // ÇAKIŞMA KONTROLÜ (Katılma İsteği Gönderirken)
               if (evt.event_date && evt.start_hour) {
                 const sH = evt.start_hour;
                 const eH = evt.end_hour || (sH + 2);
                 const { data: mySlots } = await supabase.from('user_availability').select('*').eq('user_id', user.id).eq('slot_date', evt.event_date);
                 const conflict = (mySlots || []).find(s => s.slot_hour >= sH && s.slot_hour < eH && s.is_booked);
                 if (conflict) {
-                  alert(`⚠️ DİKKAT: Bu etkinliğin saatinde (${conflict.slot_hour}:00) takviminizde başka bir planınız/randevunuz ('${conflict.locked_reason || 'Dolu'}') görünüyor! Lütfen çakışmayı unutmayın.`);
+                  alert(`⚠️ NOTICE: This event overlaps with your existing plan ('${conflict.locked_reason || 'Booked'}') at ${conflict.slot_hour}:00! Please keep the conflict in mind.`);
                 }
               }
 
               reqBtn.disabled = true;
               reqBtn.textContent = 'Sending...';
               await supabase.from('event_join_requests').upsert([{ event_id: evId, user_id: user.id, status: 'pending' }]);
-              alert('✓ Katılma isteği iletildi!');
+              alert('✓ Join request submitted!');
               loadEvents(user);
             };
           }
@@ -842,7 +834,7 @@
     }
 
     // ========================================================
-    // ETKİNLİK ODASI & GELİŞMİŞ BORÇ DAĞITIM MOTORU (SPLIT-BILL)
+    // ROOM & SPLIT BILL SETTLEMENT REPORT ENGINE
     // ========================================================
     async function openRoom(event, user) {
       currentOpenEvent = event;
@@ -856,30 +848,26 @@
 
       const isHostOrAdmin = user.is_admin || user.role === 'admin' || Number(event.created_by) === Number(user.id);
       
-      // Etkinlik Sil Butonu
+      // Delete Event Button
       const delBtn = document.getElementById('btn-delete-this-event');
       if (isHostOrAdmin) {
         delBtn.style.display = 'inline-flex';
         delBtn.onclick = async () => {
-          if (!confirm(`'${event.title}' etkinliğini silmek istediğinize emin misiniz? Tüm katılımcıların takvimlerindeki saatler serbest kalacaktır.`)) return;
+          if (!confirm(`Are you sure you want to delete '${event.title}'? All attendees' blocked hours will be released immediately.`)) return;
           
-          // Katılımcıların takvimindeki etkinlik kilitlerini temizle
-          if (event.event_date && event.start_hour) {
-            const sH = event.start_hour;
-            const eH = event.end_hour || (sH + 2);
-            for (let h = sH; h < eH; h++) {
-              await supabase.from('user_availability')
-                .delete()
-                .eq('slot_date', event.event_date)
-                .eq('slot_hour', h)
-                .ilike('locked_reason', `%${event.title}%`);
-            }
+          // Clear calendar locks for all attendees
+          if (event.event_date) {
+            await supabase.from('user_availability')
+              .delete()
+              .eq('slot_date', event.event_date)
+              .ilike('locked_reason', `%${event.title}%`);
           }
 
           await supabase.from('events').delete().eq('id', targetEventId);
-          alert('✓ Etkinlik silindi.');
+          alert('✓ Event deleted and calendars freed.');
           room.style.display = 'none';
           loadEvents(user);
+          renderFullMonthCalendar(user);
         };
       } else {
         delBtn.style.display = 'none';
@@ -898,11 +886,11 @@
         sp.style.display = 'block';
       } else sp.style.display = 'none';
 
-      // Galeri
+      // Gallery
       try { const { renderEventGallery } = await import('./modules/gallery.js'); renderEventGallery('room-gallery-container', event.drive_folder_url); } catch(e){}
 
       // ========================================================
-      // AKILLI BORÇ HESAPLAMA MOTORU (KİM KİME NE KADAR ÖDEYECEK)
+      // SPLIT BILL & SETTLEMENT ENGINE
       // ========================================================
       async function calculateAndRenderSplitBill() {
         const list = document.getElementById('inline-expenses-list');
@@ -918,7 +906,6 @@
         const attendeeIds = (attendeesData || []).map(a => Number(a.user_id));
         const numMembers = Math.max(attendeeIds.length, 1);
 
-        // Herkesin toplam ödediği miktar
         const paidMap = new Map();
         attendeeIds.forEach(id => paidMap.set(id, 0));
 
@@ -936,7 +923,7 @@
           row.innerHTML = `
             <div>
               <span style="font-size: 0.82rem; color: #f8fafc; font-weight: 500;">${e.description}</span>
-              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">ödeyen: ${payerName}</span>
+              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">paid by ${payerName}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <strong style="color: #22c55e; font-size: 0.85rem;">${amt.toFixed(2)} €</strong>
@@ -951,12 +938,10 @@
         });
 
         const perPersonShare = totalPool / numMembers;
-        badge.textContent = `Toplam Havuz: ${totalPool.toFixed(2)} € (Kişi Başı: ${perPersonShare.toFixed(2)} €)`;
+        badge.textContent = `Total: ${totalPool.toFixed(2)} € (Per Person: ${perPersonShare.toFixed(2)} €)`;
 
-        // Net Bakiye Hesaplama: Ödediği - Payı
-        // Pozitif (+) = Alacaklı, Negatif (-) = Borçlu
-        const debtors = [];  // Borcu olanlar
-        const creditors = []; // Alacağı olanlar
+        const debtors = [];
+        const creditors = [];
 
         paidMap.forEach((paidAmount, uId) => {
           const balance = paidAmount - perPersonShare;
@@ -967,7 +952,6 @@
           }
         });
 
-        // Borç Eşleştirme Algoritması
         const settlements = [];
         let dIdx = 0, cIdx = 0;
         const dCopy = debtors.map(d => ({ ...d }));
@@ -993,7 +977,6 @@
           if (creditor.amount <= 0.01) cIdx++;
         }
 
-        // Bireysel Durum Kutusu (Giriş Yapan Kişiye Özel)
         const myPaid = paidMap.get(Number(user.id)) || 0;
         const myBalance = myPaid - perPersonShare;
 
@@ -1001,34 +984,33 @@
           myPersonalBox.innerHTML = '';
         } else if (myBalance > 0.01) {
           const myDebtors = settlements.filter(s => s.toId === Number(user.id));
-          const debtsTxt = myDebtors.map(s => `<strong>${s.fromName}</strong> sana <strong>${s.amount.toFixed(2)} €</strong>`).join(', ');
+          const debtsTxt = myDebtors.map(s => `<strong>${s.fromName}</strong> owes you <strong>${s.amount.toFixed(2)} €</strong>`).join(', ');
           myPersonalBox.innerHTML = `
             <div class="credit-badge">
-              🟢 Toplam <strong>${myPaid.toFixed(2)} €</strong> harcama yaptın. Kişi başı düşen pay <strong>${perPersonShare.toFixed(2)} €</strong>.
-              <br>👉 Net Alacağın: <strong style="color:#22c55e;">+${myBalance.toFixed(2)} €</strong>. (${debtsTxt || 'Hesaplar eşitlendi'})
+              🟢 You spent a total of <strong>${myPaid.toFixed(2)} €</strong>. Fair share is <strong>${perPersonShare.toFixed(2)} €</strong>.
+              <br>👉 Net to Receive: <strong style="color:#22c55e;">+${myBalance.toFixed(2)} €</strong>. (${debtsTxt || 'All settled'})
             </div>
           `;
         } else if (myBalance < -0.01) {
           const myPayTo = settlements.filter(s => s.fromId === Number(user.id));
-          const payTxt = myPayTo.map(s => `<strong>${s.toName}</strong> kişisine <strong>${s.amount.toFixed(2)} €</strong>`).join(', ');
+          const payTxt = myPayTo.map(s => `You owe <strong>${s.toName}</strong> <strong>${s.amount.toFixed(2)} €</strong>`).join(', ');
           myPersonalBox.innerHTML = `
             <div class="debt-badge">
-              🔴 Toplam <strong>${myPaid.toFixed(2)} €</strong> harcama yaptın. Kişi başı düşen pay <strong>${perPersonShare.toFixed(2)} €</strong>.
-              <br>👉 Net Borcun: <strong style="color:#ff007f;">-${Math.abs(myBalance).toFixed(2)} €</strong>. (${payTxt || 'Hesaplar eşitlendi'})
+              🔴 You spent a total of <strong>${myPaid.toFixed(2)} €</strong>. Fair share is <strong>${perPersonShare.toFixed(2)} €</strong>.
+              <br>👉 Net to Pay: <strong style="color:#ff007f;">-${Math.abs(myBalance).toFixed(2)} €</strong>. (${payTxt || 'All settled'})
             </div>
           `;
         } else {
           myPersonalBox.innerHTML = `
             <div class="credit-badge" style="border-color:#00f2fe; background:rgba(0,242,254,0.1);">
-              ✓ Tam kişi başı payın kadar (<strong>${myPaid.toFixed(2)} €</strong>) harcama yaptın. Borcun veya alacağın yok!
+              ✓ You paid exactly your share (<strong>${myPaid.toFixed(2)} €</strong>). You are even!
             </div>
           `;
         }
 
-        // Tüm Borç Transferleri Listesi
         settlementList.innerHTML = '';
         if (settlements.length === 0) {
-          settlementList.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Tüm hesaplar dengede veya henüz harcama girilmedi.</span>';
+          settlementList.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">All balances settled or no expenses entered yet.</span>';
         } else {
           settlements.forEach(s => {
             const isMeInvolved = s.fromId === Number(user.id) || s.toId === Number(user.id);
@@ -1048,7 +1030,7 @@
         const a = document.getElementById('inline-exp-amount');
         const desc = d.value.trim();
         const amt = parseFloat(a.value);
-        if (!desc || isNaN(amt) || amt <= 0) return alert('Geçerli açıklama ve tutar girin');
+        if (!desc || isNaN(amt) || amt <= 0) return alert('Enter valid description & amount');
         
         const { error } = await supabase.from('event_expenses').insert([{ 
           event_id: targetEventId, 
@@ -1058,20 +1040,20 @@
           amount: amt 
         }]);
 
-        if (error) return alert('Harcama ekleme hatası: ' + error.message);
+        if (error) return alert('Expense error: ' + error.message);
         d.value = ''; a.value = '';
         calculateAndRenderSplitBill();
       };
       calculateAndRenderSplitBill();
 
-      // 2. GÖREVLER
+      // TASKS
       async function loadInlineTasks() {
         const list = document.getElementById('inline-tasks-list');
         const { data: tasks } = await supabase.from('event_tasks').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
 
         list.innerHTML = '';
         if (!tasks || tasks.length === 0) {
-          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Henüz görev yok. Ne getireceğinizi ekleyin!</span>';
+          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No items yet. Add what to bring!</span>';
           return;
         }
 
@@ -1084,10 +1066,10 @@
             <div style="display: flex; align-items: center; gap: 8px;">
               <input type="checkbox" class="task-chk" ${t.is_completed ? 'checked' : ''} style="cursor: pointer;">
               <span style="font-size: 0.82rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">${title}</span>
-              <span style="font-size: 0.7rem; color: #00f2fe; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">${assigneeName ? `👤 ${assigneeName}` : 'Sahipsiz'}</span>
+              <span style="font-size: 0.7rem; color: #00f2fe; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">${assigneeName ? `👤 ${assigneeName}` : 'Unassigned'}</span>
             </div>
             <div style="display: flex; gap: 6px;">
-              ${!t.assigned_to ? `<button class="btn btn-claim" style="padding: 2px 8px; font-size: 0.7rem;">Ben Getiririm</button>` : ''}
+              ${!t.assigned_to ? `<button class="btn btn-claim" style="padding: 2px 8px; font-size: 0.7rem;">I'll bring this</button>` : ''}
               <button class="btn-del-t" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.85rem;">×</button>
             </div>
           `;
@@ -1122,20 +1104,20 @@
           is_completed: false
         }]);
 
-        if (error) return alert('Görev hatası: ' + error.message);
+        if (error) return alert('Task error: ' + error.message);
         inp.value = '';
         loadInlineTasks();
       };
       loadInlineTasks();
 
-      // 3. ÖNERİLER (EN ÇOK OY ALAN ÜSTTE)
+      // SUGGESTIONS
       async function loadInlineSuggestions() {
         const list = document.getElementById('inline-suggestions-list');
         const { data: sugs } = await supabase.from('event_suggestions').select('*').eq('event_id', targetEventId).order('votes', { ascending: false }).order('created_at', { ascending: false });
 
         list.innerHTML = '';
         if (!sugs || sugs.length === 0) {
-          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Henüz öneri yok. İlk fikri sen paylaş!</span>';
+          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No ideas submitted yet. Pitch one!</span>';
           return;
         }
 
@@ -1146,7 +1128,7 @@
           card.innerHTML = `
             <div>
               <span style="color: #f8fafc; font-size: 0.82rem; font-weight: 500;">${s.text}</span>
-              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">paylaşan: ${authorName}</span>
+              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">pitched by ${authorName}</span>
             </div>
             <button class="btn btn-vote-s" style="padding: 3px 10px; font-size: 0.75rem; border-color: #22c55e; color: #22c55e;">👍 ${s.votes || 0}</button>
           `;
@@ -1170,13 +1152,13 @@
           votes: 0 
         }]);
 
-        if (error) return alert('Öneri ekleme hatası: ' + error.message);
+        if (error) return alert('Suggestion error: ' + error.message);
         inp.value = '';
         loadInlineSuggestions();
       };
       loadInlineSuggestions();
 
-      // 4. CHAT
+      // CHAT
       async function loadInlineChat() {
         const box = document.getElementById('inline-chat-messages');
         const { data: msgs } = await supabase.from('event_chat').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
@@ -1203,13 +1185,12 @@
           message: txt 
         }]);
 
-        if (error) return alert('Chat hatası: ' + error.message);
+        if (error) return alert('Chat error: ' + error.message);
         inp.value = '';
         loadInlineChat();
       };
       loadInlineChat();
 
-      // REALTIME ODA DİNLEYİCİSİ
       if (roomLiveChannel) supabase.removeChannel(roomLiveChannel);
 
       roomLiveChannel = supabase.channel(`nexus_live_room_${targetEventId}`)
@@ -1233,7 +1214,7 @@
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // KATILMA İSTEKLERİ & KABUL EDİLİNCE ÇAKIŞMA KONTROLÜ + TAKVİM KİLİTLEME
+    // JOIN REQUESTS & CALENDAR LOCKING
     async function loadJoinRequests(eventId, eventObj) {
       const panel = document.getElementById('room-join-requests-panel');
       const list = document.getElementById('room-join-requests-list');
@@ -1262,11 +1243,11 @@
           <div style="display: flex; align-items: center; gap: 8px;">
             <img src="${av}" style="width: 26px; height: 26px; border-radius: 50%;">
             <strong style="color: #f8fafc; font-size: 0.82rem;">${reqUsername}</strong>
-            <span style="color: #94a3b8; font-size: 0.72rem;">katılmak istiyor</span>
+            <span style="color: #94a3b8; font-size: 0.72rem;">wants to join</span>
           </div>
           <div style="display: flex; gap: 6px;">
-            <button class="btn btn-acc-j" style="padding: 3px 8px; font-size: 0.72rem; color: #22c55e; border-color: #22c55e;">✓ Onayla</button>
-            <button class="btn btn-rej-j" style="padding: 3px 8px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Reddet</button>
+            <button class="btn btn-acc-j" style="padding: 3px 8px; font-size: 0.72rem; color: #22c55e; border-color: #22c55e;">✓ Accept</button>
+            <button class="btn btn-rej-j" style="padding: 3px 8px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Reject</button>
           </div>
         `;
 
@@ -1274,7 +1255,6 @@
           await supabase.from('event_access').insert([{ event_id: eventId, user_id: r.user_id }]);
           await supabase.from('event_join_requests').update({ status: 'accepted' }).eq('id', r.id);
 
-          // Katılanın takvimini kilitle
           if (eventObj && eventObj.event_date && eventObj.start_hour) {
             const sH = eventObj.start_hour;
             const eH = eventObj.end_hour || (sH + 2);
@@ -1326,7 +1306,7 @@
     }
 
     // ========================================================
-    // AKILLI DASHBOARD TAKVİMİ & 1-ON-1 RANDEVU MERKEZİ (SEKME B)
+    // SCHEDULE & 1-ON-1 MATCHER
     // ========================================================
     async function initScheduleDashboard(user) {
       setupMonthYearSelectors();
@@ -1335,7 +1315,6 @@
       loadMyPendingInvitations(user);
       renderFullMonthCalendar(user);
 
-      // Takvimde Anlık Canlı Dinleme
       if (scheduleLiveChannel) supabase.removeChannel(scheduleLiveChannel);
       scheduleLiveChannel = supabase.channel('schedule_live_channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'user_availability' }, () => {
@@ -1349,14 +1328,13 @@
         .subscribe();
     }
 
-    // 1-ON-1 BULUŞMA VE ORTAK SAAT EŞLEŞTİRİCİ
     async function setup1on1Matcher(user) {
       const tUser = document.getElementById('hangout-target-user');
       const tDate = document.getElementById('hangout-date-input');
       const today = new Date().toISOString().split('T')[0];
       tDate.value = today;
 
-      tUser.innerHTML = '<option value="">Arkadaşını Seç...</option>';
+      tUser.innerHTML = '<option value="">Pick a friend...</option>';
       const { data: uList } = await supabase.from('users').select('id, username').neq('id', user.id);
       (uList || []).forEach(u => {
         tUser.innerHTML += `<option value="${u.id}">${u.username}</option>`;
@@ -1374,7 +1352,7 @@
       document.getElementById('btn-find-mutual-slots').onclick = async () => {
         const targetId = tUser.value;
         const dateVal = tDate.value;
-        if (!targetId || !dateVal) return alert('Lütfen arkadaşınızı ve tarihi seçin!');
+        if (!targetId || !dateVal) return alert('Select friend and date!');
 
         targetUserObj = (uList || []).find(u => u.id == targetId);
         pCard.style.display = 'none';
@@ -1391,7 +1369,7 @@
 
         sContainer.innerHTML = '';
         if (mutual.length === 0) {
-          sContainer.innerHTML = '<span style="color:#f43f5e; font-size:0.75rem;">Bu tarihte ikinizin de boş olarak işaretlediği ortak bir saat bulunamadı.</span>';
+          sContainer.innerHTML = '<span style="color:#f43f5e; font-size:0.75rem;">No mutual open free hours on this date.</span>';
           return;
         }
 
@@ -1427,7 +1405,6 @@
           status: 'pending'
         }]);
 
-        // E-posta bildirimi tetikle
         const { data: targetFullUser } = await supabase.from('users').select('email').eq('id', targetUserObj.id).single();
         if (targetFullUser?.email) {
           fetch(EMAIL_WEBHOOK_URL, {
@@ -1445,7 +1422,7 @@
         }
 
         pCard.style.display = 'none';
-        alert('✓ Buluşma talebi gönderildi!');
+        alert('✓ Hangout request sent!');
         loadMyPendingInvitations(user);
       };
     }
@@ -1455,7 +1432,7 @@
       const ySelect = document.getElementById('cal-select-year');
       
       mSelect.innerHTML = '';
-      monthNamesTr.forEach((m, idx) => {
+      monthNamesEn.forEach((m, idx) => {
         mSelect.innerHTML += `<option value="${idx}">${m}</option>`;
       });
 
@@ -1491,7 +1468,6 @@
       };
     }
 
-    // ONAYLANMIŞ BULUŞMALAR
     async function loadMyConfirmedHangouts(user) {
       const list = document.getElementById('my-confirmed-hangouts-list');
       const { data: hangouts } = await supabase
@@ -1503,7 +1479,7 @@
 
       list.innerHTML = '';
       if (!hangouts || hangouts.length === 0) {
-        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Aktif onaylanmış randevunuz bulunmuyor.</span>';
+        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No active confirmed hangouts.</span>';
         return;
       }
 
@@ -1516,14 +1492,14 @@
         card.style.cssText = 'background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
         card.innerHTML = `
           <div>
-            <strong style="color: #22c55e; font-size: 0.88rem;">☕ Buluşma: ${otherName}</strong>
+            <strong style="color: #22c55e; font-size: 0.88rem;">☕ Hangout: ${otherName}</strong>
             <span style="display: block; font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">📅 ${h.slot_date} (⏰ ${timeStr}) • 📝 ${h.note || 'Hangout'}</span>
           </div>
-          <button class="btn btn-cancel-hangout" style="padding: 4px 10px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ İptal Et</button>
+          <button class="btn btn-cancel-hangout" style="padding: 4px 10px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Cancel</button>
         `;
 
         card.querySelector('.btn-cancel-hangout').onclick = async () => {
-          if (!confirm(`Randevuyu iptal etmek istediğinize emin misiniz? Her iki tarafın saatleri tekrar açılacaktır.`)) return;
+          if (!confirm(`Are you sure you want to cancel this hangout? Both members' slots will reopen.`)) return;
           
           await supabase.from('user_availability')
             .update({ is_booked: false, locked_reason: null })
@@ -1533,7 +1509,7 @@
 
           await supabase.from('meetup_requests').update({ status: 'cancelled' }).eq('id', h.id);
           
-          alert('✓ Randevu iptal edildi.');
+          alert('✓ Hangout cancelled.');
           loadMyConfirmedHangouts(user);
           renderFullMonthCalendar(user);
         };
@@ -1542,7 +1518,6 @@
       });
     }
 
-    // BEKLEYEN TALEPLER
     async function loadMyPendingInvitations(user) {
       const list = document.getElementById('my-pending-hangouts-list');
       const { data: requests } = await supabase
@@ -1554,7 +1529,7 @@
 
       list.innerHTML = '';
       if (!requests || requests.length === 0) {
-        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Bekleyen istek bulunmuyor.</span>';
+        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No pending requests.</span>';
         return;
       }
 
@@ -1568,24 +1543,23 @@
         card.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
         card.innerHTML = `
           <div>
-            <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: ${isIncoming ? 'rgba(0, 242, 254, 0.15); color: #00f2fe;' : 'rgba(255, 0, 127, 0.15); color: #ff007f;'}">${isIncoming ? '📥 Gelen İstek' : '📤 Gönderilen'}</span>
+            <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: ${isIncoming ? 'rgba(0, 242, 254, 0.15); color: #00f2fe;' : 'rgba(255, 0, 127, 0.15); color: #ff007f;'}">${isIncoming ? '📥 Incoming' : '📤 Sent'}</span>
             <strong style="color: #f8fafc; font-size: 0.85rem; margin-left: 6px;">${otherName}</strong>
             <span style="display: block; font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">📅 ${r.slot_date} (⏰ ${timeStr}) • 📝 ${r.note || 'Hangout'}</span>
           </div>
           <div style="display: flex; gap: 6px;">
             ${isIncoming ? `
-              <button class="btn btn-acc-p" style="padding: 3px 8px; font-size: 0.72rem; color: #22c55e; border-color: #22c55e;">✓ Kabul Et</button>
-              <button class="btn btn-dec-p" style="padding: 3px 8px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Reddet</button>
-            ` : '<span style="font-size: 0.72rem; color: #94a3b8;">Onay bekleniyor...</span>'}
+              <button class="btn btn-acc-p" style="padding: 3px 8px; font-size: 0.72rem; color: #22c55e; border-color: #22c55e;">✓ Accept</button>
+              <button class="btn btn-dec-p" style="padding: 3px 8px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Reject</button>
+            ` : '<span style="font-size: 0.72rem; color: #94a3b8;">Pending...</span>'}
           </div>
         `;
 
         if (isIncoming) {
           card.querySelector('.btn-acc-p').onclick = async () => {
-            // ÇAKIŞMA KONTROLÜ
             const { data: mySlot } = await supabase.from('user_availability').select('*').eq('user_id', user.id).eq('slot_date', r.slot_date).eq('slot_hour', r.slot_hour).maybeSingle();
             if (mySlot && mySlot.is_booked) {
-              if (!confirm(`⚠️ DİKKAT: ${r.slot_date} tarihinde ${timeStr} saatinde başka bir planınız (${mySlot.locked_reason || 'Dolu'}) var! Yine de bu buluşmayı onaylamak istiyor musunuz?`)) {
+              if (!confirm(`⚠️ NOTICE: You already have another plan ('${mySlot.locked_reason || 'Booked'}') on ${r.slot_date} at ${timeStr}! Still want to accept?`)) {
                 return;
               }
             }
@@ -1596,7 +1570,7 @@
             ], { onConflict: 'user_id,slot_date,slot_hour' });
 
             await supabase.from('meetup_requests').update({ status: 'accepted' }).eq('id', r.id);
-            alert('✓ Randevu onaylandı ve her iki takvime işlendi!');
+            alert('✓ Hangout accepted and locked on both calendars!');
             loadMyPendingInvitations(user);
             loadMyConfirmedHangouts(user);
             renderFullMonthCalendar(user);
@@ -1612,7 +1586,7 @@
       });
     }
 
-    // AYLIK TAKVİM MOTORU
+    // CALENDAR GRID ENGINE
     async function renderFullMonthCalendar(user) {
       const daysContainer = document.getElementById('calendar-days-container');
       const label = document.getElementById('cal-month-year-label');
@@ -1620,7 +1594,7 @@
       const year = currentCalDate.getFullYear();
       const month = currentCalDate.getMonth();
 
-      label.textContent = `${monthNamesTr[month]} ${year}`;
+      label.textContent = `${monthNamesEn[month]} ${year}`;
 
       const startOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`;
       const endDay = new Date(year, month + 1, 0).getDate();
@@ -1665,13 +1639,13 @@
         const hasBooked = slots.some(s => s.is_booked);
 
         let indicatorHtml = '';
-        if (hasFree) indicatorHtml += `<span class="dot-indicator" style="background: #22c55e;" title="Müsait"></span>`;
-        if (hasBooked) indicatorHtml += `<span class="dot-indicator" style="background: #f43f5e;" title="Dolu"></span>`;
+        if (hasFree) indicatorHtml += `<span class="dot-indicator" style="background: #22c55e;" title="Free Slot Open"></span>`;
+        if (hasBooked) indicatorHtml += `<span class="dot-indicator" style="background: #f43f5e;" title="Booked"></span>`;
 
         cell.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="calendar-day-num">${day}</span>
-            ${isToday ? '<span style="font-size:0.6rem; color:#ff007f; font-weight:bold;">Bugün</span>' : ''}
+            ${isToday ? '<span style="font-size:0.6rem; color:#ff007f; font-weight:bold;">Today</span>' : ''}
           </div>
           <div class="cell-indicators">${indicatorHtml}</div>
         `;
@@ -1689,15 +1663,14 @@
       renderHoursGridForDay(user, selectedActiveDateStr);
     }
 
-    // GÜNÜN SAATLERİNİ OLUŞTUR & ANINDA DÜZENLE
     async function renderHoursGridForDay(user, dateStr) {
       const heading = document.getElementById('selected-date-heading');
       const grid = document.getElementById('schedule-hours-grid');
 
       const parts = dateStr.split('-');
       const dObj = new Date(parts[0], parts[1] - 1, parts[2]);
-      const dateFormatted = `${parts[2]} ${monthNamesTr[dObj.getMonth()]} ${parts[0]}`;
-      heading.textContent = `📅 ${dateFormatted} - Neredeyim & Saatlik Durum:`;
+      const dateFormatted = `${parts[2]} ${monthNamesEn[dObj.getMonth()]} ${parts[0]}`;
+      heading.textContent = `📅 ${dateFormatted} - Schedule & Hours:`;
 
       const { data: slots } = await supabase
         .from('user_availability')
@@ -1723,18 +1696,18 @@
           chip.style.color = '#f43f5e';
           chip.innerHTML = `
             <span style="font-weight: bold; font-size: 0.78rem;">${hourLabel}</span>
-            <span style="font-size: 0.62rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" title="${slot.locked_reason || 'Dolu'}">
-              🔒 ${slot.locked_reason ? slot.locked_reason.substring(0, 8) + '..' : 'Dolu'}
+            <span style="font-size: 0.62rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" title="${slot.locked_reason || 'Booked'}">
+              🔒 ${slot.locked_reason ? slot.locked_reason.substring(0, 8) + '..' : 'Booked'}
             </span>
           `;
-          chip.onclick = () => alert(`📅 Saat: ${hourLabel}\nDurum: DOLU\nDetay: ${slot.locked_reason || 'Planlanmış Program'}`);
+          chip.onclick = () => alert(`📅 Time: ${hourLabel}\nStatus: BOOKED\nDetail: ${slot.locked_reason || 'Scheduled Activity'}`);
         } else if (isFree) {
           chip.style.background = 'rgba(34, 197, 94, 0.2)';
           chip.style.border = '1px solid #22c55e';
           chip.style.color = '#22c55e';
           chip.innerHTML = `
             <span style="font-weight: bold; font-size: 0.78rem;">${hourLabel}</span>
-            <span style="font-size: 0.65rem; margin-top: 2px;">✓ Müsait</span>
+            <span style="font-size: 0.65rem; margin-top: 2px;">✓ Open</span>
           `;
           chip.onclick = async () => {
             await supabase.from('user_availability').delete().eq('id', slot.id);
@@ -1746,7 +1719,7 @@
           chip.style.color = '#64748b';
           chip.innerHTML = `
             <span style="font-size: 0.78rem;">${hourLabel}</span>
-            <span style="font-size: 0.62rem; margin-top: 2px;">Kapalı</span>
+            <span style="font-size: 0.62rem; margin-top: 2px;">Off</span>
           `;
           chip.onclick = async () => {
             await supabase.from('user_availability').insert([{

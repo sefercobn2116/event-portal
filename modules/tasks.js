@@ -1,86 +1,99 @@
-// modules/tasks.js
-import { supabase } from '../config.js';
-import { getSessionUser } from './auth.js';
+// modules/tasks.js - Live Tasks & Who Brings What
+window.TasksModule = {
+  eventId: null,
 
-let tasksChannel = null;
+  async init(eventId, containerId = 'tasks-container') {
+    this.eventId = eventId;
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-export async function initEventTasks(eventId, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+    this.renderUI(container);
+    await this.fetchTasks();
+    this.setupRealtime();
+  },
 
-  const currentUser = getSessionUser();
-  if (tasksChannel) supabase.removeChannel(tasksChannel);
-
-  container.innerHTML = `
-    <div>
-      <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-        <input type="text" id="new-task-input" class="input-field" placeholder="Add task or item..." style="margin-bottom: 0;">
-        <button id="btn-add-task" class="btn btn-pink" style="padding: 0 14px; font-size: 0.78rem;">+ Add</button>
+  renderUI(container) {
+    container.innerHTML = `
+      <div class="tasks-panel glass-card p-3">
+        <h5 class="neon-title mb-3">🎒 Who Brings What? (Tasks)</h5>
+        <div class="input-group mb-3">
+          <input type="text" id="task-input" class="form-control bg-dark text-white border-cyber" placeholder="Örn: 2 Koli Su, Buz torbası...">
+          <button class="btn btn-cyber" id="btn-add-task">+ Ekle</button>
+        </div>
+        <ul id="task-list" class="list-group list-group-flush gap-2"></ul>
       </div>
-      <div id="tasks-list-wrap" style="display: grid; gap: 6px;"></div>
-    </div>
-  `;
+    `;
 
-  const listWrap = document.getElementById('tasks-list-wrap');
-  const input = document.getElementById('new-task-input');
+    document.getElementById('btn-add-task').onclick = () => this.addTask();
+  },
 
-  async function loadTasks() {
+  async fetchTasks() {
     const { data: tasks } = await supabase
       .from('event_tasks')
-      .select('*, assignee:users!assigned_to(username)')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: true });
+      .select('*, users(username)')
+      .eq('event_id', this.eventId)
+      .order('id', { ascending: false });
 
-    listWrap.innerHTML = '';
-    if (!tasks || tasks.length === 0) {
-      listWrap.innerHTML = '<span style="color: #64748b; font-size: 0.75rem;">No tasks yet.</span>';
-      return;
-    }
+    this.renderTasks(tasks || []);
+  },
+
+  renderTasks(tasks) {
+    const list = document.getElementById('task-list');
+    if (!list) return;
+    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
+
+    list.innerHTML = tasks.length === 0 ? `<li class="text-muted small">Henüz görev atanmamış.</li>` : '';
 
     tasks.forEach(t => {
-      const row = document.createElement('div');
-      row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 6px 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;';
-      row.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="task-chk" ${t.is_completed ? 'checked' : ''}>
-          <span style="font-size: 0.8rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">${t.title}</span>
-          <span style="font-size: 0.68rem; color: #00f2fe;">${t.assignee?.username ? `👤 ${t.assignee.username}` : ''}</span>
-        </div>
-        <div style="display: flex; gap: 4px;">
-          ${!t.assigned_to ? `<button class="btn btn-claim" style="padding: 2px 6px; font-size: 0.68rem;">Claim</button>` : ''}
-          <button class="btn-del" style="background: none; border: none; color: #f43f5e; cursor: pointer;">×</button>
-        </div>
+      const isAssignedToMe = t.assigned_to === currentUser.id;
+      list.innerHTML += `
+        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center text-white rounded">
+          <div>
+            <input type="checkbox" class="form-check-input me-2" ${t.is_completed ? 'checked' : ''} onchange="TasksModule.toggleComplete(${t.id}, this.checked)">
+            <span style="${t.is_completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${t.title}</span>
+            <small class="d-block text-muted">Üstlenen: ${t.users ? t.users.username : '<em>Boşta</em>'}</small>
+          </div>
+          <div>
+            ${!t.assigned_to ? `<button class="btn btn-xs btn-outline-info" onclick="TasksModule.claimTask(${t.id})">Ben Getiririm</button>` : ''}
+            ${isAssignedToMe ? `<button class="btn btn-xs btn-outline-danger" onclick="TasksModule.unclaimTask(${t.id})">Bırak</button>` : ''}
+          </div>
+        </li>
       `;
-
-      row.querySelector('.task-chk').onchange = async (e) => {
-        await supabase.from('event_tasks').update({ is_completed: e.target.checked }).eq('id', t.id);
-      };
-      const claim = row.querySelector('.btn-claim');
-      if (claim) {
-        claim.onclick = async () => {
-          await supabase.from('event_tasks').update({ assigned_to: currentUser.id }).eq('id', t.id);
-        };
-      }
-      row.querySelector('.btn-del').onclick = async () => {
-        await supabase.from('event_tasks').delete().eq('id', t.id);
-      };
-
-      listWrap.appendChild(row);
     });
-  }
+  },
 
-  document.getElementById('btn-add-task').onclick = async () => {
+  async addTask() {
+    const input = document.getElementById('task-input');
     const val = input.value.trim();
     if (!val) return;
+
+    await supabase.from('event_tasks').insert({
+      event_id: this.eventId,
+      title: val,
+      is_completed: false
+    });
     input.value = '';
-    await supabase.from('event_tasks').insert([{ event_id: eventId, title: val }]);
-  };
+  },
 
-  loadTasks();
+  async claimTask(taskId) {
+    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
+    await supabase.from('event_tasks').update({ assigned_to: currentUser.id }).eq('id', taskId);
+  },
 
-  tasksChannel = supabase.channel(`tasks_${eventId}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${eventId}` }, () => {
-      loadTasks();
-    })
-    .subscribe();
-}
+  async unclaimTask(taskId) {
+    await supabase.from('event_tasks').update({ assigned_to: null }).eq('id', taskId);
+  },
+
+  async toggleComplete(taskId, isCompleted) {
+    await supabase.from('event_tasks').update({ is_completed: isCompleted }).eq('id', taskId);
+  },
+
+  setupRealtime() {
+    supabase
+      .channel('public:event_tasks_' + this.eventId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${this.eventId}` }, () => {
+        this.fetchTasks();
+      })
+      .subscribe();
+  }
+};

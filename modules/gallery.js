@@ -1,220 +1,102 @@
 // modules/gallery.js
 import { EMAIL_WEBHOOK_URL } from '../config.js';
 
-let currentMedia = [];
-let currentMediaIndex = 0;
-let activeFolderId = null;
-
-export function setupLightboxDOM() {
-  if (document.getElementById('global-lightbox')) return;
-
-  const lightbox = document.createElement('div');
-  lightbox.id = 'global-lightbox';
-  lightbox.className = 'lightbox-overlay';
-  lightbox.innerHTML = `
-    <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-      <div style="position: absolute; top: -45px; right: 0; display: flex; gap: 12px; align-items: center;">
-        <a id="lb-download" href="#" target="_blank" download class="btn" style="padding: 6px 14px; font-size: 0.8rem; background: #00f2fe; color: #070913; text-decoration: none; font-weight: 700;">⬇ Download</a>
-        <button id="lb-close" style="background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">✕</button>
-      </div>
-      <button id="lb-prev" style="position: absolute; left: -50px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">‹</button>
-      
-      <div id="lb-media-container" style="max-width: 85vw; max-height: 78vh; display: flex; justify-content: center; align-items: center;"></div>
-      
-      <button id="lb-next" style="position: absolute; right: -50px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">›</button>
-      <div id="lb-counter" style="margin-top: 12px; color: #94a3b8; font-size: 0.85rem;"></div>
-    </div>
-  `;
-  document.body.appendChild(lightbox);
-
-  document.getElementById('lb-close').onclick = closeLightbox;
-  lightbox.onclick = (e) => { if (e.target === lightbox) closeLightbox(); };
-  document.getElementById('lb-prev').onclick = showPrevMedia;
-  document.getElementById('lb-next').onclick = showNextMedia;
-
-  window.addEventListener('keydown', (e) => {
-    if (lightbox.style.display !== 'flex') return;
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') showPrevMedia();
-    if (e.key === 'ArrowRight') showNextMedia();
-  });
-}
-
-export function openLightbox(index) {
-  if (!currentMedia || currentMedia.length === 0) return;
-  currentMediaIndex = index;
-  updateLightboxView();
-  const lightbox = document.getElementById('global-lightbox');
-  if (lightbox) lightbox.style.display = 'flex';
-}
-
-export function closeLightbox() {
-  const lightbox = document.getElementById('global-lightbox');
-  if (lightbox) {
-    lightbox.style.display = 'none';
-    const container = document.getElementById('lb-media-container');
-    if (container) container.innerHTML = '';
-  }
-}
-
-function updateLightboxView() {
-  const container = document.getElementById('lb-media-container');
-  const counterEl = document.getElementById('lb-counter');
-  const dlBtn = document.getElementById('lb-download');
-  if (!container || !counterEl) return;
-
-  const item = currentMedia[currentMediaIndex];
-  container.innerHTML = '';
-
-  if (item.type === 'video') {
-    container.innerHTML = `<iframe src="${item.url}" style="width: 80vw; height: 70vh; border: none; border-radius: 12px;" allow="autoplay"></iframe>`;
-  } else {
-    container.innerHTML = `<img src="${item.url}" alt="${item.name}" style="max-width: 85vw; max-height: 78vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); object-fit: contain;">`;
-  }
-
-  if (dlBtn) dlBtn.href = item.downloadUrl;
-  counterEl.textContent = `${currentMediaIndex + 1} / ${currentMedia.length} • ${item.name}`;
-}
-
-function showPrevMedia() {
-  currentMediaIndex = (currentMediaIndex - 1 + currentMedia.length) % currentMedia.length;
-  updateLightboxView();
-}
-
-function showNextMedia() {
-  currentMediaIndex = (currentMediaIndex + 1) % currentMedia.length;
-  updateLightboxView();
-}
-
-export async function renderEventGallery(containerId, driveFolderUrl) {
+export async function renderEventGallery(containerId, driveFolderId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  setupLightboxDOM();
-
-  if (!driveFolderUrl) {
-    container.innerHTML = '<p style="color: #64748b; font-size: 0.85rem;">No Google Drive folder assigned for this event.</p>';
-    return;
-  }
-
-  let folderId = driveFolderUrl.trim();
-  const match = folderId.match(/[-\w]{25,}/);
-  if (match) folderId = match[0];
-  activeFolderId = folderId;
-
   container.innerHTML = `
-    <div style="margin-bottom: 16px;">
-      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-        <button id="btn-trigger-picker" class="btn btn-pink" style="padding: 8px 22px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
-          📤 Select & Upload Media (Multiple)
+    <div>
+      <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
+        <input type="file" id="gal-file-input" accept="image/*" style="display: none;">
+        <button id="btn-trigger-gal-upload" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem; cursor: pointer;">
+          📸 Upload Photo
         </button>
-        <span id="upload-status" style="font-size: 0.85rem; font-weight: 600;"></span>
+        <button id="btn-refresh-gal" class="btn" style="padding: 6px 12px; font-size: 0.8rem;">↻ Refresh</button>
+        <span id="gal-status" style="font-size: 0.75rem; color: #94a3b8;"></span>
       </div>
-    </div>
-    <div id="drive-photos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; min-height: 80px;">
-      <p style="color: #00f2fe; font-size: 0.85rem; grid-column: 1 / -1;">Reading media files from Drive...</p>
+      <div id="gal-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px;">
+        <span style="color: #64748b; font-size: 0.8rem;">Loading gallery...</span>
+      </div>
     </div>
   `;
 
-  const triggerBtn = document.getElementById('btn-trigger-picker');
-  const uploadStatus = document.getElementById('upload-status');
+  const fileInput = document.getElementById('gal-file-input');
+  const triggerBtn = document.getElementById('btn-trigger-gal-upload');
+  const refreshBtn = document.getElementById('btn-refresh-gal');
+  const statusEl = document.getElementById('gal-status');
+  const grid = document.getElementById('gal-grid');
 
-  // Doğrudan JS üzerinden garantili MULTIPLE dosya seçici
-  triggerBtn.onclick = () => {
-    const filePicker = document.createElement('input');
-    filePicker.type = 'file';
-    filePicker.multiple = true;
-    filePicker.setAttribute('multiple', '');
-    filePicker.accept = 'image/*,video/*';
+  triggerBtn.onclick = () => fileInput.click();
 
-    filePicker.onchange = async () => {
-      const files = Array.from(filePicker.files);
-      if (!files.length) return;
-
-      triggerBtn.disabled = true;
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        uploadStatus.style.color = '#00f2fe';
-        uploadStatus.textContent = `Uploading [${i + 1}/${files.length}]: ${file.name}...`;
-
-        await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = async () => {
-            try {
-              const payload = {
-                folderId: activeFolderId,
-                fileData: reader.result,
-                fileName: file.name,
-                mimeType: file.type
-              };
-
-              await fetch(EMAIL_WEBHOOK_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-              });
-            } catch (err) {
-              console.error(err);
-            }
-            resolve();
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
-      uploadStatus.style.color = '#22c55e';
-      uploadStatus.textContent = `✓ Uploaded ${files.length} file(s) successfully!`;
-      triggerBtn.disabled = false;
-      setTimeout(() => { uploadStatus.textContent = ''; }, 4500);
-
-      loadMediaFromDrive(activeFolderId);
-    };
-
-    filePicker.click();
-  };
-
-  loadMediaFromDrive(folderId);
-}
-
-async function loadMediaFromDrive(folderId) {
-  const grid = document.getElementById('drive-photos-grid');
-  if (!grid) return;
-
-  try {
-    const res = await fetch(`${EMAIL_WEBHOOK_URL}?action=get_drive_photos&folderId=${folderId}`);
-    const data = await res.json();
-
-    if (data.status !== 'success' || !data.photos || data.photos.length === 0) {
-      grid.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; grid-column: 1 / -1;">No photos or videos in this event yet. Use the upload button above to add media!</p>';
-      currentMedia = [];
+  async function loadPhotos() {
+    if (!driveFolderId) {
+      grid.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No Drive folder attached to this event.</span>';
       return;
     }
-
-    currentMedia = data.photos;
-    grid.innerHTML = '';
-
-    currentMedia.forEach((item, idx) => {
-      const card = document.createElement('div');
-      card.style.cssText = 'position: relative; height: 110px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.12); transition: 0.2s; background: #000;';
-      
-      if (item.type === 'video') {
-        card.innerHTML = `
-          <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,242,254,0.08);">
-            <span style="font-size: 1.8rem;">🎬</span>
-            <span style="font-size: 0.7rem; color: #fff; max-width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px;">${item.name}</span>
-          </div>
-        `;
-      } else {
-        card.innerHTML = `<img src="${item.url}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+    grid.innerHTML = '<span style="color: #94a3b8; font-size: 0.78rem;">Fetching photos...</span>';
+    try {
+      const res = await fetch(EMAIL_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'list_media', folderId: driveFolderId })
+      });
+      const data = await res.json();
+      if (!data.files || data.files.length === 0) {
+        grid.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No photos uploaded yet. Be the first!</span>';
+        return;
       }
-
-      card.onmouseover = () => { card.style.transform = 'scale(1.03)'; card.style.borderColor = '#00f2fe'; };
-      card.onmouseout = () => { card.style.transform = 'scale(1)'; card.style.borderColor = 'rgba(255,255,255,0.12)'; };
-      card.onclick = () => openLightbox(idx);
-      grid.appendChild(card);
-    });
-
-  } catch (err) {
-    grid.innerHTML = `<p style="color: #f43f5e; font-size: 0.85rem; grid-column: 1 / -1;">Failed to load media: ${err.message}</p>`;
+      grid.innerHTML = '';
+      data.files.forEach(f => {
+        const item = document.createElement('a');
+        item.href = f.viewUrl || f.url;
+        item.target = '_blank';
+        item.style.cssText = 'display: block; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,242,254,0.3); position: relative; aspect-ratio: 1;';
+        item.innerHTML = `<img src="${f.thumbnail || f.url}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+        grid.appendChild(item);
+      });
+    } catch (err) {
+      grid.innerHTML = '<span style="color: #f43f5e; font-size: 0.78rem;">Failed to load photos. Check Webhook deployment.</span>';
+    }
   }
+
+  fileInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    statusEl.style.color = '#00f2fe';
+    statusEl.textContent = 'Uploading...';
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const res = await fetch(EMAIL_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'upload_media',
+            folderId: driveFolderId,
+            fileName: file.name,
+            contentType: file.type,
+            base64Data: ev.target.result
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          statusEl.style.color = '#22c55e';
+          statusEl.textContent = '✓ Uploaded!';
+          setTimeout(() => { statusEl.textContent = ''; loadPhotos(); }, 1500);
+        } else {
+          throw new Error(data.message || 'Upload failed');
+        }
+      } catch (err) {
+        statusEl.style.color = '#f43f5e';
+        statusEl.textContent = 'Upload error: ' + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  refreshBtn.onclick = loadPhotos;
+  loadPhotos();
 }

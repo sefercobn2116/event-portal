@@ -13,12 +13,12 @@ export async function initEventExpenses(eventId, containerId) {
 
   container.innerHTML = `
     <div>
-      <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin-bottom: 10px;">
-        <input type="text" id="exp-desc-input" class="input-field" placeholder="Expense description..." style="margin-bottom: 0;">
-        <input type="number" id="exp-amount-input" class="input-field" placeholder="€ / Amount" step="0.5" style="margin-bottom: 0;">
-        <button id="btn-add-exp" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">+ Add</button>
+      <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 6px; margin-bottom: 8px;">
+        <input type="text" id="exp-desc-input" class="input-field" placeholder="Description..." style="margin-bottom: 0;">
+        <input type="number" id="exp-amount-input" class="input-field" placeholder="Amount €" step="0.5" style="margin-bottom: 0;">
+        <button id="btn-add-exp" class="btn btn-pink" style="padding: 0 14px; font-size: 0.78rem;">+ Add</button>
       </div>
-      <div id="exp-total-badge" style="background: rgba(34,197,94,0.15); border: 1px solid #22c55e; color: #22c55e; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold;">
+      <div id="exp-total-badge" style="background: rgba(34,197,94,0.15); border: 1px solid #22c55e; color: #22c55e; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; margin-bottom: 8px;">
         Total: 0.00 €
       </div>
       <div id="exp-list-wrap" style="display: grid; gap: 6px;"></div>
@@ -27,9 +27,8 @@ export async function initEventExpenses(eventId, containerId) {
 
   const listWrap = document.getElementById('exp-list-wrap');
   const totalBadge = document.getElementById('exp-total-badge');
-  const descInput = document.getElementById('exp-desc-input');
-  const amountInput = document.getElementById('exp-amount-input');
-  const addBtn = document.getElementById('btn-add-exp');
+  const desc = document.getElementById('exp-desc-input');
+  const amount = document.getElementById('exp-amount-input');
 
   async function loadExpenses() {
     const { data: expenses } = await supabase
@@ -43,49 +42,37 @@ export async function initEventExpenses(eventId, containerId) {
     (expenses || []).forEach(e => {
       sum += Number(e.amount);
       const row = document.createElement('div');
-      row.style.cssText = `
-        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px;
-        border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
-      `;
+      row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 6px 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;';
       row.innerHTML = `
         <div>
-          <span style="font-size: 0.82rem; color: #f8fafc; font-weight: 500;">${e.description}</span>
-          <span style="display: block; font-size: 0.7rem; color: #94a3b8;">paid by ${e.payer?.username || 'Member'}</span>
+          <span style="font-size: 0.8rem; color: #f8fafc;">${e.description}</span>
+          <span style="display: block; font-size: 0.68rem; color: #94a3b8;">paid by ${e.payer?.username || 'User'}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <strong style="color: #22c55e; font-size: 0.85rem;">${Number(e.amount).toFixed(2)} €</strong>
+          <strong style="color: #22c55e; font-size: 0.82rem;">${Number(e.amount).toFixed(2)} €</strong>
           <button class="btn-del-exp" style="background: none; border: none; color: #f43f5e; cursor: pointer;">×</button>
         </div>
       `;
-
       row.querySelector('.btn-del-exp').onclick = async () => {
         await supabase.from('event_expenses').delete().eq('id', e.id);
       };
-
       listWrap.appendChild(row);
     });
-
     totalBadge.textContent = `Total Pool: ${sum.toFixed(2)} €`;
   }
 
-  addBtn.onclick = async () => {
-    const desc = descInput.value.trim();
-    const amount = parseFloat(amountInput.value);
-    if (!desc || isNaN(amount) || amount <= 0) return alert('Enter valid description and amount!');
-    descInput.value = '';
-    amountInput.value = '';
-    await supabase.from('event_expenses').insert([{
-      event_id: eventId,
-      paid_by: currentUser.id,
-      description: desc,
-      amount: amount
-    }]);
+  document.getElementById('btn-add-exp').onclick = async () => {
+    const dVal = desc.value.trim();
+    const aVal = parseFloat(amount.value);
+    if (!dVal || isNaN(aVal)) return alert('Valid info required');
+    desc.value = '';
+    amount.value = '';
+    await supabase.from('event_expenses').insert([{ event_id: eventId, paid_by: currentUser.id, description: dVal, amount: aVal }]);
   };
 
   loadExpenses();
 
-  // CANLI REALTIME YAYINI
-  expChannel = supabase.channel(`expenses_${eventId}`)
+  expChannel = supabase.channel(`exp_${eventId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'event_expenses', filter: `event_id=eq.${eventId}` }, () => {
       loadExpenses();
     })

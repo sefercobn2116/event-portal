@@ -1,126 +1,134 @@
 // modules/chat.js
-window.Chat = {
-  eventId: null,
-  channel: null,
+import { supabase } from '../config.js';
+import { getSessionUser } from './auth.js';
 
-  async init(eventId) {
-    this.eventId = eventId;
-    const chatContainer = document.getElementById('module-chat') || document.getElementById('chat-container');
-    const suggContainer = document.getElementById('module-suggestions') || document.getElementById('suggestions-container');
+let activeChatChannel = null;
+let activeSugChannel = null;
 
-    if (chatContainer) {
-      chatContainer.innerHTML = `
-        <div class="glass-panel p-3 d-flex flex-column" style="height: 320px;">
-          <h6 class="text-cyber mb-2">💬 Live Room Chat</h6>
-          <div id="chat-stream" class="flex-grow-1 overflow-auto d-flex flex-column gap-2 mb-2"></div>
-          <div class="input-group input-group-sm">
-            <input type="text" id="chat-msg-input" class="form-control bg-dark text-white border-secondary" placeholder="Mesaj yazın...">
-            <button class="btn btn-outline-info" onclick="Chat.sendMessage()">Gönder</button>
-          </div>
-        </div>
-      `;
-      document.getElementById('chat-msg-input').onkeypress = (e) => { if (e.key === 'Enter') Chat.sendMessage(); };
-    }
+// ================= CANLI CHAT =================
+export async function initEventChat(eventId, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
-    if (suggContainer) {
-      suggContainer.innerHTML = `
-        <div class="glass-panel p-3 d-flex flex-column" style="height: 320px;">
-          <h6 class="text-cyber mb-2">💡 Live Event Ideas & Suggestions</h6>
-          <div class="input-group input-group-sm mb-2">
-            <input type="text" id="sugg-new-input" class="form-control bg-dark text-white border-secondary" placeholder="Fikir öner...">
-            <button class="btn btn-outline-info" onclick="Chat.addSuggestion()">Ekle</button>
-          </div>
-          <div id="sugg-stream" class="flex-grow-1 overflow-auto d-flex flex-column gap-2"></div>
-        </div>
-      `;
-    }
+  const targetEventId = Number(eventId);
 
-    await this.loadMessages();
-    await this.loadSuggestions();
-    this.listen();
-  },
-
-  async loadMessages() {
-    const box = document.getElementById('chat-stream');
-    if (!box) return;
-
+  async function loadChat() {
     const { data: messages } = await supabase
       .from('event_chat')
       .select('*, users(username)')
-      .eq('event_id', this.eventId)
+      .eq('event_id', targetEventId)
       .order('created_at', { ascending: true });
 
-    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
-    box.innerHTML = '';
-
+    container.innerHTML = '';
     (messages || []).forEach(m => {
-      const isMe = m.user_id === user.id;
-      box.innerHTML += `
-        <div class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
-          <small class="text-muted" style="font-size:10px;">${m.users?.username || 'Kullanıcı'}</small>
-          <div class="p-2 rounded small ${isMe ? 'bg-info text-dark' : 'bg-dark text-white border border-secondary'}" style="max-width:80%;">
-            ${m.message}
-          </div>
-        </div>
-      `;
+      const div = document.createElement('div');
+      div.style.cssText = 'margin-bottom: 6px; font-size: 0.82rem; word-break: break-word;';
+      div.innerHTML = `<strong style="color: #00f2fe;">${m.users?.username || 'Member'}:</strong> <span style="color: #f8fafc; margin-left: 4px;">${m.message}</span>`;
+      container.appendChild(div);
     });
-    box.scrollTop = box.scrollHeight;
-  },
+    container.scrollTop = container.scrollHeight;
+  }
 
-  async sendMessage() {
-    const input = document.getElementById('chat-msg-input');
-    const msg = input.value.trim();
-    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
-    if (!msg || !user.id) return;
+  await loadChat();
 
-    await supabase.from('event_chat').insert({ event_id: this.eventId, user_id: user.id, message: msg });
-    input.value = '';
-    this.loadMessages();
-  },
+  // Önceki açık kanalı temizle
+  if (activeChatChannel) {
+    supabase.removeChannel(activeChatChannel);
+  }
 
-  async loadSuggestions() {
-    const list = document.getElementById('sugg-stream');
-    if (!list) return;
+  // Kesintisiz Realtime Kanalı
+  activeChatChannel = supabase.channel(`room_chat_${targetEventId}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_chat' }, (payload) => {
+      if (Number(payload.new.event_id) === targetEventId) {
+        loadChat();
+      }
+    })
+    .subscribe();
+}
 
+export async function sendChatMessage(eventId, inputId) {
+  const input = document.getElementById(inputId);
+  const text = input.value.trim();
+  const user = getSessionUser();
+  if (!text || !user) return;
+
+  input.value = '';
+  await supabase.from('event_chat').insert([{
+    event_id: Number(eventId),
+    user_id: user.id,
+    message: text
+  }]);
+}
+
+// ================= CANLI ÖNERİLER (EN ÇOK OY ALAN 1. SIRADA) =================
+export async function initEventSuggestions(eventId, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const targetEventId = Number(eventId);
+
+  async function loadSuggestions() {
     const { data: suggestions } = await supabase
       .from('event_suggestions')
-      .select('*')
-      .eq('event_id', this.eventId)
-      .order('votes', { ascending: false });
+      .select('*, users(username)')
+      .eq('event_id', targetEventId)
+      .order('votes', { ascending: false })
+      .order('created_at', { ascending: false });
 
-    list.innerHTML = (suggestions || []).length === 0 ? '<small class="text-muted">Öneri bulunmuyor.</small>' : '';
+    container.innerHTML = '';
+    if (!suggestions || suggestions.length === 0) {
+      container.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No ideas submitted yet. Pitch one above!</span>';
+      return;
+    }
 
-    (suggestions || []).forEach(s => {
-      list.innerHTML += `
-        <div class="d-flex justify-content-between align-items-center bg-dark p-2 rounded border border-secondary">
-          <span class="small">${s.text}</span>
-          <button class="btn btn-xs btn-outline-info py-0" onclick="Chat.upvoteSuggestion(${s.id}, ${s.votes || 0})">👍 ${s.votes || 0}</button>
+    suggestions.forEach(s => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px;';
+      card.innerHTML = `
+        <div>
+          <span style="color: #f8fafc; font-size: 0.82rem; font-weight: 500;">${s.text}</span>
+          <span style="display: block; font-size: 0.7rem; color: #94a3b8;">by ${s.users?.username || 'Member'}</span>
         </div>
+        <button class="btn btn-vote-sug" style="padding: 3px 10px; font-size: 0.75rem; border-color: #22c55e; color: #22c55e;">
+          👍 ${s.votes || 0}
+        </button>
       `;
+
+      card.querySelector('.btn-vote-sug').onclick = async () => {
+        await supabase.from('event_suggestions').update({ votes: (s.votes || 0) + 1 }).eq('id', s.id);
+      };
+
+      container.appendChild(card);
     });
-  },
-
-  async addSuggestion() {
-    const input = document.getElementById('sugg-new-input');
-    const text = input.value.trim();
-    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
-    if (!text) return;
-
-    await supabase.from('event_suggestions').insert({ event_id: this.eventId, user_id: user.id, text, votes: 0 });
-    input.value = '';
-    this.loadSuggestions();
-  },
-
-  async upvoteSuggestion(id, currentVotes) {
-    await supabase.from('event_suggestions').update({ votes: (currentVotes || 0) + 1 }).eq('id', id);
-    this.loadSuggestions();
-  },
-
-  listen() {
-    if (this.channel) supabase.removeChannel(this.channel);
-    this.channel = supabase.channel('chat_live_' + this.eventId)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_chat', filter: `event_id=eq.${this.eventId}` }, () => this.loadMessages())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_suggestions', filter: `event_id=eq.${this.eventId}` }, () => this.loadSuggestions())
-      .subscribe();
   }
-};
+
+  await loadSuggestions();
+
+  if (activeSugChannel) {
+    supabase.removeChannel(activeSugChannel);
+  }
+
+  activeSugChannel = supabase.channel(`room_sug_${targetEventId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'event_suggestions' }, (payload) => {
+      const evId = payload.new ? payload.new.event_id : payload.old?.event_id;
+      if (Number(evId) === targetEventId) {
+        loadSuggestions();
+      }
+    })
+    .subscribe();
+}
+
+export async function sendSuggestion(eventId, inputId) {
+  const input = document.getElementById(inputId);
+  const text = input.value.trim();
+  const user = getSessionUser();
+  if (!text || !user) return;
+
+  input.value = '';
+  await supabase.from('event_suggestions').insert([{
+    event_id: Number(eventId),
+    user_id: user.id,
+    text: text,
+    votes: 0
+  }]);
+}

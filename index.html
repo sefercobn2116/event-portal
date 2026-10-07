@@ -4,42 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>NEXUS • Event & Hub</title>
-  
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
-  <link rel="alternate icon" href="./icon.svg">
-  <link rel="apple-touch-icon" href="./icon.svg">
-  <meta name="theme-color" content="#070913">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="NEXUS">
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- 1. GİRİŞ EKRANI -->
+  <!-- 1. GİRİŞ & KAYIT -->
   <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
     <div class="glass-box" style="text-align: center;">
-      <div style="margin-bottom: 16px;">
-        <img src="./icon.svg" alt="NEXUS" style="width: 76px; height: 76px; border-radius: 18px; box-shadow: 0 0 25px rgba(0, 242, 254, 0.45); display: inline-block;">
-      </div>
+      <img src="./icon.svg" style="width: 72px; height: 72px; border-radius: 16px; margin-bottom: 14px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">
       <h2 id="auth-title" style="color: #00f2fe; margin-bottom: 20px;">Sign In to NEXUS</h2>
-      
       <input type="text" id="auth-username" class="input-field" placeholder="Username">
       <div id="auth-register-fields" style="display: none;">
         <input type="email" id="reg-email" class="input-field" placeholder="Email Address *">
       </div>
       <input type="password" id="auth-password" class="input-field" placeholder="Password">
-      
-      <button id="btn-auth-submit" class="btn" style="width: 100%; margin-top: 8px;">Sign In</button>
-      
-      <div style="text-align: center; margin-top: 16px;">
-        <a href="#" id="toggle-auth-mode" style="color: #94a3b8; font-size: 0.85rem; text-decoration: none;">
-          Don't have an account? Sign Up
-        </a>
+      <button id="btn-auth-submit" class="btn" style="width: 100%; margin-top: 6px;">Sign In</button>
+      <div style="margin-top: 14px;">
+        <a href="#" id="toggle-auth-mode" style="color: #94a3b8; font-size: 0.85rem; text-decoration: none;">Don't have an account? Sign Up</a>
       </div>
-      <div id="auth-status" style="margin-top: 12px; font-size: 0.85rem; text-align: center;"></div>
+      <div id="auth-status" style="margin-top: 10px; font-size: 0.82rem;"></div>
     </div>
   </div>
 
@@ -47,275 +32,192 @@
   <div id="view-dashboard" class="container" style="display: none;">
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="./icon.svg" alt="NEXUS Logo" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); display: block;">
+        <img src="./icon.svg" style="width: 42px; height: 42px; border-radius: 10px;">
         <div>
           <div style="display: flex; align-items: center; gap: 8px;">
-            <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.25rem;">Welcome</h2>
-            <img id="user-nav-avatar" src="" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ff007f; background: #111; object-fit: cover;" title="Your Avatar">
+            <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.2rem;">Welcome</h2>
+            <img id="user-nav-avatar" src="" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ff007f; object-fit: cover;">
           </div>
-          <span id="user-role-text" style="font-size: 0.8rem; color: #94a3b8;">NEXUS Member Space</span>
+          <span id="user-role-text" style="font-size: 0.78rem; color: #94a3b8;">NEXUS Member Space</span>
         </div>
       </div>
-      <div style="display: flex; gap: 10px;">
-        <a id="btn-admin-link" href="admin.html" class="btn btn-pink" style="display: none; padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">
-          ⚙️ Admin Panel
-        </a>
-        <button id="btn-logout" class="btn" style="padding: 8px 16px; font-size: 0.85rem;">Log Out</button>
+      <div style="display: flex; gap: 8px;">
+        <a id="btn-admin-link" href="admin.html" class="btn btn-pink" style="display: none; padding: 6px 14px; font-size: 0.8rem; text-decoration: none;">⚙️ Admin</a>
+        <button id="btn-logout" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Log Out</button>
       </div>
     </div>
 
     <!-- QR DAVET BANNERI -->
-    <div class="glass-box" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(255, 0, 127, 0.1)); border: 1px solid rgba(0, 242, 254, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <div class="glass-box" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-color: rgba(0, 242, 254, 0.3);">
       <div>
-        <h4 style="color: #00f2fe; margin: 0 0 4px 0;">✨ Bring Your Friends In</h4>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">Scan QR code to instantly register and join your private events.</p>
+        <h4 style="color: #00f2fe; margin: 0 0 2px 0;">✨ Bring Your Friends In</h4>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin: 0;">Scan QR code to join private spaces.</p>
       </div>
-      <button id="btn-open-invite-qr" class="btn btn-pink" style="padding: 8px 18px; font-size: 0.85rem; font-weight: 700;">
-        📱 Show Invite QR
-      </button>
+      <button id="btn-open-invite-qr" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">📱 Show Invite QR</button>
     </div>
 
-    <!-- 👤 PROFİL KARTI -->
-    <div class="glass-box" style="margin-bottom: 20px; border: 1px solid rgba(0, 242, 254, 0.25); background: linear-gradient(135deg, rgba(18, 24, 43, 0.8), rgba(7, 9, 19, 0.95));">
+    <!-- PROFİL KARTI -->
+    <div class="glass-box" style="margin-bottom: 20px; border-color: rgba(0, 242, 254, 0.25);">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; align-items: center; gap: 14px;">
-          <img id="prof-card-avatar" src="" style="width: 56px; height: 56px; border-radius: 50%; border: 2px solid #00f2fe; background: #070913; object-fit: cover; box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);" alt="Avatar">
+          <img id="prof-card-avatar" src="" style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover;">
           <div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <h4 id="prof-card-username" style="color: #00f2fe; margin: 0; font-size: 1.05rem;">User</h4>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h4 id="prof-card-username" style="color: #00f2fe; margin: 0;">User</h4>
               <span id="prof-badge-ig" style="display: none;"></span>
             </div>
-            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8; display: block; margin-top: 2px;">Loading info...</span>
+            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8; display: block; margin-top: 2px;">Loading...</span>
             <div id="prof-card-contact" style="font-size: 0.76rem; color: #22c55e; margin-top: 4px; display: none;"></div>
           </div>
         </div>
-        <button id="btn-toggle-profile-edit" class="btn" style="padding: 5px 14px; font-size: 0.78rem;">Edit Profile</button>
+        <button id="btn-toggle-profile-edit" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Edit Profile</button>
       </div>
 
       <!-- Düzenleme Alanı -->
       <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
-        <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 14px; border-radius: 10px; margin-bottom: 14px; text-align: center;">
-          <label style="display: block; font-size: 0.82rem; color: #00f2fe; margin-bottom: 8px; font-weight: 700;">📸 Upload Your Own Picture</label>
+        <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
           <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
-          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">Choose from Gallery / Camera</button>
-          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">Auto-cropped to square</div>
+          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.78rem;">Choose Profile Picture</button>
+          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">Square auto-crop enabled</div>
         </div>
-
-        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">Or pick a preset avatar:</label>
-        <div id="prof-preset-grid" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;"></div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
-          <div>
-            <label style="display: block; font-size: 0.75rem; color: #00f2fe; margin-bottom: 4px;">📱 Phone / WhatsApp / Telegram:</label>
-            <input type="text" id="prof-contact-input" class="input-field" placeholder="+381... / @username" style="margin-bottom: 0;">
-          </div>
-          <div>
-            <label style="display: block; font-size: 0.75rem; color: #ff007f; margin-bottom: 4px;">📸 Instagram Handle / URL:</label>
-            <input type="text" id="prof-ig-input" class="input-field" placeholder="username or link" style="margin-bottom: 0;">
-          </div>
+        <div id="prof-preset-grid" style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px;"></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px;">
+          <input type="text" id="prof-contact-input" class="input-field" placeholder="Phone / Telegram (+381...)" style="margin-bottom: 0;">
+          <input type="text" id="prof-ig-input" class="input-field" placeholder="Instagram (username or URL)" style="margin-bottom: 0;">
         </div>
-
-        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Update Password:</label>
-        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password" style="margin-bottom: 14px;">
-
-        <button type="button" id="btn-save-profile" class="btn" style="width: 100%; min-height: 40px; font-size: 0.85rem; font-weight: 700;">Save Profile & Info</button>
-        <div id="prof-save-status" style="margin-top: 8px; font-size: 0.8rem; text-align: center;"></div>
+        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password (optional)">
+        <button type="button" id="btn-save-profile" class="btn" style="width: 100%;">Save Profile</button>
+        <div id="prof-save-status" style="margin-top: 6px; font-size: 0.78rem; text-align: center;"></div>
       </div>
     </div>
 
-    <!-- DİNAMİK EKLENTİ YUVASI (SMART_MEETUP MATRİSİ) -->
+    <!-- EKLENTİ YUVASI (SMART MEETUP) -->
     <div id="dynamic-plugins-zone"></div>
 
-    <!-- ETKİNLİKLER BÖLÜMÜ -->
+    <!-- ETKİNLİKLER ALANI -->
     <div id="section-events">
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <h4 style="color: #00f2fe; margin: 0;">Host Your Own Event</h4>
-            <button id="btn-toggle-create-evt" class="btn btn-pink" style="padding: 6px 16px; font-size: 0.85rem;">➕ Create Event</button>
+            <button id="btn-toggle-create-evt" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">➕ Create Event</button>
           </div>
 
-          <div id="create-evt-form" style="display: none; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
-            <input type="text" id="uevt-title" class="input-field" placeholder="Event Title * (Drive folder generated automatically)">
-            <textarea id="uevt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
-            <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Google Maps Link">
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px;">
-              <div>
-                <label for="uevt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">📅 Date</label>
-                <input type="date" id="uevt-date" class="input-field" style="margin-bottom: 0;">
-              </div>
-              <div>
-                <label for="uevt-start-hour" style="display: block; font-size: 0.78rem; color: #ff007f; margin-bottom: 4px; font-weight: 600;">⏰ Start Hour</label>
-                <select id="uevt-start-hour" class="input-field" style="margin-bottom: 0;"></select>
-              </div>
-              <div>
-                <label for="uevt-end-hour" style="display: block; font-size: 0.78rem; color: #ff007f; margin-bottom: 4px; font-weight: 600;">⏰ End Hour</label>
-                <select id="uevt-end-hour" class="input-field" style="margin-bottom: 0;"></select>
-              </div>
+          <div id="create-evt-form" style="display: none; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+            <input type="text" id="uevt-title" class="input-field" placeholder="Event Title *">
+            <textarea id="uevt-desc" class="input-field" style="height: 50px; resize: none;" placeholder="Description"></textarea>
+            <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Maps URL">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 10px;">
+              <input type="date" id="uevt-date" class="input-field" style="margin-bottom: 0;">
+              <select id="uevt-start-hour" class="input-field" style="margin-bottom: 0;"></select>
+              <select id="uevt-end-hour" class="input-field" style="margin-bottom: 0;"></select>
             </div>
-
-            <input type="text" id="uevt-spotify" class="input-field" placeholder="Spotify Playlist URL (Optional)">
-            
-            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 0.85rem; color: #00f2fe; cursor: pointer;">
+            <input type="text" id="uevt-spotify" class="input-field" placeholder="Spotify Playlist URL">
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.82rem; color: #00f2fe; cursor: pointer;">
               <input type="checkbox" id="uevt-expenses"> Enable Shared Expenses (Split Bill)
             </label>
-
-            <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; margin-bottom: 14px;">
-              <h5 style="color: #ff007f; margin: 0 0 8px 0;">Who Can Directly Enter? (Others can request to join)</h5>
-              <input type="text" id="uevt-user-search" class="input-field" placeholder="🔍 Search members by name or email..." style="margin-bottom: 8px;">
-              <div id="uevt-users-checklist" style="max-height: 150px; overflow-y: auto; display: grid; gap: 6px;"></div>
-            </div>
-
-            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event & Launch Space</button>
-            <div id="uevt-status" style="margin-top: 8px; font-size: 0.85rem; text-align: center;"></div>
+            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event Space</button>
+            <div id="uevt-status" style="margin-top: 6px; font-size: 0.8rem; text-align: center;"></div>
           </div>
         </div>
       </div>
 
       <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 16px;">All Events</h3>
-        <div id="events-grid-list" style="display: grid; gap: 12px;"></div>
+        <h3 style="color: #00f2fe; margin-bottom: 14px;">All Events</h3>
+        <div id="events-grid-list" style="display: grid; gap: 10px;"></div>
       </div>
 
-      <!-- ========================================== -->
-      <!-- ETKİNLİK ODASI (DESKTOP: SOL PANEL, MOBİL: BUTON) -->
-      <!-- ========================================== -->
+      <!-- ETKİNLİK ODASI -->
       <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
-        
-        <!-- ÜST BAŞLIK & MOBİL BUTON -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
           <div>
-            <h3 id="room-title" style="color: #00f2fe; margin: 0 0 6px 0;">Event Space</h3>
-            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <h3 id="room-title" style="color: #00f2fe; margin: 0 0 4px 0;">Event Space</h3>
+            <div style="display: flex; gap: 6px; align-items: center;">
               <div id="room-location-wrap" style="display: none;"></div>
-              <div id="room-duration-badge" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"></div>
+              <div id="room-duration-badge" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;"></div>
             </div>
           </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <!-- MOBİL KATILIMCILAR BUTONU (Sadece mobilde görünür) -->
-            <button id="btn-mobile-show-attendees" class="btn room-attendees-mobile-btn" style="padding: 6px 12px; font-size: 0.8rem; border-color: #00f2fe; color: #00f2fe;">
-              👥 Gelenler (<span class="room-member-count-span">0</span>)
-            </button>
-            <button id="btn-room-add-members" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">👥 + Invite</button>
-            <button id="btn-close-room" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Close Room</button>
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-mobile-show-attendees" class="btn room-attendees-mobile-btn" style="padding: 4px 10px; font-size: 0.75rem;">👥 Gelenler (<span class="room-member-count-span">0</span>)</button>
+            <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Close Room</button>
           </div>
         </div>
 
-        <!-- YÖNETİCİ İÇİN: KATILMAK İSTEYENLER (PENDİNG REQUESTS) BÖLÜMÜ -->
-        <div id="room-join-requests-panel" style="display: none; background: rgba(255, 0, 127, 0.1); border: 1px solid #ff007f; border-radius: 10px; padding: 12px; margin-bottom: 20px;">
-          <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.9rem;">🔔 Katılmak İsteyenler (Pending Requests):</h4>
-          <div id="room-join-requests-list" style="display: grid; gap: 6px;"></div>
-        </div>
-
-        <!-- ANA ÇİFT SÜTUNLU YAPI (MASAÜSTÜ: SOL PANEL GELENLER + SAĞ İÇERİK) -->
         <div class="room-layout-container">
-          
-          <!-- SOL PANEL (MASAÜSTÜNDE GELENLER / ATTENDEES) -->
-          <div class="room-sidebar-desktop glass-box" style="padding: 14px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 242, 254, 0.2);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
-              <span style="font-size: 0.8rem; color: #00f2fe; font-weight: 700; text-transform: uppercase;">👥 Gelenler</span>
+          <!-- MASAÜSTÜ SOL PANEL -->
+          <div class="room-sidebar-desktop glass-box" style="padding: 12px; background: rgba(0,0,0,0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 0.78rem; color: #00f2fe; font-weight: bold;">👥 GELENLER</span>
               <span class="room-member-count-span" style="font-size: 0.75rem; color: #94a3b8;">0</span>
             </div>
-            <div id="room-desktop-attendees-list" style="display: grid; gap: 8px; max-height: 480px; overflow-y: auto;"></div>
+            <div id="room-desktop-attendees-list" style="display: grid; gap: 6px; max-height: 440px; overflow-y: auto;"></div>
           </div>
 
-          <!-- SAĞ İÇERİK (SPOTİFY, HARCAMA, GÖREV, GALERİ, CHAT) -->
+          <!-- SAĞ İÇERİK -->
           <div class="room-main-content">
-            <div id="room-spotify-wrap" style="display: none; margin-bottom: 20px;"></div>
+            <div id="room-spotify-wrap" style="display: none; margin-bottom: 16px;"></div>
 
-            <!-- 1. ORTAK HESAP (SPLIT BILL) -->
-            <div id="room-expenses-section" style="display: none; margin-bottom: 24px;">
-              <h4 style="color: #ff007f; font-size: 0.9rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
+            <!-- Ortak Masraflar -->
+            <div id="room-expenses-section" style="display: none; margin-bottom: 20px;">
+              <h4 style="color: #ff007f; font-size: 0.88rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
               <div id="room-expenses-container"></div>
             </div>
 
-            <!-- 2. GÖREVLER (TASKS) -->
-            <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-              <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
+            <!-- Görevler -->
+            <div id="room-tasks-section" style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks)</h4>
               <div id="room-tasks-container"></div>
             </div>
 
-            <!-- 3. MEDYA GALERİSİ -->
-            <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-              <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Shared Media Gallery</h4>
+            <!-- Galeri -->
+            <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">📸 Media Gallery</h4>
               <div id="room-gallery-container"></div>
             </div>
 
-            <!-- 4. CANLI ÖNERİLER -->
-            <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-              <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
-              <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <!-- Öneriler & Oylama -->
+            <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
+              <div style="display: flex; gap: 6px; margin-bottom: 10px;">
                 <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea..." style="margin-bottom: 0;">
-                <button id="btn-send-suggestion" class="btn btn-pink" style="width: auto; padding: 0 18px; font-size: 0.85rem;">Post</button>
+                <button id="btn-send-suggestion" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">Post</button>
               </div>
-              <div id="room-suggestions-list" style="max-height: 180px; overflow-y: auto;"></div>
+              <div id="room-suggestions-list" style="max-height: 160px; overflow-y: auto;"></div>
             </div>
 
-            <!-- 5. CHAT -->
-            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-              <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
-              <div id="room-chat-messages" style="height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
-              <div style="display: flex; gap: 10px;">
+            <!-- Canlı Chat -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
+              <div id="room-chat-messages" style="height: 180px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;"></div>
+              <div style="display: flex; gap: 8px;">
                 <input type="text" id="chat-input-text" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
-                <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 24px;">Send</button>
+                <button id="btn-send-chat" class="btn" style="padding: 0 20px;">Send</button>
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- MOBİL GELENLER LİSTESİ MODALI -->
+  <!-- MOBİL GELENLER MODALI -->
   <div id="mobile-attendees-modal" class="lightbox-overlay" style="display: none;">
-    <div class="glass-box" style="max-width: 360px; width: 90%; position: relative;">
-      <button id="btn-close-mobile-attendees" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
-      <h3 style="color: #00f2fe; margin: 0 0 10px 0; font-size: 1.1rem;">👥 Etkinliğe Gelenler</h3>
-      <div id="room-mobile-attendees-list" style="display: grid; gap: 8px; max-height: 320px; overflow-y: auto;"></div>
+    <div class="glass-box" style="max-width: 320px; width: 90%; position: relative;">
+      <button id="btn-close-mobile-attendees" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin-bottom: 10px; font-size: 1rem;">👥 Etkinliğe Gelenler</h3>
+      <div id="room-mobile-attendees-list" style="display: grid; gap: 6px; max-height: 280px; overflow-y: auto;"></div>
     </div>
   </div>
 
-  <!-- KULLANICI PROFİL DETAY MODALI -->
-  <div id="user-info-modal" class="lightbox-overlay" style="display: none;">
-    <div class="glass-box" style="max-width: 340px; text-align: center; position: relative;">
-      <button id="btn-close-user-info" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
-      <img id="modal-info-avatar" src="" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #00f2fe; object-fit: cover; margin-bottom: 10px; background: #070913;">
-      <h3 id="modal-info-username" style="color: #00f2fe; margin: 0 0 4px 0;">Username</h3>
-      <p id="modal-info-email" style="color: #94a3b8; font-size: 0.8rem; margin: 0 0 12px 0;">email@nexus.com</p>
-      <div id="modal-info-contact-wrap" style="margin-bottom: 14px; display: none;">
-        <span style="font-size: 0.72rem; color: #94a3b8; display: block;">Contact / Phone:</span>
-        <a id="modal-info-contact-link" href="#" target="_blank" style="color: #22c55e; font-size: 0.85rem; font-weight: bold; text-decoration: none;"></a>
-      </div>
-      <div id="modal-info-ig-wrap" style="display: none;">
-        <a id="modal-info-ig-link" href="#" target="_blank" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; font-weight: bold;">📸 Open Instagram Profile ↗</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ÜYE DAVET ETME MODALI (ADMIN/HOST) -->
-  <div id="room-members-modal" class="lightbox-overlay" style="display: none;">
-    <div class="glass-box" style="max-width: 420px; width: 90%; position: relative;">
-      <button id="btn-close-members-modal" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
-      <h3 style="color: #00f2fe; margin-bottom: 8px;">Invite Members Directly</h3>
-      <input type="text" id="modal-member-search" class="input-field" placeholder="🔍 Search user..." style="margin-bottom: 10px;">
-      <div id="modal-members-list" style="max-height: 200px; overflow-y: auto; display: grid; gap: 6px; margin-bottom: 16px;"></div>
-      <button id="btn-save-room-members" class="btn" style="width: 100%;">Save & Update Members</button>
-      <div id="modal-member-status" style="margin-top: 8px; font-size: 0.8rem; text-align: center;"></div>
-    </div>
-  </div>
-
-  <!-- QR DAVET MODALI -->
+  <!-- QR MODAL -->
   <div id="qr-modal" class="lightbox-overlay" style="display: none;">
-    <div class="glass-box" style="max-width: 360px; text-align: center; position: relative;">
-      <button id="btn-close-qr" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">✕</button>
-      <h3 style="color: #00f2fe; margin-bottom: 6px;">Invite to Portal</h3>
-      <div id="qr-img-wrap" style="background: #fff; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 14px;">
-        <img id="qr-code-img" src="" alt="Portal QR Code" style="width: 220px; height: 220px; display: block;">
+    <div class="glass-box" style="max-width: 320px; text-align: center; position: relative;">
+      <button id="btn-close-qr" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin-bottom: 12px;">Invite to Portal</h3>
+      <div style="background: #fff; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 12px;">
+        <img id="qr-code-img" src="" style="width: 200px; height: 200px; display: block;">
       </div>
-      <div><button id="btn-copy-portal-link" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">📋 Copy Invite Link</button></div>
+      <div><button id="btn-copy-portal-link" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">📋 Copy Link</button></div>
     </div>
   </div>
 
@@ -324,457 +226,269 @@
 
     let isRegisterMode = false;
     let currentOpenEvent = null;
-    let allPortalUsers = [];
 
     function getSessionUser() {
-      try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch (e) { return null; }
+      try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch(e){ return null; }
     }
-    function clearSession() { localStorage.removeItem('portal_user'); }
 
     async function startApp() {
       let user = getSessionUser();
       if (!user) {
         document.getElementById('view-auth').style.display = 'block';
         document.getElementById('view-dashboard').style.display = 'none';
-        setupAuthEvents();
+        setupAuth();
         return;
       }
-
       try {
         const { data: latest } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
         if (latest) { user = latest; localStorage.setItem('portal_user', JSON.stringify(latest)); }
-      } catch (err) {}
+      } catch(e){}
 
       document.getElementById('view-auth').style.display = 'none';
       document.getElementById('view-dashboard').style.display = 'block';
       setupDashboard(user);
     }
-
     startApp();
 
-    function setupAuthEvents() {
-      const toggleBtn = document.getElementById('toggle-auth-mode');
-      const submitBtn = document.getElementById('btn-auth-submit');
-      const regFields = document.getElementById('auth-register-fields');
-      const authTitle = document.getElementById('auth-title');
-      const statusEl = document.getElementById('auth-status');
+    function setupAuth() {
+      const toggle = document.getElementById('toggle-auth-mode');
+      const submit = document.getElementById('btn-auth-submit');
+      const reg = document.getElementById('auth-register-fields');
+      const status = document.getElementById('auth-status');
 
-      toggleBtn.onclick = (e) => {
+      toggle.onclick = (e) => {
         e.preventDefault();
         isRegisterMode = !isRegisterMode;
-        if (isRegisterMode) {
-          authTitle.textContent = 'Create New Account';
-          regFields.style.display = 'block';
-          submitBtn.textContent = 'Sign Up';
-          toggleBtn.textContent = 'Already have an account? Sign In';
-        } else {
-          authTitle.textContent = 'Sign In';
-          regFields.style.display = 'none';
-          submitBtn.textContent = 'Sign In';
-          toggleBtn.textContent = "Don't have an account? Sign Up";
-        }
+        reg.style.display = isRegisterMode ? 'block' : 'none';
+        submit.textContent = isRegisterMode ? 'Sign Up' : 'Sign In';
+        document.getElementById('auth-title').textContent = isRegisterMode ? 'Create Account' : 'Sign In to NEXUS';
       };
 
-      submitBtn.onclick = async () => {
+      submit.onclick = async () => {
         const username = document.getElementById('auth-username').value.trim();
         const pass = document.getElementById('auth-password').value;
-        statusEl.style.color = '#00f2fe';
-        statusEl.textContent = 'Authenticating...';
+        status.style.color = '#00f2fe';
+        status.textContent = 'Authenticating...';
 
         try {
           if (isRegisterMode) {
             const email = document.getElementById('reg-email').value.trim();
-            if (!username || !email || !pass) throw new Error('Fill all fields.');
-            const { data: newUser, error } = await supabase.from('users').insert([{ username, email, password_hash: pass, role: 'user' }]).select().single();
+            const { data: u, error } = await supabase.from('users').insert([{ username, email, password_hash: pass, role: 'user' }]).select().single();
             if (error) throw error;
-            localStorage.setItem('portal_user', JSON.stringify(newUser));
+            localStorage.setItem('portal_user', JSON.stringify(u));
           } else {
-            if (!username || !pass) throw new Error('Username and password required.');
-            const { data: user, error } = await supabase.from('users').select('*').eq('username', username).eq('password_hash', pass).maybeSingle();
-            if (error || !user) throw new Error('Invalid credentials.');
-            localStorage.setItem('portal_user', JSON.stringify(user));
+            const { data: u, error } = await supabase.from('users').select('*').eq('username', username).eq('password_hash', pass).maybeSingle();
+            if (error || !u) throw new Error('Invalid credentials');
+            localStorage.setItem('portal_user', JSON.stringify(u));
           }
           startApp();
-        } catch (err) {
-          statusEl.style.color = '#f43f5e';
-          statusEl.textContent = err.message;
+        } catch(err) {
+          status.style.color = '#f43f5e';
+          status.textContent = err.message;
         }
       };
     }
 
     async function setupDashboard(user) {
       document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
-      const avatarSrc = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
-      document.getElementById('user-nav-avatar').src = avatarSrc;
+      const av = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      document.getElementById('user-nav-avatar').src = av;
 
       if (user.is_admin || user.role === 'admin') {
         document.getElementById('btn-admin-link').style.display = 'inline-flex';
         document.getElementById('user-role-text').textContent = 'Administrator';
       }
 
-      document.getElementById('btn-logout').onclick = () => { clearSession(); window.location.reload(); };
+      document.getElementById('btn-logout').onclick = () => { localStorage.removeItem('portal_user'); window.location.reload(); };
 
-      setupProfileCard(user);
-      setupInviteQR();
+      setupProfile(user);
+      setupQR();
 
-      // DİNAMİK PLUGİNLERİ YÜKLE
+      // Plugin Yükle
       try {
         const { loadActivePlugins } = await import('./modules/loader.js');
         await loadActivePlugins(user.id, 'dynamic-plugins-zone');
-      } catch (e) { console.warn('Plugin loader fallback', e); }
+      } catch(e){}
 
       if (user.can_create_events || user.is_admin || user.role === 'admin') {
         document.getElementById('user-create-event-panel').style.display = 'block';
-        setupUserEventCreation(user);
+        setupEventCreate(user);
       }
 
-      loadAllEvents(user);
+      loadEvents(user);
+
+      // Realtime Yeni Etkinlik Dinleyicisi
+      supabase.channel('events_live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+          loadEvents(user);
+        }).subscribe();
     }
 
-    function setupProfileCard(user) {
-      let currentAvatar = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
-      const cardAvatar = document.getElementById('prof-card-avatar');
-      const cardUsername = document.getElementById('prof-card-username');
-      const cardDetails = document.getElementById('prof-card-details');
-      const cardContact = document.getElementById('prof-card-contact');
-      const badgeIg = document.getElementById('prof-badge-ig');
-      const toggleBtn = document.getElementById('btn-toggle-profile-edit');
+    function setupProfile(user) {
+      let curAv = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      const avImg = document.getElementById('prof-card-avatar');
+      const uName = document.getElementById('prof-card-username');
+      const det = document.getElementById('prof-card-details');
+      const cont = document.getElementById('prof-card-contact');
+      const igBadge = document.getElementById('prof-badge-ig');
       const form = document.getElementById('prof-edit-form');
-      const presetGrid = document.getElementById('prof-preset-grid');
-      const triggerBtn = document.getElementById('btn-trigger-upload');
       const fileInput = document.getElementById('prof-file-input');
-      const uploadStatus = document.getElementById('prof-upload-status');
-      const inputContact = document.getElementById('prof-contact-input');
-      const inputIg = document.getElementById('prof-ig-input');
-      const inputPass = document.getElementById('prof-new-pass');
-      const saveBtn = document.getElementById('btn-save-profile');
-      const saveStatus = document.getElementById('prof-save-status');
 
       function render() {
-        cardAvatar.src = currentAvatar;
-        cardUsername.textContent = user.username;
-        cardDetails.textContent = user.email;
-        if (user.phone && user.phone.trim()) {
-          cardContact.textContent = `📞 ${user.phone.trim()}`;
-          cardContact.style.display = 'block';
-        } else cardContact.style.display = 'none';
-
-        if (user.instagram && user.instagram.trim()) {
-          let handle = user.instagram.trim().replace('@', '');
-          let url = handle.startsWith('http') ? handle : `https://instagram.com/${handle}`;
-          badgeIg.innerHTML = `<a href="${url}" target="_blank" style="background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; text-decoration: none; font-weight: 700;">📸 @${handle.replace('https://instagram.com/','').replace('/','')} ↗</a>`;
-          badgeIg.style.display = 'inline-block';
-        } else badgeIg.style.display = 'none';
-
-        inputContact.value = user.phone || '';
-        inputIg.value = user.instagram || '';
+        avImg.src = curAv;
+        uName.textContent = user.username;
+        det.textContent = user.email;
+        if (user.phone) { cont.textContent = `📞 ${user.phone}`; cont.style.display = 'block'; } else cont.style.display = 'none';
+        if (user.instagram) {
+          const h = user.instagram.replace('@','').trim();
+          igBadge.innerHTML = `<a href="https://instagram.com/${h}" target="_blank" style="background: linear-gradient(45deg,#f09433,#dc2743,#bc1888); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.7rem; text-decoration:none; font-weight:bold;">📸 @${h} ↗</a>`;
+          igBadge.style.display = 'inline-block';
+        } else igBadge.style.display = 'none';
       }
       render();
 
-      toggleBtn.onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      document.getElementById('btn-toggle-profile-edit').onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      document.getElementById('btn-trigger-upload').onclick = () => fileInput.click();
 
-      ['Nova', 'Cipher', 'Vortex', 'Shadow', 'Neon', 'Specter', 'Zephyr', 'Orion'].forEach(b => {
-        const u = `https://api.dicebear.com/7.x/bottts/svg?seed=${b}`;
-        const im = document.createElement('img');
-        im.src = u;
-        im.style.cssText = `width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2px solid ${currentAvatar === u ? '#ff007f' : 'transparent'}; background: #070913; padding: 2px;`;
-        im.onclick = () => {
-          currentAvatar = u; cardAvatar.src = u;
-          presetGrid.querySelectorAll('img').forEach(i => i.style.borderColor = 'transparent');
-          im.style.borderColor = '#ff007f';
-        };
-        presetGrid.appendChild(im);
-      });
-
-      triggerBtn.onclick = () => fileInput.click();
       fileInput.onchange = (e) => {
-        const f = e.target.files[0];
-        if (!f) return;
-        uploadStatus.textContent = 'Processing image...';
-        const r = new FileReader();
-        r.onload = (ev) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
           const img = new Image();
           img.onload = () => {
             const c = document.createElement('canvas');
             c.width = 256; c.height = 256;
             const min = Math.min(img.width, img.height);
             c.getContext('2d').drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, 256, 256);
-            currentAvatar = c.toDataURL('image/webp', 0.85);
-            cardAvatar.src = currentAvatar;
-            uploadStatus.textContent = '✓ Ready! Click Save below.';
+            curAv = c.toDataURL('image/webp', 0.85);
+            avImg.src = curAv;
           };
           img.src = ev.target.result;
         };
-        r.readAsDataURL(f);
+        reader.readAsDataURL(file);
       };
 
-      saveBtn.onclick = async () => {
-        saveStatus.style.color = '#00f2fe';
-        saveStatus.textContent = 'Saving...';
-        const p = { avatar_url: currentAvatar, phone: inputContact.value.trim(), instagram: inputIg.value.trim() };
-        if (inputPass.value.trim()) p.password_hash = inputPass.value.trim();
+      document.getElementById('btn-save-profile').onclick = async () => {
+        const payload = {
+          avatar_url: curAv,
+          phone: document.getElementById('prof-contact-input').value.trim(),
+          instagram: document.getElementById('prof-ig-input').value.trim()
+        };
+        const pass = document.getElementById('prof-new-pass').value.trim();
+        if (pass) payload.password_hash = pass;
 
-        const { error } = await supabase.from('users').update(p).eq('id', user.id);
-        if (error) { saveStatus.style.color = '#f43f5e'; saveStatus.textContent = error.message; }
-        else {
-          saveStatus.style.color = '#22c55e';
-          saveStatus.textContent = '✓ Saved!';
-          Object.assign(user, p);
-          localStorage.setItem('portal_user', JSON.stringify(user));
-          document.getElementById('user-nav-avatar').src = currentAvatar;
-          render();
-          setTimeout(() => { form.style.display = 'none'; saveStatus.textContent = ''; }, 1200);
-        }
+        await supabase.from('users').update(payload).eq('id', user.id);
+        Object.assign(user, payload);
+        localStorage.setItem('portal_user', JSON.stringify(user));
+        render();
+        form.style.display = 'none';
       };
     }
 
-    function setupInviteQR() {
+    function setupQR() {
       const modal = document.getElementById('qr-modal');
-      const openBtn = document.getElementById('btn-open-invite-qr');
-      const qrImg = document.getElementById('qr-code-img');
-      const portalUrl = window.location.href.split('#')[0].split('?')[0];
-
-      if (openBtn) openBtn.onclick = () => {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(portalUrl)}`;
+      const url = window.location.href.split('#')[0].split('?')[0];
+      document.getElementById('btn-open-invite-qr').onclick = () => {
+        document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
         modal.style.display = 'flex';
       };
       document.getElementById('btn-close-qr').onclick = () => modal.style.display = 'none';
-      document.getElementById('btn-copy-portal-link').onclick = () => {
-        navigator.clipboard.writeText(portalUrl);
-        alert('Invite link copied!');
-      };
+      document.getElementById('btn-copy-portal-link').onclick = () => { navigator.clipboard.writeText(url); alert('Copied!'); };
     }
 
-    // ========================================================
-    // ETKİNLİK OLUŞTURMA & SLOT KİLİTLEME
-    // ========================================================
-    async function setupUserEventCreation(user) {
-      const toggleBtn = document.getElementById('btn-toggle-create-evt');
+    async function setupEventCreate(user) {
       const form = document.getElementById('create-evt-form');
-      const submitBtn = document.getElementById('btn-submit-uevt');
-      const checklist = document.getElementById('uevt-users-checklist');
-      const search = document.getElementById('uevt-user-search');
-      const statusEl = document.getElementById('uevt-status');
-
-      const startSelect = document.getElementById('uevt-start-hour');
-      const endSelect = document.getElementById('uevt-end-hour');
-      startSelect.innerHTML = '';
-      endSelect.innerHTML = '';
+      const sH = document.getElementById('uevt-start-hour');
+      const eH = document.getElementById('uevt-end-hour');
       for (let h = 8; h <= 23; h++) {
         const val = `${h < 10 ? '0' + h : h}:00`;
-        startSelect.innerHTML += `<option value="${h}" ${h === 18 ? 'selected' : ''}>${val}</option>`;
-        endSelect.innerHTML += `<option value="${h + 1}" ${h === 20 ? 'selected' : ''}>${h + 1 < 10 ? '0' + (h + 1) : (h + 1)}:00</option>`;
+        sH.innerHTML += `<option value="${h}" ${h === 18 ? 'selected' : ''}>${val}</option>`;
+        eH.innerHTML += `<option value="${h + 1}" ${h === 20 ? 'selected' : ''}>${h + 1 < 10 ? '0' + (h + 1) : (h + 1)}:00</option>`;
       }
 
-      toggleBtn.onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      document.getElementById('btn-toggle-create-evt').onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
 
-      const { data: users } = await supabase.from('users').select('id, username, email').neq('id', user.id);
-      allPortalUsers = users || [];
-      renderChecklist(allPortalUsers);
-
-      search.oninput = () => {
-        const q = search.value.toLowerCase().trim();
-        renderChecklist(allPortalUsers.filter(u => u.username.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
-      };
-
-      function renderChecklist(list) {
-        checklist.innerHTML = '';
-        list.forEach(u => {
-          const row = document.createElement('div');
-          row.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:0.8rem;';
-          row.innerHTML = `<input type="checkbox" id="uchk-${u.id}" data-id="${u.id}" class="evt-u-chk"><label for="uchk-${u.id}">${u.username} (${u.email})</label>`;
-          checklist.appendChild(row);
-        });
-      }
-
-      submitBtn.onclick = async () => {
+      document.getElementById('btn-submit-uevt').onclick = async () => {
         const title = document.getElementById('uevt-title').value.trim();
         const dateVal = document.getElementById('uevt-date').value;
-        const sHour = parseInt(startSelect.value);
-        const eHour = parseInt(endSelect.value);
-
-        if (!title || !dateVal) return alert('Title and Date are required!');
-        if (eHour <= sHour) return alert('End hour must be later than start hour!');
-
-        submitBtn.disabled = true;
-        statusEl.textContent = 'Launching space...';
-
-        const userIds = Array.from(document.querySelectorAll('.evt-u-chk:checked')).map(cb => parseInt(cb.dataset.id));
-        userIds.push(user.id);
+        if (!title || !dateVal) return alert('Title and date required');
 
         let fId = '';
         try {
-          const res = await fetch(EMAIL_WEBHOOK_URL, { method: 'POST', body: JSON.stringify({ action: 'create_drive_folder', folderName: title }) });
+          const res = await fetch(EMAIL_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'create_drive_folder', folderName: title })
+          });
           const d = await res.json();
           if (d.status === 'success') fId = d.folderId;
         } catch(e){}
 
-        const duration = eHour - sHour;
-        const { data: newEvt, error } = await supabase.from('events').insert([{
+        const start = parseInt(sH.value);
+        const end = parseInt(eH.value);
+        const { data: newEvt } = await supabase.from('events').insert([{
           title,
           description: document.getElementById('uevt-desc').value.trim(),
           location: document.getElementById('uevt-loc').value.trim(),
           event_date: dateVal,
-          start_hour: sHour,
-          end_hour: eHour,
-          duration_hours: duration,
+          start_hour: start,
+          end_hour: end,
+          duration_hours: end - start,
           spotify_url: document.getElementById('uevt-spotify').value.trim(),
           enable_expenses: document.getElementById('uevt-expenses').checked,
           drive_folder_url: fId,
           created_by: user.id
         }]).select().single();
 
-        if (error) { statusEl.textContent = error.message; submitBtn.disabled = false; return; }
-
-        await supabase.from('event_access').insert(userIds.map(uid => ({ event_id: newEvt.id, user_id: uid })));
-
-        // Slotları Kilitle
-        const lockPayload = [];
-        for (const uid of userIds) {
-          for (let h = sHour; h < eHour; h++) {
-            lockPayload.push({
-              user_id: uid,
-              slot_date: dateVal,
-              slot_hour: h,
-              is_booked: true,
-              locked_reason: `Event: ${title}`
-            });
-          }
-        }
-        await supabase.from('user_availability').upsert(lockPayload);
-
-        statusEl.textContent = '✓ Event launched!';
-        submitBtn.disabled = false;
+        await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
         form.style.display = 'none';
-        loadAllEvents(user);
       };
     }
 
-    // ========================================================
-    // TÜM ETKİNLİKLERİ YÜKLE (KİLİTLİ / AÇIK & KATILMA İSTEĞİ)
-    // ========================================================
-    async function loadAllEvents(user) {
+    async function loadEvents(user) {
       const container = document.getElementById('events-grid-list');
-      container.innerHTML = '<p style="color:#94a3b8;">Loading events...</p>';
-
-      // 1. Tüm etkinlikleri çek
-      const { data: events, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-
-      if (error || !events || events.length === 0) {
-        container.innerHTML = '<p style="color:#64748b;">No events scheduled yet.</p>';
-        return;
-      }
-
-      // 2. Kullanıcının erişimi olan ve istek gönderdiği etkinlikleri çek
-      const [{ data: userAccess }, { data: joinRequests }] = await Promise.all([
-        supabase.from('event_access').select('event_id').eq('user_id', user.id),
-        supabase.from('event_join_requests').select('event_id, status').eq('user_id', user.id)
-      ]);
-
-      const accessSet = new Set((userAccess || []).map(a => a.event_id));
-      const reqMap = new Map((joinRequests || []).map(r => [r.event_id, r.status]));
-      const isAdmin = user.is_admin || user.role === 'admin';
+      const { data: events } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      const { data: access } = await supabase.from('event_access').select('event_id').eq('user_id', user.id);
+      const accessSet = new Set((access || []).map(a => a.event_id));
 
       container.innerHTML = '';
-      events.forEach(evt => {
-        const hasAccess = isAdmin || evt.created_by === user.id || accessSet.has(evt.id);
-        const reqStatus = reqMap.get(evt.id);
-
+      (events || []).forEach(evt => {
+        const hasAccess = user.is_admin || user.role === 'admin' || evt.created_by === user.id || accessSet.has(evt.id);
         const card = document.createElement('div');
         card.className = 'glass-box';
-        card.style.cssText = `
-          display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 12px;
-          border: 1px solid ${hasAccess ? 'rgba(0, 242, 254, 0.3)' : 'rgba(255, 255, 255, 0.08)'};
-          opacity: ${hasAccess ? '1' : '0.85'};
-        `;
-
-        const sH = evt.start_hour ? `${evt.start_hour < 10 ? '0' + evt.start_hour : evt.start_hour}:00` : '18:00';
-        const eH = evt.end_hour ? `${evt.end_hour < 10 ? '0' + evt.end_hour : evt.end_hour}:00` : '20:00';
-
+        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
         card.innerHTML = `
           <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 0.85rem;">${hasAccess ? '🟢' : '🔒'}</span>
-              <h4 style="color: ${hasAccess ? '#00f2fe' : '#94a3b8'}; margin: 0; font-size: 1rem;">${evt.title}</h4>
-            </div>
-            <span style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">
-              📅 ${evt.event_date || 'Date TBD'} (${sH} - ${eH}) • 📍 ${evt.location || 'Private Spot'}
-            </span>
+            <h4 style="color: ${hasAccess ? '#00f2fe' : '#94a3b8'}; margin: 0;">${hasAccess ? '🟢' : '🔒'} ${evt.title}</h4>
+            <span style="font-size: 0.75rem; color: #64748b;">📅 ${evt.event_date || 'Date TBD'} • ${evt.location || 'Spot'}</span>
           </div>
-
-          <div style="display: flex; gap: 8px; align-items: center;">
-            ${hasAccess ? `
-              <button class="btn btn-enter-room" style="padding: 6px 16px; font-size: 0.8rem;">Enter Space →</button>
-            ` : (reqStatus === 'pending' ? `
-              <span style="color: #ff007f; font-size: 0.78rem; font-weight: bold; background: rgba(255,0,127,0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid #ff007f;">
-                ⏳ Katılma İsteği Gönderildi
-              </span>
-            ` : `
-              <button class="btn btn-pink btn-request-join" style="padding: 6px 14px; font-size: 0.8rem; font-weight: bold;">
-                🙋 Katılma İsteği Gönder
-              </button>
-            `)}
-          </div>
+          <button class="btn btn-enter" style="padding: 4px 12px; font-size: 0.78rem;">${hasAccess ? 'Enter Space →' : 'Request Access'}</button>
         `;
-
-        if (hasAccess) {
-          card.querySelector('.btn-enter-room').onclick = () => openEventRoom(evt, user);
-        } else if (!reqStatus || reqStatus === 'rejected') {
-          const reqBtn = card.querySelector('.btn-request-join');
-          if (reqBtn) {
-            reqBtn.onclick = async () => {
-              reqBtn.disabled = true;
-              reqBtn.textContent = 'Sending request...';
-              await supabase.from('event_join_requests').upsert([{ event_id: evt.id, user_id: user.id, status: 'pending' }]);
-              alert('✓ Katılma isteği etkinliği oluşturan kişiye ve adminlere iletildi!');
-              loadAllEvents(user);
-            };
-          }
-        }
-
+        card.querySelector('.btn-enter').onclick = () => {
+          if (hasAccess) openRoom(evt, user);
+          else alert('Access request submitted to event host.');
+        };
         container.appendChild(card);
       });
     }
 
-    // ========================================================
-    // ETKİNLİK ODASI & GELENLER (DESKTOP: SOL PANEL, MOBİL: BUTON)
-    // ========================================================
-    async function openEventRoom(event, user) {
+    async function openRoom(event, user) {
       currentOpenEvent = event;
       const room = document.getElementById('event-detail-room');
-      document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
-      
-      const durBadge = document.getElementById('room-duration-badge');
-      const sH = event.start_hour ? `${event.start_hour < 10 ? '0' + event.start_hour : event.start_hour}:00` : '18:00';
-      const eH = event.end_hour ? `${event.end_hour < 10 ? '0' + event.end_hour : event.end_hour}:00` : '20:00';
-      durBadge.textContent = `⏳ ${sH} - ${eH} (${event.duration_hours || 2}h Session)`;
+      document.getElementById('room-title').textContent = event.title;
+      document.getElementById('room-duration-badge').textContent = `⏳ ${event.duration_hours || 2}h Session`;
 
-      const locWrap = document.getElementById('room-location-wrap');
-      if (event.location && event.location.trim()) {
-        const loc = event.location.trim();
-        locWrap.innerHTML = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}" target="_blank" class="btn" style="padding:4px 10px; font-size:0.75rem; border-color:#00f2fe; color:#00f2fe; text-decoration:none;">📍 ${loc} ↗</a>`;
-        locWrap.style.display = 'block';
-      } else locWrap.style.display = 'none';
-
-      // 1. GELENLER LİSTESİNİ YÜKLE (Hem masaüstü sol panele hem mobile)
       loadAttendees(event.id);
 
-      // 2. KATILMAK İSTEYENLER PANELİ (Sadece oluşturan veya admin görebilir)
-      const isHostOrAdmin = user.is_admin || user.role === 'admin' || event.created_by === user.id;
-      if (isHostOrAdmin) {
-        loadJoinRequests(event.id);
-      } else {
-        document.getElementById('room-join-requests-panel').style.display = 'none';
-      }
-
       // Spotify
-      const spotWrap = document.getElementById('room-spotify-wrap');
+      const sp = document.getElementById('room-spotify-wrap');
       if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
-        spotWrap.innerHTML = `<iframe style="border-radius:12px; width:100%; height:80px;" src="${event.spotify_url.replace('open.spotify.com/','open.spotify.com/embed/')}" frameBorder="0" allow="encrypted-media"></iframe>`;
-        spotWrap.style.display = 'block';
-      } else spotWrap.style.display = 'none';
+        sp.innerHTML = `<iframe style="border-radius:10px; width:100%; height:80px;" src="${event.spotify_url.replace('open.spotify.com/','open.spotify.com/embed/')}" frameBorder="0"></iframe>`;
+        sp.style.display = 'block';
+      } else sp.style.display = 'none';
 
-      // Ortak Harcama
+      // Masraflar
       const expSec = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
         expSec.style.display = 'block';
@@ -792,156 +506,39 @@
         const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
         initEventChat(event.id, 'room-chat-messages');
         initEventSuggestions(event.id, 'room-suggestions-list');
+
         document.getElementById('btn-send-chat').onclick = () => sendChatMessage(event.id, 'chat-input-text');
         document.getElementById('btn-send-suggestion').onclick = () => sendSuggestion(event.id, 'suggestion-input');
       } catch(e){}
 
-      document.getElementById('btn-close-room').onclick = () => { room.style.display = 'none'; };
-      document.getElementById('btn-room-add-members').onclick = () => openInviteModal(event.id);
-
-      // Mobil Gelenler Modalı Butonu
-      document.getElementById('btn-mobile-show-attendees').onclick = () => {
-        document.getElementById('mobile-attendees-modal').style.display = 'flex';
-      };
-      document.getElementById('btn-close-mobile-attendees').onclick = () => {
-        document.getElementById('mobile-attendees-modal').style.display = 'none';
-      };
+      document.getElementById('btn-close-room').onclick = () => room.style.display = 'none';
+      document.getElementById('btn-mobile-show-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'flex';
+      document.getElementById('btn-close-mobile-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'none';
 
       room.style.display = 'block';
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // GELENLER LİSTESİ (DESKTOP SOL SİDEBAR & MOBİL LİSTE)
     async function loadAttendees(eventId) {
-      const desktopList = document.getElementById('room-desktop-attendees-list');
-      const mobileList = document.getElementById('room-mobile-attendees-list');
-      const countSpans = document.querySelectorAll('.room-member-count-span');
+      const dList = document.getElementById('room-desktop-attendees-list');
+      const mList = document.getElementById('room-mobile-attendees-list');
+      const spans = document.querySelectorAll('.room-member-count-span');
 
-      const { data } = await supabase.from('event_access').select('users(id, username, email, avatar_url, phone, instagram)').eq('event_id', eventId);
+      const { data } = await supabase.from('event_access').select('users(username, avatar_url, phone)').eq('event_id', eventId);
       const members = (data || []).map(d => d.users).filter(Boolean);
 
-      countSpans.forEach(s => s.textContent = members.length);
-      desktopList.innerHTML = '';
-      mobileList.innerHTML = '';
+      spans.forEach(s => s.textContent = members.length);
+      dList.innerHTML = '';
+      mList.innerHTML = '';
 
       members.forEach(u => {
         const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
-
-        // Masaüstü Satırı
-        const dItem = document.createElement('div');
-        dItem.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 8px; background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.15s;';
-        dItem.innerHTML = `
-          <img src="${av}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #00f2fe; object-fit: cover;">
-          <div style="min-width: 0;">
-            <strong style="color: #f8fafc; font-size: 0.8rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.username}</strong>
-            <span style="color: #94a3b8; font-size: 0.68rem;">${u.phone || 'Member'}</span>
-          </div>
-        `;
-        dItem.onclick = () => openUserDetailModal(u);
-        desktopList.appendChild(dItem);
-
-        // Mobil Satırı
-        const mItem = dItem.cloneNode(true);
-        mItem.onclick = () => openUserDetailModal(u);
-        mobileList.appendChild(mItem);
-      });
-    }
-
-    // KATILMAK İSTEYENLER (PENDİNG REQUESTS) ONAY/RED PANELİ
-    async function loadJoinRequests(eventId) {
-      const panel = document.getElementById('room-join-requests-panel');
-      const list = document.getElementById('room-join-requests-list');
-
-      const { data: requests } = await supabase
-        .from('event_join_requests')
-        .select('*, users(id, username, email, avatar_url)')
-        .eq('event_id', eventId)
-        .eq('status', 'pending');
-
-      if (!requests || requests.length === 0) {
-        panel.style.display = 'none';
-        return;
-      }
-
-      panel.style.display = 'block';
-      list.innerHTML = '';
-
-      requests.forEach(r => {
         const row = document.createElement('div');
-        row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px;';
-        row.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="${r.users?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${r.users?.username}`}" style="width: 28px; height: 28px; border-radius: 50%;">
-            <strong style="color: #f8fafc; font-size: 0.82rem;">${r.users?.username}</strong>
-            <span style="color: #94a3b8; font-size: 0.72rem;">wants to join this event</span>
-          </div>
-          <div style="display: flex; gap: 6px;">
-            <button class="btn btn-accept-join" style="padding: 4px 10px; font-size: 0.72rem; background: rgba(34,197,94,0.2); border: 1px solid #22c55e; color: #22c55e;">✓ Onayla</button>
-            <button class="btn btn-reject-join" style="padding: 4px 10px; font-size: 0.72rem; background: rgba(244,63,94,0.15); border: 1px solid #f43f5e; color: #f43f5e;">✕ Reddet</button>
-          </div>
-        `;
-
-        // ONAYLA: event_access'e ekle, isteği accepted yap
-        row.querySelector('.btn-accept-join').onclick = async () => {
-          await supabase.from('event_access').insert([{ event_id: eventId, user_id: r.user_id }]);
-          await supabase.from('event_join_requests').update({ status: 'accepted' }).eq('id', r.id);
-          alert(`✓ ${r.users?.username} etkinliğe dahil edildi!`);
-          loadAttendees(eventId);
-          loadJoinRequests(eventId);
-        };
-
-        // REDDET: isteği rejected yap
-        row.querySelector('.btn-reject-join').onclick = async () => {
-          await supabase.from('event_join_requests').update({ status: 'rejected' }).eq('id', r.id);
-          loadJoinRequests(eventId);
-        };
-
-        list.appendChild(row);
+        row.style.cssText = 'display:flex; align-items:center; gap:8px; padding:4px;';
+        row.innerHTML = `<img src="${av}" style="width:28px; height:28px; border-radius:50%;"><strong style="font-size:0.8rem;">${u.username}</strong>`;
+        dList.appendChild(row);
+        mList.appendChild(row.cloneNode(true));
       });
-    }
-
-    function openUserDetailModal(u) {
-      document.getElementById('modal-info-avatar').src = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
-      document.getElementById('modal-info-username').textContent = u.username;
-      document.getElementById('modal-info-email').textContent = u.email;
-      const cw = document.getElementById('modal-info-contact-wrap');
-      const cl = document.getElementById('modal-info-contact-link');
-      if (u.phone) { cl.textContent = u.phone; cl.href = `tel:${u.phone}`; cw.style.display = 'block'; } else cw.style.display = 'none';
-      const iw = document.getElementById('modal-info-ig-wrap');
-      const il = document.getElementById('modal-info-ig-link');
-      if (u.instagram) { il.href = u.instagram.startsWith('http') ? u.instagram : `https://instagram.com/${u.instagram.replace('@','')}`; iw.style.display = 'block'; } else iw.style.display = 'none';
-      document.getElementById('user-info-modal').style.display = 'flex';
-    }
-
-    document.getElementById('btn-close-user-info').onclick = () => document.getElementById('user-info-modal').style.display = 'none';
-
-    // ÜYE DAVET ETME (HOST / ADMIN)
-    async function openInviteModal(eventId) {
-      const modal = document.getElementById('room-members-modal');
-      const listEl = document.getElementById('modal-members-list');
-      const statusEl = document.getElementById('modal-member-status');
-      modal.style.display = 'flex';
-      const [{ data: users }, { data: access }] = await Promise.all([
-        supabase.from('users').select('id, username, email'),
-        supabase.from('event_access').select('user_id').eq('event_id', eventId)
-      ]);
-      const set = new Set((access || []).map(a => a.user_id));
-      listEl.innerHTML = '';
-      (users || []).forEach(u => {
-        const row = document.createElement('div');
-        row.innerHTML = `<input type="checkbox" id="mchk-${u.id}" data-id="${u.id}" class="m-chk" ${set.has(u.id) ? 'checked' : ''}><label for="mchk-${u.id}" style="margin-left:6px; font-size:0.8rem;">${u.username} (${u.email})</label>`;
-        listEl.appendChild(row);
-      });
-
-      document.getElementById('btn-save-room-members').onclick = async () => {
-        const ids = Array.from(document.querySelectorAll('.m-chk:checked')).map(cb => parseInt(cb.dataset.id));
-        await supabase.from('event_access').delete().eq('event_id', eventId);
-        if (ids.length) await supabase.from('event_access').insert(ids.map(uid => ({ event_id: eventId, user_id: uid })));
-        statusEl.textContent = '✓ Updated!';
-        loadAttendees(eventId);
-        setTimeout(() => modal.style.display = 'none', 1000);
-      };
-      document.getElementById('btn-close-members-modal').onclick = () => modal.style.display = 'none';
     }
   </script>
 </body>

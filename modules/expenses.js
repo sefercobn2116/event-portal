@@ -1,70 +1,56 @@
-// modules/expenses.js - Live Shared Expenses Pool
-window.ExpensesModule = {
+// modules/expenses.js
+window.Expenses = {
   eventId: null,
+  channel: null,
 
-  async init(eventId, containerId = 'expenses-container') {
+  async init(eventId) {
     this.eventId = eventId;
-    const container = document.getElementById(containerId);
+    const container = document.getElementById('module-expenses') || document.getElementById('expenses-container');
     if (!container) return;
 
-    this.renderUI(container);
-    await this.fetchExpenses();
-    this.setupRealtime();
-  },
-
-  renderUI(container) {
     container.innerHTML = `
-      <div class="expenses-panel glass-card p-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="neon-title m-0">💸 Shared Expenses Pool</h5>
-          <span id="total-pool-badge" class="badge bg-success fs-6">0.00 TL</span>
+      <div class="expenses-wrapper glass-panel p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="text-cyber m-0">💸 Shared Expenses Pool</h6>
+          <span id="expenses-total-badge" class="badge bg-success">0.00 TL</span>
         </div>
-        <div class="row g-2 mb-3">
-          <div class="col-7">
-            <input type="text" id="expense-desc" class="form-control form-control-sm bg-dark text-white border-cyber" placeholder="Açıklama (Örn: Mangal eti)">
-          </div>
-          <div class="col-3">
-            <input type="number" id="expense-amount" class="form-control form-control-sm bg-dark text-white border-cyber" placeholder="Tutar">
-          </div>
-          <div class="col-2">
-            <button class="btn btn-sm btn-cyber w-100" id="btn-add-expense">+</button>
-          </div>
+        <div class="input-group input-group-sm mb-3">
+          <input type="text" id="exp-input-desc" class="form-control bg-dark text-white border-secondary" placeholder="Harcama açıklaması">
+          <input type="number" id="exp-input-amount" class="form-control bg-dark text-white border-secondary" placeholder="Tutar" style="max-width: 90px;">
+          <button class="btn btn-outline-info" onclick="Expenses.addExpense()">Ekle</button>
         </div>
-        <ul id="expense-list" class="list-group list-group-flush gap-2"></ul>
+        <div id="expenses-items-list" class="d-flex flex-column gap-2" style="max-height: 240px; overflow-y: auto;"></div>
       </div>
     `;
 
-    document.getElementById('btn-add-expense').onclick = () => this.addExpense();
+    await this.loadExpenses();
+    this.listen();
   },
 
-  async fetchExpenses() {
+  async loadExpenses() {
+    const list = document.getElementById('expenses-items-list');
+    const badge = document.getElementById('expenses-total-badge');
+    if (!list) return;
+
     const { data: expenses } = await supabase
       .from('event_expenses')
       .select('*, users(username)')
       .eq('event_id', this.eventId)
       .order('id', { ascending: false });
 
-    this.renderExpenses(expenses || []);
-  },
-
-  renderExpenses(expenses) {
-    const list = document.getElementById('expense-list');
-    const badge = document.getElementById('total-pool-badge');
-    if (!list) return;
-
     let total = 0;
-    list.innerHTML = expenses.length === 0 ? `<li class="text-muted small">Kayıtlı masraf yok.</li>` : '';
+    list.innerHTML = (expenses || []).length === 0 ? '<small class="text-muted">Kayıtlı harcama yok.</small>' : '';
 
-    expenses.forEach(e => {
+    (expenses || []).forEach(e => {
       total += parseFloat(e.amount || 0);
       list.innerHTML += `
-        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center text-white rounded">
+        <div class="d-flex justify-content-between align-items-center bg-dark p-2 rounded border border-secondary">
           <div>
             <strong>${e.description}</strong>
-            <small class="d-block text-muted">Ödeyen: ${e.users ? e.users.username : 'Bilinmiyor'}</small>
+            <small class="d-block text-muted">Ödeyen: ${e.users?.username || 'Bilinmiyor'}</small>
           </div>
           <span class="badge bg-primary fs-6">${parseFloat(e.amount).toFixed(2)}</span>
-        </li>
+        </div>
       `;
     });
 
@@ -72,28 +58,29 @@ window.ExpensesModule = {
   },
 
   async addExpense() {
-    const desc = document.getElementById('expense-desc').value.trim();
-    const amount = parseFloat(document.getElementById('expense-amount').value);
-    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
+    const desc = document.getElementById('exp-input-desc').value.trim();
+    const amount = parseFloat(document.getElementById('exp-input-amount').value);
+    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
 
-    if (!desc || isNaN(amount) || amount <= 0) return alert('Geçerli bir harcama giriniz.');
+    if (!desc || isNaN(amount) || amount <= 0) return alert('Lütfen geçerli harcama giriniz.');
 
     await supabase.from('event_expenses').insert({
       event_id: this.eventId,
-      paid_by: currentUser.id,
+      paid_by: user.id,
       description: desc,
       amount: amount
     });
 
-    document.getElementById('expense-desc').value = '';
-    document.getElementById('expense-amount').value = '';
+    document.getElementById('exp-input-desc').value = '';
+    document.getElementById('exp-input-amount').value = '';
+    this.loadExpenses();
   },
 
-  setupRealtime() {
-    supabase
-      .channel('public:event_expenses_' + this.eventId)
+  listen() {
+    if (this.channel) supabase.removeChannel(this.channel);
+    this.channel = supabase.channel('expenses_live_' + this.eventId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_expenses', filter: `event_id=eq.${this.eventId}` }, () => {
-        this.fetchExpenses();
+        this.loadExpenses();
       })
       .subscribe();
   }

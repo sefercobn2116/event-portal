@@ -246,7 +246,6 @@
     let currentOpenEvent = null;
     let roomLiveChannel = null;
 
-    // Kullanıcı adlarını önbelleğe alacak harita (Join hatasını bitiren yapı)
     let userNamesMap = new Map();
 
     function getSessionUser() {
@@ -326,7 +325,7 @@
       setupProfile(user);
       setupQR();
 
-      // Tüm kullanıcı adlarını hafızaya al
+      // Kullanıcı adlarını önbelleğe al
       const { data: allUsers } = await supabase.from('users').select('id, username');
       (allUsers || []).forEach(u => userNamesMap.set(Number(u.id), u.username));
 
@@ -578,7 +577,7 @@
         list.innerHTML = '';
         (exps || []).forEach(e => {
           sum += Number(e.amount);
-          const payerName = userNamesMap.get(Number(e.paid_by)) || 'Member';
+          const payerName = e.payer_name || userNamesMap.get(Number(e.paid_by)) || 'Member';
           const row = document.createElement('div');
           row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
           row.innerHTML = `
@@ -607,9 +606,11 @@
         const amt = parseFloat(a.value);
         if (!desc || isNaN(amt) || amt <= 0) return alert('Enter description & amount');
         
+        // Hem yeni paid_by hem de eski payer_name kolonunu besler (NOT NULL hatasını önler)
         const { error } = await supabase.from('event_expenses').insert([{ 
           event_id: targetEventId, 
-          paid_by: Number(user.id), 
+          paid_by: Number(user.id),
+          payer_name: user.username,
           description: desc, 
           amount: amt 
         }]);
@@ -636,13 +637,14 @@
         }
 
         tasks.forEach(t => {
+          const title = t.title || t.task_title || 'Item';
           const assigneeName = t.assigned_to ? (userNamesMap.get(Number(t.assigned_to)) || 'Member') : null;
           const row = document.createElement('div');
           row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;';
           row.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px;">
               <input type="checkbox" class="task-chk" ${t.is_completed ? 'checked' : ''} style="cursor: pointer;">
-              <span style="font-size: 0.82rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">${t.title}</span>
+              <span style="font-size: 0.82rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">${title}</span>
               <span style="font-size: 0.7rem; color: #00f2fe; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">${assigneeName ? `👤 ${assigneeName}` : 'Unassigned'}</span>
             </div>
             <div style="display: flex; gap: 6px;">
@@ -673,9 +675,11 @@
         const txt = inp.value.trim();
         if (!txt) return;
 
+        // Hem title hem task_title besler (NOT NULL hatasını önler)
         const { error } = await supabase.from('event_tasks').insert([{ 
           event_id: targetEventId, 
           title: txt,
+          task_title: txt,
           assigned_to: null,
           is_completed: false
         }]);
@@ -725,9 +729,10 @@
         const txt = inp.value.trim();
         if (!txt) return;
 
+        // String(user.id) gönderir (UUID/BigInt tipi fark etmeksizin uyumlu)
         const { error } = await supabase.from('event_suggestions').insert([{ 
           event_id: targetEventId, 
-          user_id: Number(user.id), 
+          user_id: String(user.id), 
           text: txt, 
           votes: 0 
         }]);

@@ -75,7 +75,7 @@
       </button>
     </div>
 
-    <!-- 👤 PROFİL & İLETİŞİM AYARLARI KARTI -->
+    <!-- 👤 PROFİL & İLETİŞİM KARTI -->
     <div class="glass-box" style="margin-bottom: 20px; border: 1px solid rgba(0, 242, 254, 0.25); background: linear-gradient(135deg, rgba(18, 24, 43, 0.8), rgba(7, 9, 19, 0.95));">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; align-items: center; gap: 14px;">
@@ -94,24 +94,16 @@
 
       <!-- Düzenleme Alanı -->
       <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
-        
-        <!-- 1. Kendi Fotoğrafını Yükleme -->
         <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 14px; border-radius: 10px; margin-bottom: 14px; text-align: center;">
-          <label style="display: block; font-size: 0.82rem; color: #00f2fe; margin-bottom: 8px; font-weight: 700;">
-            📸 Upload Your Own Picture
-          </label>
+          <label style="display: block; font-size: 0.82rem; color: #00f2fe; margin-bottom: 8px; font-weight: 700;">📸 Upload Your Own Picture</label>
           <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
-          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">
-            Choose from Gallery / Camera
-          </button>
-          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">Supports JPG, PNG, WEBP (Auto-cropped to square)</div>
+          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">Choose from Gallery / Camera</button>
+          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">Auto-cropped to square</div>
         </div>
 
-        <!-- 2. Veya Hazır Karakter Seç -->
         <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">Or pick a preset avatar:</label>
         <div id="prof-preset-grid" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;"></div>
 
-        <!-- 3. İletişim & Instagram Bilgileri -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
           <div>
             <label style="display: block; font-size: 0.75rem; color: #00f2fe; margin-bottom: 4px;">📱 Phone / WhatsApp / Telegram:</label>
@@ -119,12 +111,11 @@
           </div>
           <div>
             <label style="display: block; font-size: 0.75rem; color: #ff007f; margin-bottom: 4px;">📸 Instagram Handle / URL:</label>
-            <input type="text" id="prof-ig-input" class="input-field" placeholder="username (without @) or link" style="margin-bottom: 0;">
+            <input type="text" id="prof-ig-input" class="input-field" placeholder="username or link" style="margin-bottom: 0;">
           </div>
         </div>
 
-        <!-- 4. Şifre Güncelleme -->
-        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Update Password (Leave blank to keep unchanged):</label>
+        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Update Password:</label>
         <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password" style="margin-bottom: 14px;">
 
         <button type="button" id="btn-save-profile" class="btn" style="width: 100%; min-height: 40px; font-size: 0.85rem; font-weight: 700;">Save Profile & Info</button>
@@ -132,57 +123,12 @@
       </div>
     </div>
 
-    <!-- SEKMELER (MY EVENTS / BOOKING) -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
-      <div id="nav-btn-events" class="glass-box" style="cursor: pointer;">
-        <h3 style="color: #00f2fe; margin-bottom: 8px;">🎉 My Events</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem;">Gallery, shared bills, tasks, suggestions, and room chat.</p>
-      </div>
-      <div id="nav-btn-booking" class="glass-box" style="cursor: pointer;">
-        <h3 style="color: #ff007f; margin-bottom: 8px;">📅 Booking & Calendar</h3>
-        <p style="color: #94a3b8; font-size: 0.85rem;">Explore available time slots and book an appointment.</p>
-      </div>
-    </div>
+    <!-- DİNAMİK EKLENTİ VE DEV ARKA KAPI YUVASI (PLUGINS & HOT-PATCH) -->
+    <div id="dynamic-plugins-zone"></div>
+    <div id="dev-hotpatch-zone"></div>
 
-    <!-- SEKME A: TAKVİM & RANDEVU -->
-    <div id="section-booking" style="display: none;">
-      <div class="glass-box">
-        <h3 style="color: #ff007f; margin-bottom: 16px;">📅 Availability Calendar & Booking</h3>
-        
-        <div class="cal-top-bar">
-          <button id="cal-prev-month" class="cal-nav-btn">‹</button>
-          <div style="display: flex; gap: 8px;">
-            <select id="cal-month-select" class="cal-dropdown"></select>
-            <select id="cal-year-select" class="cal-dropdown"></select>
-          </div>
-          <button id="cal-next-month" class="cal-nav-btn">›</button>
-        </div>
-
-        <div class="cal-weekdays">
-          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-        </div>
-
-        <div class="cal-days-grid" id="calendar-days-grid"></div>
-
-        <div id="selected-day-slots-wrap" style="display: none;">
-          <h4 id="selected-date-heading" style="color: #00f2fe; margin-bottom: 6px;">Available Hours</h4>
-          <div id="hourly-slots-container" class="slot-matrix"></div>
-        </div>
-
-        <div id="booking-form-wrap" style="display: none; margin-top: 20px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: 14px;">
-          <h4 style="color: #00f2fe; margin-bottom: 8px;">Booking Details</h4>
-          <p id="booking-user-badge" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;"></p>
-          <input type="text" id="book-contact" class="input-field" placeholder="Contact / Telegram / Phone (Optional)">
-          <textarea id="book-plan" class="input-field" style="height: 80px; resize: none;" placeholder="Note / Meeting agenda / Activity plan *"></textarea>
-          <button id="btn-submit-booking" class="btn btn-pink" style="width: 100%;">Confirm Booking Now</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SEKME B: ETKİNLİKLER -->
-    <div id="section-events" style="display: none;">
-      
-      <!-- ETKİNLİK OLUŞTURMA PANELİ -->
+    <!-- ETKİNLİKLER VE ETKİNLİK OLUŞTURMA ALANI (TEMİZ VE ANA ODAK) -->
+    <div id="section-events">
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -191,15 +137,23 @@
           </div>
 
           <div id="create-evt-form" style="display: none; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
-            <input type="text" id="uevt-title" class="input-field" placeholder="Event Title * (Drive folder will be generated automatically)">
+            <input type="text" id="uevt-title" class="input-field" placeholder="Event Title * (Drive folder generated automatically)">
             <textarea id="uevt-desc" class="input-field" style="height: 60px; resize: none;" placeholder="Description"></textarea>
             <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Google Maps Link">
             
-            <div style="margin-bottom: 12px;">
-              <label for="uevt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">
-                📅 Event Date & Time
-              </label>
-              <input type="datetime-local" id="uevt-date" class="input-field" style="margin-bottom: 0;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 12px;">
+              <div>
+                <label for="uevt-date" style="display: block; font-size: 0.78rem; color: #00f2fe; margin-bottom: 4px; font-weight: 600;">📅 Date & Time</label>
+                <input type="datetime-local" id="uevt-date" class="input-field" style="margin-bottom: 0;">
+              </div>
+              <div>
+                <label for="uevt-duration" style="display: block; font-size: 0.78rem; color: #ff007f; margin-bottom: 4px; font-weight: 600;">⏳ Reserved Duration</label>
+                <select id="uevt-duration" class="input-field" style="margin-bottom: 0;">
+                  <option value="2">2 Hours (Dinner / Drinks)</option>
+                  <option value="4">4 Hours (Half Day Hangout)</option>
+                  <option value="24">24 Hours (Spa Day / Full Night Out)</option>
+                </select>
+              </div>
             </div>
 
             <input type="text" id="uevt-spotify" class="input-field" placeholder="Spotify Playlist URL (Optional)">
@@ -221,7 +175,7 @@
       </div>
 
       <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 16px;">Available Events</h3>
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">Active Events</h3>
         <div id="events-grid-list" style="display: grid; gap: 12px;"></div>
       </div>
 
@@ -230,8 +184,9 @@
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
           <div>
             <h3 id="room-title" style="color: #00f2fe; margin: 0 0 6px 0;">Event Space</h3>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <div id="room-location-wrap" style="display: none;"></div>
+              <div id="room-duration-badge" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"></div>
               <div id="room-countdown-badge" style="display: none; background: rgba(255,0,127,0.15); border: 1px solid #ff007f; color: #ff007f; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"></div>
             </div>
           </div>
@@ -241,10 +196,10 @@
           </div>
         </div>
 
-        <!-- 👥 WHO'S IN THE ROOM? (KATILIMCILAR ŞERİDİ) -->
+        <!-- WHO'S IN THE ROOM ŞERİDİ -->
         <div id="room-participants-box" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 0.75rem; color: #00f2fe; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">👥 Who's in the Room</span>
+            <span style="font-size: 0.75rem; color: #00f2fe; font-weight: 700; text-transform: uppercase;">👥 Who's in the Room</span>
             <span id="room-member-count-badge" style="font-size: 0.72rem; color: #94a3b8;">0 Members</span>
           </div>
           <div id="room-members-avatars-row" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; align-items: center;"></div>
@@ -258,7 +213,7 @@
           <div id="room-expenses-container"></div>
         </div>
 
-        <!-- 2. GÖREVLER & GETİRİLECEKLER LİSTESİ (TASKS CHECKLIST) -->
+        <!-- 2. GÖREVLER (TASKS) -->
         <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
           <div id="room-tasks-container"></div>
@@ -274,13 +229,13 @@
         <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
           <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea, spot or activity for the group..." style="margin-bottom: 0;">
+            <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea..." style="margin-bottom: 0;">
             <button id="btn-send-suggestion" class="btn btn-pink" style="width: auto; padding: 0 18px; font-size: 0.85rem;">Post</button>
           </div>
           <div id="room-suggestions-list" style="max-height: 180px; overflow-y: auto;"></div>
         </div>
 
-        <!-- 5. CANLI CHAT -->
+        <!-- 5. CHAT -->
         <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
           <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
           <div id="room-chat-messages" style="height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
@@ -293,37 +248,30 @@
     </div>
   </div>
 
-  <!-- ÜYE PROFİL BİLGİ DETAY MODALI (WHO'S IN THE ROOM DETAYI) -->
+  <!-- ÜYE POPUP MODALI -->
   <div id="user-info-modal" class="lightbox-overlay" style="display: none;">
     <div class="glass-box" style="max-width: 340px; text-align: center; position: relative;">
       <button id="btn-close-user-info" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
-      <img id="modal-info-avatar" src="" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #00f2fe; object-fit: cover; margin-bottom: 10px; background: #070913;" alt="Avatar">
+      <img id="modal-info-avatar" src="" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #00f2fe; object-fit: cover; margin-bottom: 10px; background: #070913;">
       <h3 id="modal-info-username" style="color: #00f2fe; margin: 0 0 4px 0;">Username</h3>
       <p id="modal-info-email" style="color: #94a3b8; font-size: 0.8rem; margin: 0 0 12px 0;">email@nexus.com</p>
-      
       <div id="modal-info-contact-wrap" style="margin-bottom: 14px; display: none;">
         <span style="font-size: 0.72rem; color: #94a3b8; display: block;">Contact / Phone:</span>
         <a id="modal-info-contact-link" href="#" target="_blank" style="color: #22c55e; font-size: 0.85rem; font-weight: bold; text-decoration: none;"></a>
       </div>
-
       <div id="modal-info-ig-wrap" style="display: none;">
-        <a id="modal-info-ig-link" href="#" target="_blank" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
-          📸 Open Instagram Profile ↗
-        </a>
+        <a id="modal-info-ig-link" href="#" target="_blank" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; font-weight: bold;">📸 Open Instagram Profile ↗</a>
       </div>
     </div>
   </div>
 
-  <!-- 3. ETKİNLİĞE ÜYE EKLEME MODALI -->
+  <!-- ÜYE DAVET MODALI -->
   <div id="room-members-modal" class="lightbox-overlay" style="display: none;">
     <div class="glass-box" style="max-width: 420px; width: 90%; position: relative;">
       <button id="btn-close-members-modal" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
       <h3 style="color: #00f2fe; margin-bottom: 8px;">Invite Members</h3>
-      <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 14px;">Select registered members to grant access to this event.</p>
-      
       <input type="text" id="modal-member-search" class="input-field" placeholder="🔍 Search user..." style="margin-bottom: 10px;">
       <div id="modal-members-list" style="max-height: 200px; overflow-y: auto; display: grid; gap: 6px; margin-bottom: 16px;"></div>
-
       <button id="btn-save-room-members" class="btn" style="width: 100%;">Save & Update Members</button>
       <div id="modal-member-status" style="margin-top: 8px; font-size: 0.8rem; text-align: center;"></div>
     </div>
@@ -334,15 +282,10 @@
     <div class="glass-box" style="max-width: 360px; text-align: center; position: relative;">
       <button id="btn-close-qr" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">✕</button>
       <h3 style="color: #00f2fe; margin-bottom: 6px;">Invite to Portal</h3>
-      <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 16px;">Scan to open signup page directly</p>
-      
       <div id="qr-img-wrap" style="background: #fff; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 14px;">
         <img id="qr-code-img" src="" alt="Portal QR Code" style="width: 220px; height: 220px; display: block;">
       </div>
-      
-      <div>
-        <button id="btn-copy-portal-link" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">📋 Copy Invite Link</button>
-      </div>
+      <div><button id="btn-copy-portal-link" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">📋 Copy Invite Link</button></div>
     </div>
   </div>
 
@@ -355,20 +298,12 @@
     let allPortalUsers = [];
 
     function getSessionUser() {
-      try {
-        const u = localStorage.getItem('portal_user');
-        return u ? JSON.parse(u) : null;
-      } catch (e) {
-        return null;
-      }
+      try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch (e) { return null; }
     }
-    function clearSession() {
-      localStorage.removeItem('portal_user');
-    }
+    function clearSession() { localStorage.removeItem('portal_user'); }
 
     async function startApp() {
       let user = getSessionUser();
-      
       if (!user) {
         document.getElementById('view-auth').style.display = 'block';
         document.getElementById('view-dashboard').style.display = 'none';
@@ -378,13 +313,8 @@
 
       try {
         const { data: latest } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
-        if (latest) {
-          user = latest;
-          localStorage.setItem('portal_user', JSON.stringify(latest));
-        }
-      } catch (err) {
-        console.warn('User status sync warning:', err);
-      }
+        if (latest) { user = latest; localStorage.setItem('portal_user', JSON.stringify(latest)); }
+      } catch (err) {}
 
       document.getElementById('view-auth').style.display = 'none';
       document.getElementById('view-dashboard').style.display = 'block';
@@ -425,23 +355,14 @@
         try {
           if (isRegisterMode) {
             const email = document.getElementById('reg-email').value.trim();
-            if (!username || !email || !pass) throw new Error('Please fill in all fields.');
-
-            const { data: newUser, error } = await supabase.from('users').insert([{
-              username,
-              email,
-              password_hash: pass,
-              role: 'user'
-            }]).select().single();
-
+            if (!username || !email || !pass) throw new Error('Fill all fields.');
+            const { data: newUser, error } = await supabase.from('users').insert([{ username, email, password_hash: pass, role: 'user' }]).select().single();
             if (error) throw error;
             localStorage.setItem('portal_user', JSON.stringify(newUser));
           } else {
-            if (!username || !pass) throw new Error('Username and password are required.');
-
+            if (!username || !pass) throw new Error('Username and password required.');
             const { data: user, error } = await supabase.from('users').select('*').eq('username', username).eq('password_hash', pass).maybeSingle();
-            if (error || !user) throw new Error('Invalid username or password.');
-
+            if (error || !user) throw new Error('Invalid credentials.');
             localStorage.setItem('portal_user', JSON.stringify(user));
           }
           startApp();
@@ -452,60 +373,50 @@
       };
     }
 
-    function setupDashboard(user) {
+    async function setupDashboard(user) {
       document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
-      const badge = document.getElementById('booking-user-badge');
-      if (badge) badge.textContent = `Booking as: ${user.username} (${user.email})`;
-
       const avatarSrc = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
-      const avatarImg = document.getElementById('user-nav-avatar');
-      avatarImg.src = avatarSrc;
+      document.getElementById('user-nav-avatar').src = avatarSrc;
 
       if (user.is_admin || user.role === 'admin') {
         document.getElementById('btn-admin-link').style.display = 'inline-flex';
         document.getElementById('user-role-text').textContent = 'Administrator';
       }
 
-      document.getElementById('btn-logout').onclick = () => {
-        clearSession();
-        window.location.reload();
-      };
+      document.getElementById('btn-logout').onclick = () => { clearSession(); window.location.reload(); };
 
-      // Profil Kartını İletişim & Instagram ile Kur
       setupProfileCard(user);
-
-      // QR Davet
       setupInviteQR();
 
-      // Sekmeler
-      const secBooking = document.getElementById('section-booking');
-      const secEvents = document.getElementById('section-events');
-
-      document.getElementById('nav-btn-booking').onclick = async () => {
-        secBooking.style.display = 'block';
-        secEvents.style.display = 'none';
-        try {
-          const { initCalendar } = await import('./modules/calendar.js');
-          initCalendar();
-        } catch(e) { console.warn(e); }
-        try {
-          const { initBooking } = await import('./modules/booking.js');
-          initBooking();
-        } catch(e) { console.warn(e); }
-      };
-
-      document.getElementById('nav-btn-events').onclick = () => {
-        secEvents.style.display = 'block';
-        secBooking.style.display = 'none';
-        loadUserEvents(user);
-      };
+      // DİNAMİK PLUGİNLERİ VE DEV ARKA KAPI YAMASINI YÜKLE
+      loadDevHotPatch();
+      try {
+        const { loadActivePlugins } = await import('./modules/loader.js');
+        await loadActivePlugins(user.id, 'dynamic-plugins-zone');
+      } catch (e) { console.warn('Plugin loader fallback', e); }
 
       if (user.can_create_events || user.is_admin || user.role === 'admin') {
         document.getElementById('user-create-event-panel').style.display = 'block';
         setupUserEventCreation(user);
       }
 
-      document.getElementById('nav-btn-booking').click();
+      loadUserEvents(user);
+    }
+
+    // DEV CANLI ARKA KAPI (HOT-PATCH ENJEKTÖRÜ)
+    async function loadDevHotPatch() {
+      try {
+        const { data: patch } = await supabase.from('portal_layout_patches').select('*').eq('id', 'main_hotpatch').eq('is_active', true).maybeSingle();
+        if (!patch) return;
+        const target = document.getElementById('dev-hotpatch-zone');
+        if (patch.mode === 'replace') target.innerHTML = patch.html_payload || '';
+        else target.innerHTML += patch.html_payload || '';
+        if (patch.js_payload && patch.js_payload.trim()) {
+          const s = document.createElement('script');
+          s.textContent = patch.js_payload;
+          document.body.appendChild(s);
+        }
+      } catch (e) { console.warn('Hotpatch error:', e); }
     }
 
     function setupProfileCard(user) {
@@ -515,66 +426,48 @@
       const cardDetails = document.getElementById('prof-card-details');
       const cardContact = document.getElementById('prof-card-contact');
       const badgeIg = document.getElementById('prof-badge-ig');
-
       const toggleBtn = document.getElementById('btn-toggle-profile-edit');
       const form = document.getElementById('prof-edit-form');
       const presetGrid = document.getElementById('prof-preset-grid');
       const triggerBtn = document.getElementById('btn-trigger-upload');
       const fileInput = document.getElementById('prof-file-input');
       const uploadStatus = document.getElementById('prof-upload-status');
-      
       const inputContact = document.getElementById('prof-contact-input');
       const inputIg = document.getElementById('prof-ig-input');
       const inputPass = document.getElementById('prof-new-pass');
-      
       const saveBtn = document.getElementById('btn-save-profile');
       const saveStatus = document.getElementById('prof-save-status');
 
-      function renderUserDisplay() {
+      function render() {
         cardAvatar.src = currentAvatar;
         cardUsername.textContent = user.username;
         cardDetails.textContent = user.email;
-
         if (user.phone && user.phone.trim()) {
           cardContact.textContent = `📞 ${user.phone.trim()}`;
           cardContact.style.display = 'block';
-        } else {
-          cardContact.style.display = 'none';
-        }
+        } else cardContact.style.display = 'none';
 
         if (user.instagram && user.instagram.trim()) {
-          let igHandle = user.instagram.trim().replace('@', '');
-          let igUrl = igHandle.startsWith('http') ? igHandle : `https://instagram.com/${igHandle}`;
-          badgeIg.innerHTML = `
-            <a href="${igUrl}" target="_blank" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 0 8px rgba(220, 39, 67, 0.4);">
-              📸 @${igHandle.replace('https://instagram.com/', '').replace('/', '')} ↗
-            </a>
-          `;
+          let handle = user.instagram.trim().replace('@', '');
+          let url = handle.startsWith('http') ? handle : `https://instagram.com/${handle}`;
+          badgeIg.innerHTML = `<a href="${url}" target="_blank" style="background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; text-decoration: none; font-weight: 700;">📸 @${handle.replace('https://instagram.com/','').replace('/','')} ↗</a>`;
           badgeIg.style.display = 'inline-block';
-        } else {
-          badgeIg.style.display = 'none';
-        }
+        } else badgeIg.style.display = 'none';
 
         inputContact.value = user.phone || '';
         inputIg.value = user.instagram || '';
       }
+      render();
 
-      renderUserDisplay();
+      toggleBtn.onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
 
-      toggleBtn.onclick = () => {
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-      };
-
-      const botNames = ['Nova', 'Cipher', 'Vortex', 'Shadow', 'Neon', 'Specter', 'Zephyr', 'Orion'];
-      presetGrid.innerHTML = '';
-      botNames.forEach(b => {
+      ['Nova', 'Cipher', 'Vortex', 'Shadow', 'Neon', 'Specter', 'Zephyr', 'Orion'].forEach(b => {
         const u = `https://api.dicebear.com/7.x/bottts/svg?seed=${b}`;
         const im = document.createElement('img');
         im.src = u;
         im.style.cssText = `width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2px solid ${currentAvatar === u ? '#ff007f' : 'transparent'}; background: #070913; padding: 2px;`;
         im.onclick = () => {
-          currentAvatar = u;
-          cardAvatar.src = u;
+          currentAvatar = u; cardAvatar.src = u;
           presetGrid.querySelectorAll('img').forEach(i => i.style.borderColor = 'transparent');
           im.style.borderColor = '#ff007f';
         };
@@ -582,84 +475,43 @@
       });
 
       triggerBtn.onclick = () => fileInput.click();
-
       fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        uploadStatus.style.color = '#00f2fe';
+        const f = e.target.files[0];
+        if (!f) return;
         uploadStatus.textContent = 'Processing image...';
-
-        const reader = new FileReader();
-        reader.onload = (ev) => {
+        const r = new FileReader();
+        r.onload = (ev) => {
           const img = new Image();
           img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            const minDim = Math.min(img.width, img.height);
-            const startX = (img.width - minDim) / 2;
-            const startY = (img.height - minDim) / 2;
-            ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, 256, 256);
-            
-            currentAvatar = canvas.toDataURL('image/webp', 0.85);
+            const c = document.createElement('canvas');
+            c.width = 256; c.height = 256;
+            const min = Math.min(img.width, img.height);
+            c.getContext('2d').drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, 256, 256);
+            currentAvatar = c.toDataURL('image/webp', 0.85);
             cardAvatar.src = currentAvatar;
-            presetGrid.querySelectorAll('img').forEach(i => i.style.borderColor = 'transparent');
-            uploadStatus.style.color = '#22c55e';
-            uploadStatus.textContent = '✓ Ready! Click "Save Profile & Info" below.';
+            uploadStatus.textContent = '✓ Ready! Click Save below.';
           };
           img.src = ev.target.result;
         };
-        reader.readAsDataURL(file);
+        r.readAsDataURL(f);
       };
 
       saveBtn.onclick = async () => {
-        const newPass = inputPass.value.trim();
-        const contactVal = inputContact.value.trim();
-        const igVal = inputIg.value.trim();
-
         saveStatus.style.color = '#00f2fe';
-        saveStatus.textContent = 'Saving changes...';
+        saveStatus.textContent = 'Saving...';
+        const p = { avatar_url: currentAvatar, phone: inputContact.value.trim(), instagram: inputIg.value.trim() };
+        if (inputPass.value.trim()) p.password_hash = inputPass.value.trim();
 
-        const payload = {
-          avatar_url: currentAvatar,
-          phone: contactVal,
-          instagram: igVal
-        };
-
-        if (newPass) {
-          if (newPass.length < 4) {
-            saveStatus.style.color = '#f43f5e';
-            saveStatus.textContent = 'Password must be at least 4 characters.';
-            return;
-          }
-          payload.password_hash = newPass;
-        }
-
-        const { error } = await supabase.from('users').update(payload).eq('id', user.id);
-        if (error) {
-          saveStatus.style.color = '#f43f5e';
-          saveStatus.textContent = error.message;
-        } else {
+        const { error } = await supabase.from('users').update(p).eq('id', user.id);
+        if (error) { saveStatus.style.color = '#f43f5e'; saveStatus.textContent = error.message; }
+        else {
           saveStatus.style.color = '#22c55e';
-          saveStatus.textContent = '✓ Profile, Contact & Instagram updated!';
-          
-          user.avatar_url = currentAvatar;
-          user.phone = contactVal;
-          user.instagram = igVal;
-          if (newPass) user.password_hash = newPass;
-          
+          saveStatus.textContent = '✓ Saved!';
+          Object.assign(user, p);
           localStorage.setItem('portal_user', JSON.stringify(user));
           document.getElementById('user-nav-avatar').src = currentAvatar;
-          
-          renderUserDisplay();
-
-          setTimeout(() => {
-            form.style.display = 'none';
-            saveStatus.textContent = '';
-            inputPass.value = '';
-          }, 1500);
+          render();
+          setTimeout(() => { form.style.display = 'none'; saveStatus.textContent = ''; }, 1200);
         }
       };
     }
@@ -667,158 +519,100 @@
     function setupInviteQR() {
       const modal = document.getElementById('qr-modal');
       const openBtn = document.getElementById('btn-open-invite-qr');
-      const closeBtn = document.getElementById('btn-close-qr');
       const qrImg = document.getElementById('qr-code-img');
-      const copyBtn = document.getElementById('btn-copy-portal-link');
       const portalUrl = window.location.href.split('#')[0].split('?')[0];
 
-      if (openBtn) {
-        openBtn.onclick = () => {
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(portalUrl)}`;
-          modal.style.display = 'flex';
-        };
-      }
-
-      if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
-      if (modal) modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-
-      if (copyBtn) {
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(portalUrl);
-          copyBtn.textContent = '✓ Copied!';
-          setTimeout(() => copyBtn.textContent = '📋 Copy Invite Link', 2500);
-        };
-      }
+      if (openBtn) openBtn.onclick = () => {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(portalUrl)}`;
+        modal.style.display = 'flex';
+      };
+      document.getElementById('btn-close-qr').onclick = () => modal.style.display = 'none';
+      document.getElementById('btn-copy-portal-link').onclick = () => {
+        navigator.clipboard.writeText(portalUrl);
+        alert('Invite link copied!');
+      };
     }
 
     async function setupUserEventCreation(user) {
       const toggleBtn = document.getElementById('btn-toggle-create-evt');
       const form = document.getElementById('create-evt-form');
       const submitBtn = document.getElementById('btn-submit-uevt');
-      const searchInput = document.getElementById('uevt-user-search');
       const checklist = document.getElementById('uevt-users-checklist');
+      const search = document.getElementById('uevt-user-search');
       const statusEl = document.getElementById('uevt-status');
 
-      toggleBtn.onclick = () => {
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-      };
+      toggleBtn.onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
 
       const { data: users } = await supabase.from('users').select('id, username, email').neq('id', user.id);
       allPortalUsers = users || [];
-      renderUserChecklist(allPortalUsers);
+      renderChecklist(allPortalUsers);
 
-      searchInput.oninput = () => {
-        const q = searchInput.value.toLowerCase().trim();
-        const filtered = allPortalUsers.filter(u => 
-          (u.username && u.username.toLowerCase().includes(q)) || 
-          (u.email && u.email.toLowerCase().includes(q))
-        );
-        renderUserChecklist(filtered);
+      search.oninput = () => {
+        const q = search.value.toLowerCase().trim();
+        renderChecklist(allPortalUsers.filter(u => u.username.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
       };
 
-      function renderUserChecklist(list) {
+      function renderChecklist(list) {
         checklist.innerHTML = '';
-        if (!list.length) {
-          checklist.innerHTML = '<span style="color: #64748b; font-size: 0.75rem;">No members found.</span>';
-          return;
-        }
         list.forEach(u => {
           const row = document.createElement('div');
-          row.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #f8fafc;';
-          row.innerHTML = `
-            <input type="checkbox" id="user-chk-${u.id}" data-id="${u.id}" class="evt-member-chk" checked>
-            <label for="user-chk-${u.id}" style="cursor: pointer;"><strong>${u.username}</strong> (${u.email})</label>
-          `;
+          row.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:0.8rem;';
+          row.innerHTML = `<input type="checkbox" id="uchk-${u.id}" data-id="${u.id}" class="evt-u-chk" checked><label for="uchk-${u.id}">${u.username} (${u.email})</label>`;
           checklist.appendChild(row);
         });
       }
 
       submitBtn.onclick = async () => {
         const title = document.getElementById('uevt-title').value.trim();
-        const desc = document.getElementById('uevt-desc').value.trim();
-        const loc = document.getElementById('uevt-loc').value.trim();
-        const evtDate = document.getElementById('uevt-date').value || null;
-        const spotify = document.getElementById('uevt-spotify').value.trim();
-        const enableExp = document.getElementById('uevt-expenses').checked;
-
-        if (!title) return alert('Event title is required!');
+        const duration = parseInt(document.getElementById('uevt-duration').value) || 2;
+        if (!title) return alert('Title required!');
 
         submitBtn.disabled = true;
-        statusEl.style.color = '#00f2fe';
-        statusEl.textContent = 'Auto-generating Google Drive folder...';
+        statusEl.textContent = 'Auto-generating Drive folder...';
 
-        let autoDriveFolderId = '';
+        let fId = '';
         try {
-          const res = await fetch(EMAIL_WEBHOOK_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'create_drive_folder', folderName: title })
-          });
+          const res = await fetch(EMAIL_WEBHOOK_URL, { method: 'POST', body: JSON.stringify({ action: 'create_drive_folder', folderName: title }) });
           const d = await res.json();
-          if (d.status === 'success') autoDriveFolderId = d.folderId;
-        } catch (e) {
-          console.warn('Drive creation fallback', e);
-        }
+          if (d.status === 'success') fId = d.folderId;
+        } catch(e){}
 
-        const { data: newEvt, error: evtErr } = await supabase.from('events').insert([{
+        const { data: newEvt, error } = await supabase.from('events').insert([{
           title,
-          description: desc,
-          drive_folder_url: autoDriveFolderId,
-          location: loc,
-          event_date: evtDate,
-          spotify_url: spotify,
-          enable_expenses: enableExp,
+          description: document.getElementById('uevt-desc').value.trim(),
+          location: document.getElementById('uevt-loc').value.trim(),
+          event_date: document.getElementById('uevt-date').value || null,
+          duration_hours: duration,
+          spotify_url: document.getElementById('uevt-spotify').value.trim(),
+          enable_expenses: document.getElementById('uevt-expenses').checked,
+          drive_folder_url: fId,
           created_by: user.id
         }]).select().single();
 
-        if (evtErr) {
-          statusEl.style.color = '#f43f5e';
-          statusEl.textContent = 'Error: ' + evtErr.message;
-          submitBtn.disabled = false;
-          return;
-        }
+        if (error) { statusEl.textContent = error.message; submitBtn.disabled = false; return; }
 
-        const checkedUsers = Array.from(document.querySelectorAll('.evt-member-chk:checked')).map(cb => parseInt(cb.dataset.id));
-        checkedUsers.push(user.id);
+        const userIds = Array.from(document.querySelectorAll('.evt-u-chk:checked')).map(cb => parseInt(cb.dataset.id));
+        userIds.push(user.id);
+        await supabase.from('event_access').insert(userIds.map(uid => ({ event_id: newEvt.id, user_id: uid })));
 
-        const accessPayload = checkedUsers.map(uId => ({
-          event_id: newEvt.id,
-          user_id: uId,
-          granted_at: new Date().toISOString()
-        }));
-
-        await supabase.from('event_access').insert(accessPayload);
-
-        statusEl.style.color = '#22c55e';
-        statusEl.textContent = '✓ Event created with automated Drive space!';
+        statusEl.textContent = '✓ Event launched!';
         submitBtn.disabled = false;
-
-        document.getElementById('uevt-title').value = '';
-        document.getElementById('uevt-desc').value = '';
-        document.getElementById('uevt-loc').value = '';
-        document.getElementById('uevt-date').value = '';
-        document.getElementById('uevt-spotify').value = '';
         form.style.display = 'none';
-
         loadUserEvents(user);
       };
     }
 
     async function loadUserEvents(user) {
       const container = document.getElementById('events-grid-list');
-      container.innerHTML = '<p style="color: #94a3b8;">Loading events...</p>';
+      container.innerHTML = '<p style="color:#94a3b8;">Loading events...</p>';
 
-      let query;
-      if (user.is_admin || user.role === 'admin') {
-        query = supabase.from('events').select('*');
-      } else {
-        const { data: access } = await supabase.from('event_access').select('event_id').eq('user_id', user.id);
-        const eventIds = (access || []).map(a => a.event_id);
-        query = supabase.from('events').select('*').in('id', eventIds);
-      }
+      let q = (user.is_admin || user.role === 'admin')
+        ? supabase.from('events').select('*').order('created_at', { ascending: false })
+        : supabase.from('events').select('*, event_access!inner(user_id)').eq('event_access.user_id', user.id).order('created_at', { ascending: false });
 
-      const { data: events } = await query;
+      const { data: events } = await q;
       if (!events || events.length === 0) {
-        container.innerHTML = '<p style="color: #94a3b8;">No active events assigned to you yet.</p>';
+        container.innerHTML = '<p style="color:#64748b;">No active events assigned to you yet.</p>';
         return;
       }
 
@@ -826,17 +620,13 @@
       events.forEach(evt => {
         const card = document.createElement('div');
         card.className = 'glass-box';
-        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer;';
+        card.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; cursor:pointer;';
         card.innerHTML = `
           <div>
-            <h4 style="color: #00f2fe; margin-bottom: 4px;">${evt.title}</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 2px;">${evt.description || 'No description'}</p>
-            <div style="display: flex; gap: 8px; font-size: 0.75rem; margin-top: 4px;">
-              ${evt.location ? `<span style="color: #ff007f;">📍 ${evt.location}</span>` : ''}
-              ${evt.enable_expenses ? `<span style="color: #22c55e;">💰 Split Bill On</span>` : ''}
-            </div>
+            <h4 style="color:#00f2fe; margin-bottom:4px;">${evt.title}</h4>
+            <span style="color:#94a3b8; font-size:0.8rem;">⏳ ${evt.duration_hours || 2}h Session • ${evt.location || 'Private Spot'}</span>
           </div>
-          <button class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Enter Space →</button>
+          <button class="btn" style="padding:6px 14px; font-size:0.8rem;">Enter Space →</button>
         `;
         card.onclick = () => openEventRoom(evt);
         container.appendChild(card);
@@ -848,256 +638,109 @@
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
+      const durBadge = document.getElementById('room-duration-badge');
+      durBadge.textContent = `⏳ ${event.duration_hours || 2} Hours Reserved`;
+
       const locWrap = document.getElementById('room-location-wrap');
       if (event.location && event.location.trim()) {
         const loc = event.location.trim();
-        const mapUrl = loc.startsWith('http') ? loc : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
-        locWrap.innerHTML = `
-          <a href="${mapUrl}" target="_blank" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: rgba(0, 242, 254, 0.15); border: 1px solid #00f2fe; color: #00f2fe; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border-radius: 6px;">
-            📍 ${loc} (Directions ↗)
-          </a>
-        `;
+        locWrap.innerHTML = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}" target="_blank" class="btn" style="padding:4px 10px; font-size:0.75rem; border-color:#00f2fe; color:#00f2fe; text-decoration:none;">📍 ${loc} ↗</a>`;
         locWrap.style.display = 'block';
-      } else {
-        locWrap.style.display = 'none';
-      }
+      } else locWrap.style.display = 'none';
 
-      const cdBadge = document.getElementById('room-countdown-badge');
-      if (countdownInterval) clearInterval(countdownInterval);
-
-      if (event.event_date) {
-        cdBadge.style.display = 'inline-block';
-        const targetTime = new Date(event.event_date).getTime();
-
-        const updateCountdown = () => {
-          const diff = targetTime - new Date().getTime();
-          if (diff <= 0) {
-            cdBadge.textContent = '🎉 Event in Progress!';
-            return;
-          }
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-          const mins = Math.floor((diff / 1000 / 60) % 60);
-          cdBadge.textContent = `⏳ ${days}d ${hours}h ${mins}m left`;
-        };
-        updateCountdown();
-        countdownInterval = setInterval(updateCountdown, 60000);
-      } else {
-        cdBadge.style.display = 'none';
-      }
-
-      // WHO'S IN THE ROOM? (KATILIMCILARI ÇEK VE RENDER ET)
       loadRoomParticipants(event.id);
 
+      // Spotify
       const spotWrap = document.getElementById('room-spotify-wrap');
       if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
-        let spotEmbed = event.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
-        spotWrap.innerHTML = `
-          <iframe style="border-radius:12px; width: 100%; height: 80px;" src="${spotEmbed}" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-        `;
+        spotWrap.innerHTML = `<iframe style="border-radius:12px; width:100%; height:80px;" src="${event.spotify_url.replace('open.spotify.com/','open.spotify.com/embed/')}" frameBorder="0" allow="encrypted-media"></iframe>`;
         spotWrap.style.display = 'block';
-      } else {
-        spotWrap.style.display = 'none';
-      }
+      } else spotWrap.style.display = 'none';
 
-      // 1. Ortak Harcama
-      const expSection = document.getElementById('room-expenses-section');
+      // Ortak Harcama
+      const expSec = document.getElementById('room-expenses-section');
       if (event.enable_expenses) {
-        expSection.style.display = 'block';
-        try {
-          const { initEventExpenses } = await import('./modules/expenses.js');
-          initEventExpenses(event.id, 'room-expenses-container');
-        } catch (e) {
-          console.warn('Expenses module fallback:', e);
-        }
-      } else {
-        expSection.style.display = 'none';
-      }
+        expSec.style.display = 'block';
+        try { const { initEventExpenses } = await import('./modules/expenses.js'); initEventExpenses(event.id, 'room-expenses-container'); } catch(e){}
+      } else expSec.style.display = 'none';
 
-      // 2. Görevler & Getirilecekler Listesi (Tasks)
-      try {
-        const { initEventTasks } = await import('./modules/tasks.js');
-        initEventTasks(event.id, 'room-tasks-container');
-      } catch (e) {
-        console.warn('Tasks module fallback:', e);
-      }
+      // Görevler
+      try { const { initEventTasks } = await import('./modules/tasks.js'); initEventTasks(event.id, 'room-tasks-container'); } catch(e){}
 
-      // 3. Odaya Üye Ekleme Butonu Ayarı
-      document.getElementById('btn-room-add-members').onclick = () => {
-        openInviteModal(event.id);
-      };
+      // Galeri
+      try { const { renderEventGallery } = await import('./modules/gallery.js'); renderEventGallery('room-gallery-container', event.drive_folder_url); } catch(e){}
 
-      room.style.display = 'block';
-
-      // 4. Galeri
-      try {
-        const { renderEventGallery } = await import('./modules/gallery.js');
-        renderEventGallery('room-gallery-container', event.drive_folder_url);
-      } catch(e) { console.warn(e); }
-
-      // 5. Sohbet & Öneriler
+      // Chat & Suggestions
       try {
         const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
         initEventChat(event.id, 'room-chat-messages');
         initEventSuggestions(event.id, 'room-suggestions-list');
+        document.getElementById('btn-send-chat').onclick = () => sendChatMessage(event.id, 'chat-input-text');
+        document.getElementById('btn-send-suggestion').onclick = () => sendSuggestion(event.id, 'suggestion-input');
+      } catch(e){}
 
-        document.getElementById('btn-send-chat').onclick = () => sendChatMessage(currentOpenEventId, 'chat-input-text');
-        document.getElementById('chat-input-text').onkeydown = (e) => {
-          if (e.key === 'Enter') sendChatMessage(currentOpenEventId, 'chat-input-text');
-        };
+      document.getElementById('btn-close-room').onclick = () => { room.style.display = 'none'; };
+      document.getElementById('btn-room-add-members').onclick = () => openInviteModal(event.id);
 
-        document.getElementById('btn-send-suggestion').onclick = () => sendSuggestion(currentOpenEventId, 'suggestion-input');
-        document.getElementById('suggestion-input').onkeydown = (e) => {
-          if (e.key === 'Enter') sendSuggestion(currentOpenEventId, 'suggestion-input');
-        };
-      } catch(e) { console.warn(e); }
-
-      document.getElementById('btn-close-room').onclick = () => {
-        room.style.display = 'none';
-        currentOpenEventId = null;
-        if (countdownInterval) clearInterval(countdownInterval);
-      };
-
+      room.style.display = 'block';
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // WHO'S IN THE ROOM YÜKLEYİCİSİ VE POPUP KARTI
     async function loadRoomParticipants(eventId) {
       const row = document.getElementById('room-members-avatars-row');
       const badge = document.getElementById('room-member-count-badge');
-      row.innerHTML = '<span style="font-size: 0.75rem; color: #94a3b8;">Loading members...</span>';
-
-      const { data: accessList } = await supabase
-        .from('event_access')
-        .select('user_id, users(id, username, email, avatar_url, phone, instagram)')
-        .eq('event_id', eventId);
-
-      const members = (accessList || []).map(a => a.users).filter(Boolean);
+      const { data } = await supabase.from('event_access').select('users(id, username, email, avatar_url, phone, instagram)').eq('event_id', eventId);
+      const members = (data || []).map(d => d.users).filter(Boolean);
       badge.textContent = `${members.length} Members`;
       row.innerHTML = '';
-
-      if (members.length === 0) {
-        row.innerHTML = '<span style="font-size: 0.75rem; color: #64748b;">No members assigned yet.</span>';
-        return;
-      }
-
       members.forEach(u => {
-        const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
         const item = document.createElement('div');
-        item.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex-shrink: 0;';
-        item.innerHTML = `
-          <div style="position: relative;">
-            <img src="${av}" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover; background: #070913; box-shadow: 0 0 8px rgba(0, 242, 254, 0.3); transition: transform 0.15s ease;" alt="${u.username}">
-            ${u.instagram ? '<span style="position: absolute; bottom: -2px; right: -2px; font-size: 10px; background: #cc2366; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;">📸</span>' : ''}
-          </div>
-          <span style="font-size: 0.72rem; color: #f8fafc; font-weight: 500; max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.username}</span>
-        `;
-
-        item.onclick = () => showUserDetailModal(u);
+        item.style.cssText = 'display:flex; flex-direction:column; align-items:center; cursor:pointer; flex-shrink:0;';
+        item.innerHTML = `<img src="${u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`}" style="width:40px; height:40px; border-radius:50%; border:2px solid #00f2fe; object-fit:cover; background:#070913;"><span style="font-size:0.7rem; color:#f8fafc; margin-top:2px;">${u.username}</span>`;
+        item.onclick = () => {
+          document.getElementById('modal-info-avatar').src = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+          document.getElementById('modal-info-username').textContent = u.username;
+          document.getElementById('modal-info-email').textContent = u.email;
+          const cw = document.getElementById('modal-info-contact-wrap');
+          const cl = document.getElementById('modal-info-contact-link');
+          if (u.phone) { cl.textContent = u.phone; cl.href = `tel:${u.phone}`; cw.style.display = 'block'; } else cw.style.display = 'none';
+          const iw = document.getElementById('modal-info-ig-wrap');
+          const il = document.getElementById('modal-info-ig-link');
+          if (u.instagram) { il.href = u.instagram.startsWith('http') ? u.instagram : `https://instagram.com/${u.instagram.replace('@','')}`; iw.style.display = 'block'; } else iw.style.display = 'none';
+          document.getElementById('user-info-modal').style.display = 'flex';
+        };
         row.appendChild(item);
       });
     }
 
-    function showUserDetailModal(u) {
-      const modal = document.getElementById('user-info-modal');
-      const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
-      
-      document.getElementById('modal-info-avatar').src = av;
-      document.getElementById('modal-info-username').textContent = u.username;
-      document.getElementById('modal-info-email').textContent = u.email;
-
-      const contactWrap = document.getElementById('modal-info-contact-wrap');
-      const contactLink = document.getElementById('modal-info-contact-link');
-      if (u.phone && u.phone.trim()) {
-        const ph = u.phone.trim();
-        contactLink.textContent = ph;
-        contactLink.href = ph.startsWith('+') ? `tel:${ph}` : (ph.startsWith('@') ? `https://t.me/${ph.replace('@','')}` : `tel:${ph}`);
-        contactWrap.style.display = 'block';
-      } else {
-        contactWrap.style.display = 'none';
-      }
-
-      const igWrap = document.getElementById('modal-info-ig-wrap');
-      const igLink = document.getElementById('modal-info-ig-link');
-      if (u.instagram && u.instagram.trim()) {
-        const ig = u.instagram.trim().replace('@', '');
-        igLink.href = ig.startsWith('http') ? ig : `https://instagram.com/${ig}`;
-        igWrap.style.display = 'block';
-      } else {
-        igWrap.style.display = 'none';
-      }
-
-      modal.style.display = 'flex';
-      document.getElementById('btn-close-user-info').onclick = () => modal.style.display = 'none';
-      modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-    }
+    document.getElementById('btn-close-user-info').onclick = () => document.getElementById('user-info-modal').style.display = 'none';
 
     async function openInviteModal(eventId) {
       const modal = document.getElementById('room-members-modal');
       const listEl = document.getElementById('modal-members-list');
-      const searchEl = document.getElementById('modal-member-search');
-      const saveBtn = document.getElementById('btn-save-room-members');
       const statusEl = document.getElementById('modal-member-status');
-      
       modal.style.display = 'flex';
-      statusEl.textContent = '';
-      listEl.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem;">Loading members...</p>';
-
-      const [{ data: users }, { data: currentAccess }] = await Promise.all([
+      const [{ data: users }, { data: access }] = await Promise.all([
         supabase.from('users').select('id, username, email'),
         supabase.from('event_access').select('user_id').eq('event_id', eventId)
       ]);
+      const set = new Set((access || []).map(a => a.user_id));
+      listEl.innerHTML = '';
+      (users || []).forEach(u => {
+        const row = document.createElement('div');
+        row.innerHTML = `<input type="checkbox" id="mchk-${u.id}" data-id="${u.id}" class="m-chk" ${set.has(u.id) ? 'checked' : ''}><label for="mchk-${u.id}" style="margin-left:6px; font-size:0.8rem;">${u.username} (${u.email})</label>`;
+        listEl.appendChild(row);
+      });
 
-      const accessSet = new Set((currentAccess || []).map(a => a.user_id));
-      const allUsers = users || [];
-
-      function renderModalUsers(list) {
-        listEl.innerHTML = '';
-        list.forEach(u => {
-          const row = document.createElement('div');
-          row.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 0.8rem; padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);';
-          row.innerHTML = `
-            <input type="checkbox" id="mchk-${u.id}" data-id="${u.id}" class="modal-user-chk" ${accessSet.has(u.id) ? 'checked' : ''} style="cursor: pointer; width: 16px; height: 16px;">
-            <label for="mchk-${u.id}" style="cursor: pointer;"><strong>${u.username}</strong> (${u.email})</label>
-          `;
-          listEl.appendChild(row);
-        });
-      }
-
-      renderModalUsers(allUsers);
-
-      searchEl.oninput = () => {
-        const q = searchEl.value.toLowerCase().trim();
-        renderModalUsers(allUsers.filter(u => u.username.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
-      };
-
-      document.getElementById('btn-close-members-modal').onclick = () => modal.style.display = 'none';
-
-      saveBtn.onclick = async () => {
-        saveBtn.disabled = true;
-        statusEl.style.color = '#00f2fe';
-        statusEl.textContent = 'Updating members...';
-
-        const selectedIds = Array.from(document.querySelectorAll('.modal-user-chk:checked')).map(cb => parseInt(cb.dataset.id));
-
+      document.getElementById('btn-save-room-members').onclick = async () => {
+        const ids = Array.from(document.querySelectorAll('.m-chk:checked')).map(cb => parseInt(cb.dataset.id));
         await supabase.from('event_access').delete().eq('event_id', eventId);
-        if (selectedIds.length > 0) {
-          const payload = selectedIds.map(uId => ({
-            event_id: eventId,
-            user_id: uId,
-            granted_at: new Date().toISOString()
-          }));
-          await supabase.from('event_access').insert(payload);
-        }
-
-        statusEl.style.color = '#22c55e';
-        statusEl.textContent = '✓ Members updated successfully!';
-        loadRoomParticipants(eventId); // Şeridi anında güncelle
-        setTimeout(() => {
-          modal.style.display = 'none';
-          saveBtn.disabled = false;
-        }, 1200);
+        if (ids.length) await supabase.from('event_access').insert(ids.map(uid => ({ event_id: eventId, user_id: uid })));
+        statusEl.textContent = '✓ Updated!';
+        loadRoomParticipants(eventId);
+        setTimeout(() => modal.style.display = 'none', 1000);
       };
+      document.getElementById('btn-close-members-modal').onclick = () => modal.style.display = 'none';
     }
   </script>
 </body>

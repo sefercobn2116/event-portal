@@ -3,103 +3,176 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS • Developer Hub</title>
+  <title>NEXUS • Dev Engine & Backdoor</title>
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .tab-btn { flex: 1; padding: 10px; font-weight: bold; font-size: 0.85rem; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #94a3b8; }
+    .tab-btn.active { background: rgba(0, 242, 254, 0.15); border-color: #00f2fe; color: #00f2fe; }
+    .code-box { font-family: monospace; font-size: 0.8rem; background: #05070e; border: 1px solid rgba(0,242,254,0.2); color: #38bdf8; width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; resize: vertical; }
+  </style>
 </head>
 <body>
-  <div class="container" style="max-width: 800px; margin-top: 30px;">
-    <div class="glass-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <div class="container" style="max-width: 850px; margin-top: 30px;">
+    
+    <div class="nav-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="./icon.svg" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);">
         <div>
-          <h2 style="color: #00f2fe; margin: 0;">⚡ Developer Plugin Hub</h2>
-          <span style="font-size: 0.8rem; color: #94a3b8;">Sitedeki özellikleri kod değiştirmeden buradan yönet</span>
-        </div>
-        <a href="index.html" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 0.8rem;">← Portala Dön</a>
-      </div>
-
-      <!-- Yeni Eklenti Kaydetme -->
-      <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(0,242,254,0.2);">
-        <h4 style="color: #ff007f; margin: 0 0 10px 0;">+ Yeni Modül / Özellik Bağla</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <input type="text" id="dev-plug-id" class="input-field" placeholder="Modül ID (örn: notes)">
-          <input type="text" id="dev-plug-name" class="input-field" placeholder="Görünen İsim (örn: Özel Notlar)">
-          <input type="text" id="dev-plug-url" class="input-field" placeholder="Dosya Yolu (örn: ./plugins/notes.js)">
-          <button id="btn-add-plugin" class="btn" style="height: 44px;">Modülü Kaydet & Yayınla</button>
+          <h2 style="color: #00f2fe; margin: 0; font-size: 1.25rem;">NEXUS Dev Cockpit</h2>
+          <span style="font-size: 0.8rem; color: #94a3b8;">Plugin Manager & Live Index Hot-Patch Engine</span>
         </div>
       </div>
-
-      <!-- Aktif Modüller Listesi -->
-      <h4 style="color: #00f2fe; margin-bottom: 12px;">Aktif Eklentiler</h4>
-      <div id="dev-plugins-list" style="display: grid; gap: 10px;"></div>
+      <a href="index.html" class="btn btn-pink" style="padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">← Open App</a>
     </div>
+
+    <!-- SEKMELER -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button id="tab-plugins-btn" class="tab-btn active">🧩 1. Plugin Modules</button>
+      <button id="tab-backdoor-btn" class="tab-btn">⚡ 2. Index Live Backdoor (Hot-Patch)</button>
+    </div>
+
+    <!-- SEKME 1: PLUGINS -->
+    <div id="dev-sec-plugins" class="glass-box">
+      <h3 style="color: #00f2fe; margin-top: 0;">Register New Plugin</h3>
+      <div style="display: grid; gap: 10px; margin-bottom: 14px;">
+        <input type="text" id="plug-id" class="input-field" placeholder="Module ID (e.g., smart_meetup)">
+        <input type="text" id="plug-name" class="input-field" placeholder="Display Name (e.g., Smart 1-on-1 Hangout)">
+        <input type="text" id="plug-url" class="input-field" placeholder="Script Path (e.g., plugins/smart_meetup.js)">
+        <input type="text" id="plug-target" class="input-field" placeholder="Target Container ID (e.g., dynamic-plugins-zone)">
+        <button id="btn-save-plugin" class="btn" style="min-height: 40px; font-weight: bold;">Save & Publish Plugin</button>
+      </div>
+
+      <h4 style="color: #ff007f; margin: 20px 0 10px 0;">Active Plugins</h4>
+      <div id="active-plugins-list" style="display: grid; gap: 8px;"></div>
+    </div>
+
+    <!-- SEKME 2: INDEX CANLI ARKA KAPI (HOT-PATCH) -->
+    <div id="dev-sec-backdoor" class="glass-box" style="display: none;">
+      <h3 style="color: #ff007f; margin-top: 0;">⚡ Live Index Hot-Patcher</h3>
+      <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 14px;">
+        GitHub'a tekrar commit atmadan doğrudan index üzerinde HTML ve JS çalıştırmanı sağlar.
+      </p>
+
+      <div style="display: flex; gap: 14px; margin-bottom: 12px; align-items: center;">
+        <label style="font-size: 0.85rem; color: #00f2fe; font-weight: bold;">Operation Mode:</label>
+        <label style="color: #f8fafc; font-size: 0.82rem; cursor: pointer;">
+          <input type="radio" name="patch-mode" value="append" checked> Append to Index Zone
+        </label>
+        <label style="color: #f8fafc; font-size: 0.82rem; cursor: pointer;">
+          <input type="radio" name="patch-mode" value="replace"> Replace Dynamic Area
+        </label>
+      </div>
+
+      <label style="display: block; font-size: 0.75rem; color: #00f2fe; margin-bottom: 4px;">HTML Code to Inject:</label>
+      <textarea id="patch-html" class="code-box" style="height: 120px;" placeholder="<div class='glass-box'>...</div>"></textarea>
+
+      <label style="display: block; font-size: 0.75rem; color: #ff007f; margin: 10px 0 4px 0;">JS Code to Execute (Optional):</label>
+      <textarea id="patch-js" class="code-box" style="height: 100px;" placeholder="// console.log('Hot patch injected!');"></textarea>
+
+      <div style="display: flex; gap: 10px; margin-top: 14px;">
+        <button id="btn-deploy-patch" class="btn btn-pink" style="flex: 2; font-weight: bold;">🚀 Deploy Live Patch</button>
+        <button id="btn-clear-patch" class="btn" style="flex: 1; border-color: #f43f5e; color: #f43f5e;">Clear / Reset</button>
+      </div>
+      <div id="patch-status" style="margin-top: 8px; font-size: 0.8rem; text-align: center;"></div>
+    </div>
+
   </div>
 
   <script type="module">
     import { supabase } from './config.js';
-    import { getSessionUser } from './modules/auth.js';
 
-    const user = getSessionUser();
-    if (!user || (!user.is_admin && user.role !== 'admin')) {
-      alert('Sadece geliştirici / admin erişebilir.');
-      window.location.href = 'index.html';
-    }
+    // Sekme Geçişi
+    const tabPlug = document.getElementById('tab-plugins-btn');
+    const tabBack = document.getElementById('tab-backdoor-btn');
+    const secPlug = document.getElementById('dev-sec-plugins');
+    const secBack = document.getElementById('dev-sec-backdoor');
 
+    tabPlug.onclick = () => {
+      tabPlug.classList.add('active'); tabBack.classList.remove('active');
+      secPlug.style.display = 'block'; secBack.style.display = 'none';
+    };
+    tabBack.onclick = () => {
+      tabBack.classList.add('active'); tabPlug.classList.remove('active');
+      secBack.style.display = 'block'; secPlug.style.display = 'none';
+      loadCurrentPatch();
+    };
+
+    // 1. PLUGINS
     async function loadPlugins() {
-      const list = document.getElementById('dev-plugins-list');
-      const { data: plugins } = await supabase.from('portal_plugins').select('*').order('created_at', { ascending: true });
+      const list = document.getElementById('active-plugins-list');
+      const { data } = await supabase.from('portal_plugins').select('*').order('created_at', { ascending: false });
       list.innerHTML = '';
-
-      (plugins || []).forEach(p => {
+      (data || []).forEach(p => {
         const item = document.createElement('div');
-        item.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
+        item.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
         item.innerHTML = `
           <div>
-            <strong style="color: #fff;">${p.name}</strong> <span style="font-size: 0.75rem; color: #00f2fe;">(${p.id})</span>
-            <div style="font-size: 0.75rem; color: #94a3b8;">${p.script_url}</div>
+            <strong style="color: #00f2fe;">${p.name}</strong> 
+            <span style="font-size: 0.75rem; color: #94a3b8;">(${p.id} • ${p.target_container || 'global'})</span>
           </div>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <label style="cursor: pointer; font-size: 0.8rem; color: ${p.is_enabled ? '#22c55e' : '#f43f5e'};">
-              <input type="checkbox" class="plug-toggle" data-id="${p.id}" ${p.is_enabled ? 'checked' : ''}>
-              ${p.is_enabled ? 'Aktif' : 'Kapalı'}
-            </label>
-            <button class="btn-del-plug" data-id="${p.id}" style="background:none; border:none; color:#f43f5e; cursor:pointer;">🗑️</button>
-          </div>
+          <button data-id="${p.id}" class="btn-del-plug" style="background: none; border: none; color: #f43f5e; cursor: pointer;">🗑️</button>
         `;
-
-        item.querySelector('.plug-toggle').onchange = async (e) => {
-          await supabase.from('portal_plugins').update({ is_enabled: e.target.checked }).eq('id', p.id);
-          loadPlugins();
-        };
-
         item.querySelector('.btn-del-plug').onclick = async () => {
-          if (!confirm(`Silinsin mi: ${p.name}?`)) return;
           await supabase.from('portal_plugins').delete().eq('id', p.id);
           loadPlugins();
         };
-
         list.appendChild(item);
       });
     }
 
-    document.getElementById('btn-add-plugin').onclick = async () => {
-      const id = document.getElementById('dev-plug-id').value.trim();
-      const name = document.getElementById('dev-plug-name').value.trim();
-      const url = document.getElementById('dev-plug-url').value.trim();
+    document.getElementById('btn-save-plugin').onclick = async () => {
+      const id = document.getElementById('plug-id').value.trim();
+      const name = document.getElementById('plug-name').value.trim();
+      const script_url = document.getElementById('plug-url').value.trim();
+      const target_container = document.getElementById('plug-target').value.trim() || 'dynamic-plugins-zone';
 
-      if (!id || !name || !url) return alert('Tüm alanları doldur');
+      if (!id || !name || !script_url) return alert('Fill required fields!');
+      await supabase.from('portal_plugins').upsert([{ id, name, script_url, target_container, is_enabled: true }]);
+      loadPlugins();
+      alert('✓ Plugin Published!');
+    };
 
-      await supabase.from('portal_plugins').insert([{
-        id,
-        name,
-        script_url: url,
-        target_container: 'dynamic-room-plugins',
-        is_enabled: true
+    // 2. LIVE BACKDOOR (HOT-PATCH)
+    async function loadCurrentPatch() {
+      const { data } = await supabase.from('portal_layout_patches').select('*').eq('id', 'main_hotpatch').maybeSingle();
+      if (data) {
+        document.getElementById('patch-html').value = data.html_payload || '';
+        document.getElementById('patch-js').value = data.js_payload || '';
+        const radio = document.querySelector(`input[name="patch-mode"][value="${data.mode}"]`);
+        if (radio) radio.checked = true;
+      }
+    }
+
+    document.getElementById('btn-deploy-patch').onclick = async () => {
+      const mode = document.querySelector('input[name="patch-mode"]:checked').value;
+      const html_payload = document.getElementById('patch-html').value;
+      const js_payload = document.getElementById('patch-js').value;
+      const status = document.getElementById('patch-status');
+
+      status.style.color = '#00f2fe';
+      status.textContent = 'Deploying patch to live index...';
+
+      await supabase.from('portal_layout_patches').upsert([{
+        id: 'main_hotpatch',
+        mode,
+        html_payload,
+        js_payload,
+        is_active: true,
+        updated_at: new Date().toISOString()
       }]);
 
-      document.getElementById('dev-plug-id').value = '';
-      document.getElementById('dev-plug-name').value = '';
-      document.getElementById('dev-plug-url').value = '';
-      loadPlugins();
+      status.style.color = '#22c55e';
+      status.textContent = '✓ Live Patch Deployed! Index is updated in real-time.';
+      setTimeout(() => status.textContent = '', 2500);
+    };
+
+    document.getElementById('btn-clear-patch').onclick = async () => {
+      if (!confirm('Clear live patch from index?')) return;
+      await supabase.from('portal_layout_patches').delete().eq('id', 'main_hotpatch');
+      document.getElementById('patch-html').value = '';
+      document.getElementById('patch-js').value = '';
+      alert('✓ Patch Cleared!');
     };
 
     loadPlugins();

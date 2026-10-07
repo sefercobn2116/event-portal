@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS • Developer Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container" style="max-width: 800px; margin-top: 30px;">
+    <div class="glass-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+          <h2 style="color: #00f2fe; margin: 0;">⚡ Developer Plugin Hub</h2>
+          <span style="font-size: 0.8rem; color: #94a3b8;">Sitedeki özellikleri kod değiştirmeden buradan yönet</span>
+        </div>
+        <a href="index.html" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 0.8rem;">← Portala Dön</a>
+      </div>
+
+      <!-- Yeni Eklenti Kaydetme -->
+      <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(0,242,254,0.2);">
+        <h4 style="color: #ff007f; margin: 0 0 10px 0;">+ Yeni Modül / Özellik Bağla</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <input type="text" id="dev-plug-id" class="input-field" placeholder="Modül ID (örn: notes)">
+          <input type="text" id="dev-plug-name" class="input-field" placeholder="Görünen İsim (örn: Özel Notlar)">
+          <input type="text" id="dev-plug-url" class="input-field" placeholder="Dosya Yolu (örn: ./plugins/notes.js)">
+          <button id="btn-add-plugin" class="btn" style="height: 44px;">Modülü Kaydet & Yayınla</button>
+        </div>
+      </div>
+
+      <!-- Aktif Modüller Listesi -->
+      <h4 style="color: #00f2fe; margin-bottom: 12px;">Aktif Eklentiler</h4>
+      <div id="dev-plugins-list" style="display: grid; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './config.js';
+    import { getSessionUser } from './modules/auth.js';
+
+    const user = getSessionUser();
+    if (!user || (!user.is_admin && user.role !== 'admin')) {
+      alert('Sadece geliştirici / admin erişebilir.');
+      window.location.href = 'index.html';
+    }
+
+    async function loadPlugins() {
+      const list = document.getElementById('dev-plugins-list');
+      const { data: plugins } = await supabase.from('portal_plugins').select('*').order('created_at', { ascending: true });
+      list.innerHTML = '';
+
+      (plugins || []).forEach(p => {
+        const item = document.createElement('div');
+        item.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
+        item.innerHTML = `
+          <div>
+            <strong style="color: #fff;">${p.name}</strong> <span style="font-size: 0.75rem; color: #00f2fe;">(${p.id})</span>
+            <div style="font-size: 0.75rem; color: #94a3b8;">${p.script_url}</div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label style="cursor: pointer; font-size: 0.8rem; color: ${p.is_enabled ? '#22c55e' : '#f43f5e'};">
+              <input type="checkbox" class="plug-toggle" data-id="${p.id}" ${p.is_enabled ? 'checked' : ''}>
+              ${p.is_enabled ? 'Aktif' : 'Kapalı'}
+            </label>
+            <button class="btn-del-plug" data-id="${p.id}" style="background:none; border:none; color:#f43f5e; cursor:pointer;">🗑️</button>
+          </div>
+        `;
+
+        item.querySelector('.plug-toggle').onchange = async (e) => {
+          await supabase.from('portal_plugins').update({ is_enabled: e.target.checked }).eq('id', p.id);
+          loadPlugins();
+        };
+
+        item.querySelector('.btn-del-plug').onclick = async () => {
+          if (!confirm(`Silinsin mi: ${p.name}?`)) return;
+          await supabase.from('portal_plugins').delete().eq('id', p.id);
+          loadPlugins();
+        };
+
+        list.appendChild(item);
+      });
+    }
+
+    document.getElementById('btn-add-plugin').onclick = async () => {
+      const id = document.getElementById('dev-plug-id').value.trim();
+      const name = document.getElementById('dev-plug-name').value.trim();
+      const url = document.getElementById('dev-plug-url').value.trim();
+
+      if (!id || !name || !url) return alert('Tüm alanları doldur');
+
+      await supabase.from('portal_plugins').insert([{
+        id,
+        name,
+        script_url: url,
+        target_container: 'dynamic-room-plugins',
+        is_enabled: true
+      }]);
+
+      document.getElementById('dev-plug-id').value = '';
+      document.getElementById('dev-plug-name').value = '';
+      document.getElementById('dev-plug-url').value = '';
+      loadPlugins();
+    };
+
+    loadPlugins();
+  </script>
+</body>
+</html>

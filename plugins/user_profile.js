@@ -27,7 +27,7 @@ export async function initPlugin(contextId, containerId) {
       <!-- Düzenleme Paneli -->
       <div id="plug-profile-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 10px;">
         
-        <!-- 1. KENDİ FOTOĞRAFINI YÜKLEME ALANI -->
+        <!-- FOTOĞRAF YÜKLEME ALANI -->
         <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 14px; border-radius: 10px; margin-bottom: 14px; text-align: center;">
           <label style="display: block; font-size: 0.8rem; color: #00f2fe; margin-bottom: 8px; font-weight: 700;">
             📸 Upload Your Own Picture
@@ -39,11 +39,11 @@ export async function initPlugin(contextId, containerId) {
           <div id="plug-file-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">Supports JPG, PNG, WEBP (Auto-optimized)</div>
         </div>
 
-        <!-- 2. VEYA HAZIR BOT SEÇ -->
+        <!-- HAZIR AVATARLAR -->
         <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">Or pick a preset avatar:</label>
         <div id="plug-avatar-picker-grid" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;"></div>
 
-        <!-- 3. ŞİFRE GÜNCELLEME -->
+        <!-- ŞİFRE GÜNCELLEME -->
         <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Update Password (Leave blank to keep unchanged):</label>
         <input type="password" id="plug-prof-new-pass" class="input-field" placeholder="New Password" style="margin-bottom: 12px;">
 
@@ -78,7 +78,6 @@ export async function initPlugin(contextId, containerId) {
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   };
 
-  // Kendi Fotoğrafını Yükleme (Dosya Seçici Tetikleyici)
   const fileInput = document.getElementById('plug-avatar-file-input');
   const triggerBtn = document.getElementById('btn-trigger-avatar-file');
   const uploadStatus = document.getElementById('plug-file-upload-status');
@@ -96,21 +95,18 @@ export async function initPlugin(contextId, containerId) {
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        // Kare ve optimize boyuta küçültme (Canvas)
         const canvas = document.createElement('canvas');
-        const targetSize = 256; // 256x256 mükemmel netlik ve 15-20kb hafiflik
+        const targetSize = 256;
         canvas.width = targetSize;
         canvas.height = targetSize;
         const ctx = canvas.getContext('2d');
 
-        // Merkezden kare kesim hesabı
         const minDim = Math.min(img.width, img.height);
         const startX = (img.width - minDim) / 2;
         const startY = (img.height - minDim) / 2;
 
         ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
 
-        // WebP formatında optimize et
         const optimizedDataUrl = canvas.toDataURL('image/webp', 0.85);
 
         currentAvatar = optimizedDataUrl;
@@ -125,7 +121,6 @@ export async function initPlugin(contextId, containerId) {
     reader.readAsDataURL(file);
   };
 
-  // Değişiklikleri Kaydet
   document.getElementById('btn-save-user-profile').onclick = async () => {
     const newPass = document.getElementById('plug-prof-new-pass').value.trim();
     const statusEl = document.getElementById('plug-profile-save-status');
@@ -141,6 +136,7 @@ export async function initPlugin(contextId, containerId) {
         return;
       }
       updates.password_hash = newPass;
+      updates.password = newPass;
     }
 
     const { error } = await supabase.from('users').update(updates).eq('id', user.id);
@@ -152,9 +148,11 @@ export async function initPlugin(contextId, containerId) {
       statusEl.style.color = '#22c55e';
       statusEl.textContent = '✓ Profile & Picture updated successfully!';
       
-      // LocalStorage ve sol üstteki küçük avatarı anında güncelle
       user.avatar_url = currentAvatar;
-      if (newPass) user.password_hash = newPass;
+      if (newPass) {
+        user.password_hash = newPass;
+        user.password = newPass;
+      }
       localStorage.setItem('portal_user', JSON.stringify(user));
 
       const navAvatar = document.getElementById('user-nav-avatar');

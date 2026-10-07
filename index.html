@@ -94,7 +94,7 @@
     <!-- DİNAMİK PLUGİNLER (SMART MEETUP) -->
     <div id="dynamic-plugins-zone"></div>
 
-    <!-- ETKİNLİKLER -->
+    <!-- ETKİNLİKLER ALANI -->
     <div id="section-events">
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
@@ -129,6 +129,8 @@
 
       <!-- ETKİNLİK ODASI -->
       <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
+        
+        <!-- BAŞLIK & BUTONLAR -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
           <div>
             <h3 id="room-title" style="color: #00f2fe; margin: 0 0 4px 0;">Event Space</h3>
@@ -143,8 +145,14 @@
           </div>
         </div>
 
+        <!-- YÖNETİCİ/HOST İÇİN: KATILMAK İSTEYENLER (PENDING REQUESTS) PANELİ -->
+        <div id="room-join-requests-panel" style="display: none; background: rgba(255, 0, 127, 0.1); border: 1px solid #ff007f; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+          <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.88rem;">🔔 Katılmak İsteyenler (Pending Requests):</h4>
+          <div id="room-join-requests-list" style="display: grid; gap: 6px;"></div>
+        </div>
+
         <div class="room-layout-container">
-          <!-- MASAÜSTÜ SOL PANEL -->
+          <!-- MASAÜSTÜ SOL PANEL (GELENLER) -->
           <div class="room-sidebar-desktop glass-box" style="padding: 12px; background: rgba(0,0,0,0.35);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
               <span style="font-size: 0.78rem; color: #00f2fe; font-weight: bold;">👥 GELENLER</span>
@@ -226,6 +234,7 @@
 
     let isRegisterMode = false;
     let currentOpenEvent = null;
+    let joinReqChannel = null;
 
     function getSessionUser() {
       try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch(e){ return null; }
@@ -443,32 +452,67 @@
 
         await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
         form.style.display = 'none';
+        loadEvents(user);
       };
     }
 
+    // TÜM ETKİNLİKLERİ YÜKLE (KİLİTLİ/AÇIK & KATILMA İSTEĞİ BUTONU)
     async function loadEvents(user) {
       const container = document.getElementById('events-grid-list');
-      const { data: events } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-      const { data: access } = await supabase.from('event_access').select('event_id').eq('user_id', user.id);
+      const [{ data: events }, { data: access }, { data: joinReqs }] = await Promise.all([
+        supabase.from('events').select('*').order('created_at', { ascending: false }),
+        supabase.from('event_access').select('event_id').eq('user_id', user.id),
+        supabase.from('event_join_requests').select('event_id, status').eq('user_id', user.id)
+      ]);
+
       const accessSet = new Set((access || []).map(a => a.event_id));
+      const reqMap = new Map((joinReqs || []).map(r => [r.event_id, r.status]));
+      const isAdmin = user.is_admin || user.role === 'admin';
 
       container.innerHTML = '';
       (events || []).forEach(evt => {
-        const hasAccess = user.is_admin || user.role === 'admin' || evt.created_by === user.id || accessSet.has(evt.id);
+        const hasAccess = isAdmin || evt.created_by === user.id || accessSet.has(evt.id);
+        const reqStatus = reqMap.get(evt.id);
+
         const card = document.createElement('div');
         card.className = 'glass-box';
-        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+        card.style.cssText = `
+          display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px;
+          border: 1px solid ${hasAccess ? 'rgba(0, 242, 254, 0.3)' : 'rgba(255, 255, 255, 0.08)'};
+          opacity: ${hasAccess ? '1' : '0.85'};
+        `;
+
         card.innerHTML = `
           <div>
             <h4 style="color: ${hasAccess ? '#00f2fe' : '#94a3b8'}; margin: 0;">${hasAccess ? '🟢' : '🔒'} ${evt.title}</h4>
-            <span style="font-size: 0.75rem; color: #64748b;">📅 ${evt.event_date || 'Date TBD'} • ${evt.location || 'Spot'}</span>
+            <span style="font-size: 0.75rem; color: #64748b;">📅 ${evt.event_date || 'Date TBD'} • ${evt.location || 'Private Spot'}</span>
           </div>
-          <button class="btn btn-enter" style="padding: 4px 12px; font-size: 0.78rem;">${hasAccess ? 'Enter Space →' : 'Request Access'}</button>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            ${hasAccess ? `
+              <button class="btn btn-enter" style="padding: 4px 12px; font-size: 0.78rem;">Enter Space →</button>
+            ` : (reqStatus === 'pending' ? `
+              <span style="color: #ff007f; font-size: 0.75rem; font-weight: bold; background: rgba(255,0,127,0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid #ff007f;">⏳ Katılma İsteği Gönderildi</span>
+            ` : `
+              <button class="btn btn-pink btn-req-join" style="padding: 4px 12px; font-size: 0.78rem;">🙋 Katılma İsteği Gönder</button>
+            `)}
+          </div>
         `;
-        card.querySelector('.btn-enter').onclick = () => {
-          if (hasAccess) openRoom(evt, user);
-          else alert('Access request submitted to event host.');
-        };
+
+        if (hasAccess) {
+          card.querySelector('.btn-enter').onclick = () => openRoom(evt, user);
+        } else if (!reqStatus || reqStatus === 'rejected') {
+          const reqBtn = card.querySelector('.btn-req-join');
+          if (reqBtn) {
+            reqBtn.onclick = async () => {
+              reqBtn.disabled = true;
+              reqBtn.textContent = 'Sending...';
+              await supabase.from('event_join_requests').upsert([{ event_id: evt.id, user_id: user.id, status: 'pending' }]);
+              alert('✓ Katılma isteği etkinlik yöneticisine iletildi!');
+              loadEvents(user);
+            };
+          }
+        }
+
         container.appendChild(card);
       });
     }
@@ -480,6 +524,14 @@
       document.getElementById('room-duration-badge').textContent = `⏳ ${event.duration_hours || 2}h Session`;
 
       loadAttendees(event.id);
+
+      // YÖNETİCİ/HOST İÇİN KATILMA İSTEKLERİNİ YÜKLE
+      const isHostOrAdmin = user.is_admin || user.role === 'admin' || event.created_by === user.id;
+      if (isHostOrAdmin) {
+        loadJoinRequests(event.id);
+      } else {
+        document.getElementById('room-join-requests-panel').style.display = 'none';
+      }
 
       // Spotify
       const sp = document.getElementById('room-spotify-wrap');
@@ -517,6 +569,66 @@
 
       room.style.display = 'block';
       room.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // KATILMAK İSTEYENLER (PENDING JOIN REQUESTS) LİSTELEME & ONAYLAMA
+    async function loadJoinRequests(eventId) {
+      const panel = document.getElementById('room-join-requests-panel');
+      const list = document.getElementById('room-join-requests-list');
+
+      const { data: reqs } = await supabase
+        .from('event_join_requests')
+        .select('*, users(id, username, email, avatar_url)')
+        .eq('event_id', eventId)
+        .eq('status', 'pending');
+
+      if (!reqs || reqs.length === 0) {
+        panel.style.display = 'none';
+        return;
+      }
+
+      panel.style.display = 'block';
+      list.innerHTML = '';
+
+      reqs.forEach(r => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px;';
+        row.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="${r.users?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${r.users?.username}`}" style="width: 26px; height: 26px; border-radius: 50%;">
+            <strong style="color: #f8fafc; font-size: 0.82rem;">${r.users?.username}</strong>
+            <span style="color: #94a3b8; font-size: 0.72rem;">wants to join</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-acc-j" style="padding: 3px 8px; font-size: 0.72rem; color: #22c55e; border-color: #22c55e;">✓ Onayla</button>
+            <button class="btn btn-rej-j" style="padding: 3px 8px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Reddet</button>
+          </div>
+        `;
+
+        row.querySelector('.btn-acc-j').onclick = async () => {
+          await supabase.from('event_access').insert([{ event_id: eventId, user_id: r.user_id }]);
+          await supabase.from('event_join_requests').update({ status: 'accepted' }).eq('id', r.id);
+          loadAttendees(eventId);
+          loadJoinRequests(eventId);
+        };
+
+        row.querySelector('.btn-rej-j').onclick = async () => {
+          await supabase.from('event_join_requests').update({ status: 'rejected' }).eq('id', r.id);
+          loadJoinRequests(eventId);
+        };
+
+        list.appendChild(row);
+      });
+
+      // İstekler için Realtime Dinleyici
+      if (joinReqChannel) supabase.removeChannel(joinReqChannel);
+      joinReqChannel = supabase.channel(`join_reqs_${eventId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests' }, (payload) => {
+          if (Number(payload.new?.event_id || payload.old?.event_id) === Number(eventId)) {
+            loadJoinRequests(eventId);
+          }
+        })
+        .subscribe();
     }
 
     async function loadAttendees(eventId) {

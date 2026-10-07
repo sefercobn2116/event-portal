@@ -1,153 +1,131 @@
-// modules/calendar.js - İnteraktif & Canlı Takvim Modülü
-window.CalendarModule = {
+// modules/calendar.js
+window.Calendar = {
   currentDate: new Date(),
   selectedDate: null,
-  userSlots: new Set(),
+  activeSlots: new Set(),
 
-  async init(containerId = 'calendar-container') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    this.renderCalendarUI(container);
-    await this.loadMonthData();
-    this.setupRealtime();
+  init() {
+    this.renderMonthView();
+    this.bindEvents();
+    this.subscribeRealtime();
   },
 
-  renderCalendarUI(container) {
-    container.innerHTML = `
-      <div class="calendar-wrapper glass-card p-4">
-        <div class="calendar-header d-flex justify-content-between align-items-center mb-3">
-          <button class="btn btn-sm btn-outline-cyber" id="cal-prev">&lt;</button>
-          <h4 id="cal-month-title" class="neon-title m-0"></h4>
-          <button class="btn btn-sm btn-outline-cyber" id="cal-next">&gt;</button>
-        </div>
-        <div class="calendar-grid-weekdays d-grid" style="grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; opacity: 0.7;">
-          <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
-        </div>
-        <div id="calendar-days-grid" class="calendar-grid-days d-grid mt-2" style="grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
-
-        <!-- Saat Seçim Modal / Paneli -->
-        <div id="slot-picker-drawer" class="mt-4 p-3 rounded glass-panel" style="display: none;">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 id="slot-picker-date" class="m-0 text-cyber"></h5>
-            <button class="btn btn-sm btn-outline-secondary" onclick="CalendarModule.closeSlotPicker()">Kapat ✕</button>
-          </div>
-          <p class="small text-muted mb-3">Müsait olduğun saatleri yeşile çevirmek için dokun:</p>
-          <div id="slot-hours-grid" class="d-flex flex-wrap gap-2"></div>
-        </div>
-      </div>
-    `;
-
-    document.getElementById('cal-prev').onclick = () => this.changeMonth(-1);
-    document.getElementById('cal-next').onclick = () => this.changeMonth(1);
+  bindEvents() {
+    const prevBtn = document.getElementById('cal-prev-month');
+    const nextBtn = document.getElementById('cal-next-month');
+    if (prevBtn) prevBtn.onclick = () => { this.currentDate.setMonth(this.currentDate.getMonth() - 1); this.renderMonthView(); };
+    if (nextBtn) nextBtn.onclick = () => { this.currentDate.setMonth(this.currentDate.getMonth() + 1); this.renderMonthView(); };
   },
 
-  changeMonth(delta) {
-    this.currentDate.setMonth(this.currentDate.getMonth() + delta);
-    this.loadMonthData();
-  },
+  renderMonthView() {
+    const grid = document.getElementById('calendar-grid') || document.getElementById('calendar-days-container');
+    const title = document.getElementById('cal-current-month') || document.getElementById('calendar-title');
+    if (!grid) return;
 
-  async loadMonthData() {
     const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();
-    const monthTitle = new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(this.currentDate);
-    document.getElementById('cal-month-title').innerText = monthTitle.toUpperCase();
-
-    const grid = document.getElementById('calendar-days-grid');
-    grid.innerHTML = '';
-
-    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
-    const totalDays = new Date(year, month + 1, 0).getDate();
-
-    // Boşlukları doldur
-    for (let i = 0; i < firstDayIndex; i++) {
-      grid.innerHTML += `<div class="cal-empty-day p-2"></div>`;
+    
+    if (title) {
+      title.innerText = new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(this.currentDate).toUpperCase();
     }
 
+    grid.innerHTML = '';
+    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const todayStr = new Date().toISOString().split('T')[0];
 
-    for (let day = 1; day <= totalDays; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const isToday = dateStr === todayStr;
+    for (let i = 0; i < firstDayIndex; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'cal-day-cell cal-empty opacity-25';
+      grid.appendChild(empty);
+    }
 
-      const dayCell = document.createElement('div');
-      dayCell.className = `cal-day-cell text-center p-2 rounded cursor-pointer ${isToday ? 'border-cyber' : ''}`;
-      dayCell.style.cursor = 'pointer';
-      dayCell.innerHTML = `<span>${day}</span>`;
-
-      dayCell.onclick = () => this.openSlotPicker(dateStr);
-      grid.appendChild(dayCell);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const cell = document.createElement('div');
+      cell.className = `cal-day-cell p-2 text-center rounded border ${dateStr === todayStr ? 'border-info' : 'border-secondary'}`;
+      cell.style.cursor = 'pointer';
+      cell.innerHTML = `<span>${d}</span>`;
+      
+      cell.onclick = () => this.openDaySlotPicker(dateStr);
+      grid.appendChild(cell);
     }
   },
 
-  async openSlotPicker(dateStr) {
+  async openDaySlotPicker(dateStr) {
     this.selectedDate = dateStr;
-    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
-    if (!currentUser.id) return alert('Lütfen giriş yapın.');
+    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
+    if (!user.id) return alert('Lütfen önce giriş yapın.');
 
-    document.getElementById('slot-picker-drawer').style.display = 'block';
-    document.getElementById('slot-picker-date').innerText = `Tarih: ${dateStr}`;
+    let drawer = document.getElementById('cal-slot-drawer');
+    if (!drawer) {
+      drawer = document.createElement('div');
+      drawer.id = 'cal-slot-drawer';
+      drawer.className = 'glass-card p-3 mt-3 border border-info rounded';
+      const container = document.getElementById('calendar-module') || document.querySelector('.calendar-container') || document.body;
+      container.appendChild(drawer);
+    }
+    drawer.style.display = 'block';
 
     const { data: slots } = await supabase
       .from('user_availability')
-      .select('slot_hour, is_booked')
-      .eq('user_id', currentUser.id)
+      .select('slot_hour')
+      .eq('user_id', user.id)
       .eq('slot_date', dateStr);
 
-    this.userSlots = new Set((slots || []).map(s => s.slot_hour));
-    this.renderHourSlots();
+    this.activeSlots = new Set((slots || []).map(s => s.slot_hour));
+    this.renderSlotPickerUI(drawer, dateStr);
   },
 
-  renderHourSlots() {
-    const container = document.getElementById('slot-hours-grid');
-    container.innerHTML = '';
+  renderSlotPickerUI(drawer, dateStr) {
+    drawer.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong class="text-info">${dateStr} — Müsaitlik Saatlerin</strong>
+        <button class="btn btn-sm btn-outline-secondary py-0" onclick="document.getElementById('cal-slot-drawer').style.display='none'">✕</button>
+      </div>
+      <p class="small text-muted mb-2">Yeşil olan saatler profilinde "Müsait" olarak listelenir:</p>
+      <div id="slot-buttons" class="d-flex flex-wrap gap-2"></div>
+    `;
 
+    const btnContainer = drawer.querySelector('#slot-buttons');
     for (let h = 8; h <= 23; h++) {
-      const isSelected = this.userSlots.has(h);
+      const active = this.activeSlots.has(h);
       const btn = document.createElement('button');
-      btn.className = `btn btn-sm ${isSelected ? 'btn-success' : 'btn-outline-secondary'}`;
+      btn.className = `btn btn-sm ${active ? 'btn-success' : 'btn-outline-secondary'} py-1 px-2`;
       btn.innerText = `${String(h).padStart(2, '0')}:00`;
-      btn.onclick = () => this.toggleSlot(h);
-      container.appendChild(btn);
+      btn.onclick = () => this.toggleHourSlot(h);
+      btnContainer.appendChild(btn);
     }
   },
 
-  async toggleSlot(hour) {
-    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
-    const isSelected = this.userSlots.has(hour);
-
-    if (isSelected) {
-      this.userSlots.delete(hour);
-      await supabase
-        .from('user_availability')
-        .delete()
-        .eq('user_id', currentUser.id)
+  async toggleHourSlot(hour) {
+    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
+    if (this.activeSlots.has(hour)) {
+      this.activeSlots.delete(hour);
+      await supabase.from('user_availability').delete()
+        .eq('user_id', user.id)
         .eq('slot_date', this.selectedDate)
         .eq('slot_hour', hour);
     } else {
-      this.userSlots.add(hour);
-      await supabase
-        .from('user_availability')
-        .upsert({
-          user_id: currentUser.id,
-          slot_date: this.selectedDate,
-          slot_hour: hour,
-          is_booked: false
-        });
+      this.activeSlots.add(hour);
+      await supabase.from('user_availability').upsert({
+        user_id: user.id,
+        slot_date: this.selectedDate,
+        slot_hour: hour,
+        is_booked: false
+      });
     }
-    this.renderHourSlots();
+    const drawer = document.getElementById('cal-slot-drawer');
+    if (drawer) this.renderSlotPickerUI(drawer, this.selectedDate);
   },
 
-  closeSlotPicker() {
-    document.getElementById('slot-picker-drawer').style.display = 'none';
-  },
-
-  setupRealtime() {
-    supabase
-      .channel('public:user_availability')
+  subscribeRealtime() {
+    supabase.channel('public:cal_sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_availability' }, () => {
-        if (this.selectedDate) this.openSlotPicker(this.selectedDate);
+        if (this.selectedDate) this.openDaySlotPicker(this.selectedDate);
       })
       .subscribe();
   }
 };
+
+window.addEventListener('DOMContentLoaded', () => window.Calendar.init());

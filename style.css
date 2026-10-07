@@ -1,10 +1,6 @@
-/* ========================================================
-   NEXUS • CORE THEME & CYBERPUNK STYLESHEET
-   ======================================================== */
-
 :root {
   --bg-color: #070913;
-  --box-bg: rgba(18, 24, 43, 0.7);
+  --box-bg: rgba(18, 24, 43, 0.75);
   --cyan-neon: #00f2fe;
   --pink-neon: #ff007f;
   --green-neon: #22c55e;
@@ -17,7 +13,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
@@ -40,7 +36,6 @@ body {
   margin: 0 auto;
 }
 
-/* Glassmorphism Kutuları */
 .glass-box {
   background: var(--box-bg);
   backdrop-filter: blur(16px);
@@ -51,7 +46,6 @@ body {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
 }
 
-/* Navigasyon Üst Başlığı */
 .nav-header {
   display: flex;
   justify-content: space-between;
@@ -63,7 +57,6 @@ body {
   gap: 12px;
 }
 
-/* Giriş Alanları (Inputs & Selects) */
 .input-field {
   width: 100%;
   padding: 10px 14px;
@@ -87,7 +80,6 @@ select.input-field option {
   color: #fff;
 }
 
-/* Butonlar */
 .btn {
   background: rgba(0, 242, 254, 0.15);
   border: 1px solid var(--cyan-neon);
@@ -122,7 +114,6 @@ select.input-field option {
   box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
 }
 
-/* Modal & Lightbox Katmanları */
 .lightbox-overlay {
   position: fixed;
   inset: 0;
@@ -136,10 +127,7 @@ select.input-field option {
   padding: 16px;
 }
 
-/* ========================================================
-   RESPONSIVE ODA DÜZENİ (DESKTOP: SOL PANEL / MOBİL: BUTON)
-   ======================================================== */
-
+/* Masaüstü Sol Panel & Mobil Düzen */
 .room-layout-container {
   display: flex;
   gap: 20px;
@@ -163,23 +151,9 @@ select.input-field option {
 }
 
 @media (max-width: 768px) {
-  body {
-    padding: 10px;
-  }
-  
-  .glass-box {
-    padding: 14px;
-  }
-
-  .room-layout-container {
-    flex-direction: column;
-  }
-
-  .room-sidebar-desktop {
-    display: none !important; /* Mobilde dikey sol paneli gizle */
-  }
-
-  .room-attendees-mobile-btn {
-    display: inline-flex !important; /* Mobilde üstteki Gelenler butonunu göster */
-  }
+  body { padding: 10px; }
+  .glass-box { padding: 14px; }
+  .room-layout-container { flex-direction: column; }
+  .room-sidebar-desktop { display: none !important; }
+  .room-attendees-mobile-btn { display: inline-flex !important; }
 }

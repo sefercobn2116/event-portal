@@ -1,98 +1,88 @@
-// modules/tasks.js - Live Tasks & Who Brings What
-window.TasksModule = {
+// modules/tasks.js
+window.Tasks = {
   eventId: null,
+  channel: null,
 
-  async init(eventId, containerId = 'tasks-container') {
+  async init(eventId) {
     this.eventId = eventId;
-    const container = document.getElementById(containerId);
+    const container = document.getElementById('module-tasks') || document.getElementById('tasks-container');
     if (!container) return;
 
-    this.renderUI(container);
-    await this.fetchTasks();
-    this.setupRealtime();
-  },
-
-  renderUI(container) {
     container.innerHTML = `
-      <div class="tasks-panel glass-card p-3">
-        <h5 class="neon-title mb-3">🎒 Who Brings What? (Tasks)</h5>
-        <div class="input-group mb-3">
-          <input type="text" id="task-input" class="form-control bg-dark text-white border-cyber" placeholder="Örn: 2 Koli Su, Buz torbası...">
-          <button class="btn btn-cyber" id="btn-add-task">+ Ekle</button>
+      <div class="tasks-wrapper glass-panel p-3">
+        <h6 class="text-cyber mb-2">🎒 Who Brings What? (Tasks)</h6>
+        <div class="input-group input-group-sm mb-3">
+          <input type="text" id="new-task-title" class="form-control bg-dark text-white border-secondary" placeholder="Malzeme veya görev ekle...">
+          <button class="btn btn-outline-info" onclick="Tasks.addTask()">Ekle</button>
         </div>
-        <ul id="task-list" class="list-group list-group-flush gap-2"></ul>
+        <div id="tasks-items-list" class="d-flex flex-column gap-2" style="max-height: 240px; overflow-y: auto;"></div>
       </div>
     `;
 
-    document.getElementById('btn-add-task').onclick = () => this.addTask();
+    await this.loadTasks();
+    this.listen();
   },
 
-  async fetchTasks() {
+  async loadTasks() {
+    const list = document.getElementById('tasks-items-list');
+    if (!list) return;
+
     const { data: tasks } = await supabase
       .from('event_tasks')
-      .select('*, users(username)')
+      .select('*, users(id, username)')
       .eq('event_id', this.eventId)
       .order('id', { ascending: false });
 
-    this.renderTasks(tasks || []);
-  },
+    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
+    list.innerHTML = (tasks || []).length === 0 ? '<small class="text-muted">Görev bulunmuyor.</small>' : '';
 
-  renderTasks(tasks) {
-    const list = document.getElementById('task-list');
-    if (!list) return;
-    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
-
-    list.innerHTML = tasks.length === 0 ? `<li class="text-muted small">Henüz görev atanmamış.</li>` : '';
-
-    tasks.forEach(t => {
-      const isAssignedToMe = t.assigned_to === currentUser.id;
+    (tasks || []).forEach(t => {
+      const isMine = t.assigned_to === user.id;
       list.innerHTML += `
-        <li class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center text-white rounded">
+        <div class="d-flex justify-content-between align-items-center bg-dark p-2 rounded border border-secondary">
           <div>
-            <input type="checkbox" class="form-check-input me-2" ${t.is_completed ? 'checked' : ''} onchange="TasksModule.toggleComplete(${t.id}, this.checked)">
-            <span style="${t.is_completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${t.title}</span>
-            <small class="d-block text-muted">Üstlenen: ${t.users ? t.users.username : '<em>Boşta</em>'}</small>
+            <input type="checkbox" class="form-check-input me-2" ${t.is_completed ? 'checked' : ''} onchange="Tasks.toggleComplete(${t.id}, this.checked)">
+            <span style="${t.is_completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${t.title}</span>
+            <small class="d-block text-muted">Sorumlu: ${t.users ? t.users.username : '<em>Boşta</em>'}</small>
           </div>
           <div>
-            ${!t.assigned_to ? `<button class="btn btn-xs btn-outline-info" onclick="TasksModule.claimTask(${t.id})">Ben Getiririm</button>` : ''}
-            ${isAssignedToMe ? `<button class="btn btn-xs btn-outline-danger" onclick="TasksModule.unclaimTask(${t.id})">Bırak</button>` : ''}
+            ${!t.assigned_to ? `<button class="btn btn-xs btn-outline-success py-0" onclick="Tasks.claim(${t.id})">Ben Alırım</button>` : ''}
+            ${isMine ? `<button class="btn btn-xs btn-outline-danger py-0" onclick="Tasks.unclaim(${t.id})">Bırak</button>` : ''}
           </div>
-        </li>
+        </div>
       `;
     });
   },
 
   async addTask() {
-    const input = document.getElementById('task-input');
+    const input = document.getElementById('new-task-title');
     const val = input.value.trim();
     if (!val) return;
-
-    await supabase.from('event_tasks').insert({
-      event_id: this.eventId,
-      title: val,
-      is_completed: false
-    });
+    await supabase.from('event_tasks').insert({ event_id: this.eventId, title: val, is_completed: false });
     input.value = '';
+    this.loadTasks();
   },
 
-  async claimTask(taskId) {
-    const currentUser = JSON.parse(localStorage.getItem('user_session') || '{}');
-    await supabase.from('event_tasks').update({ assigned_to: currentUser.id }).eq('id', taskId);
+  async claim(taskId) {
+    const user = JSON.parse(sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user') || '{}');
+    await supabase.from('event_tasks').update({ assigned_to: user.id }).eq('id', taskId);
+    this.loadTasks();
   },
 
-  async unclaimTask(taskId) {
+  async unclaim(taskId) {
     await supabase.from('event_tasks').update({ assigned_to: null }).eq('id', taskId);
+    this.loadTasks();
   },
 
-  async toggleComplete(taskId, isCompleted) {
-    await supabase.from('event_tasks').update({ is_completed: isCompleted }).eq('id', taskId);
+  async toggleComplete(taskId, val) {
+    await supabase.from('event_tasks').update({ is_completed: val }).eq('id', taskId);
   },
 
-  setupRealtime() {
-    supabase
-      .channel('public:event_tasks_' + this.eventId)
+  listen() {
+    if (this.channel) supabase.removeChannel(this.channel);
+    this.channel = supabase.channel('tasks_live_' + this.eventId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${this.eventId}` }, () => {
-        this.fetchTasks();
+        this.loadTasks();
       })
       .subscribe();
   }

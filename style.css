@@ -1,6 +1,10 @@
+/* ========================================================
+   NEXUS • COMPLETE STYLESHEET (PRODUCTION BUILD)
+   ======================================================== */
+
 :root {
   --bg-color: #070913;
-  --box-bg: rgba(18, 24, 43, 0.75);
+  --box-bg: rgba(18, 24, 43, 0.78);
   --cyan-neon: #00f2fe;
   --pink-neon: #ff007f;
   --green-neon: #22c55e;
@@ -13,7 +17,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -32,10 +37,11 @@ body {
 
 .container {
   width: 100%;
-  max-width: 900px;
+  max-width: 920px;
   margin: 0 auto;
 }
 
+/* Glassmorphism Kutuları */
 .glass-box {
   background: var(--box-bg);
   backdrop-filter: blur(16px);
@@ -44,8 +50,11 @@ body {
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  margin-bottom: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Navigasyon Üst Barı */
 .nav-header {
   display: flex;
   justify-content: space-between;
@@ -57,11 +66,12 @@ body {
   gap: 12px;
 }
 
+/* Giriş Alanları (Inputs, Textarea & Select) */
 .input-field {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   color: #fff;
   font-size: 0.88rem;
@@ -72,7 +82,7 @@ body {
 
 .input-field:focus {
   border-color: var(--cyan-neon);
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);
 }
 
 select.input-field option {
@@ -80,6 +90,7 @@ select.input-field option {
   color: #fff;
 }
 
+/* Butonlar */
 .btn {
   background: rgba(0, 242, 254, 0.15);
   border: 1px solid var(--cyan-neon);
@@ -94,12 +105,18 @@ select.input-field option {
   justify-content: center;
   gap: 6px;
   text-decoration: none;
+  font-size: 0.85rem;
+  user-select: none;
 }
 
 .btn:hover {
   background: var(--cyan-neon);
   color: #070913;
   box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+}
+
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btn-pink {
@@ -114,20 +131,30 @@ select.input-field option {
   box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
 }
 
+/* Modal & Lightbox Katmanları */
 .lightbox-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4, 6, 12, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(4, 6, 12, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 16px;
+  animation: fadeIn 0.15s ease-out;
 }
 
-/* Masaüstü Sol Panel & Mobil Düzen */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ========================================================
+   RESPONSIVE ODA DÜZENİ (DESKTOP: SOL PANEL / MOBİL: BUTON)
+   ======================================================== */
+
 .room-layout-container {
   display: flex;
   gap: 20px;
@@ -150,10 +177,45 @@ select.input-field option {
   display: none;
 }
 
+/* Scrollbar Tasarımı */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 242, 254, 0.25);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan-neon);
+}
+
+/* Mobil Ekran Kırılmaları */
 @media (max-width: 768px) {
-  body { padding: 10px; }
-  .glass-box { padding: 14px; }
-  .room-layout-container { flex-direction: column; }
-  .room-sidebar-desktop { display: none !important; }
-  .room-attendees-mobile-btn { display: inline-flex !important; }
+  body {
+    padding: 10px;
+  }
+  
+  .glass-box {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .room-layout-container {
+    flex-direction: column;
+  }
+
+  .room-sidebar-desktop {
+    display: none !important; /* Mobilde dikey sol paneli gizle */
+  }
+
+  .room-attendees-mobile-btn {
+    display: inline-flex !important; /* Mobilde üstteki Gelenler butonunu göster */
+  }
 }

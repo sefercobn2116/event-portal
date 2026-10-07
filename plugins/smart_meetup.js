@@ -15,7 +15,24 @@ export async function initPlugin(contextId, containerId) {
   container.innerHTML = `
     <div style="display: grid; gap: 20px; margin-bottom: 24px;">
       
-      <!-- 1. KİŞİSEL MÜSAİTLİK MATRİSİ (CYBERPUNK NEON GRID) -->
+      <!-- 1. GELEN VE GİDEN BULUŞMA TALEPLERİ KUTUSU (GELEN KUTUSU / INBOX) -->
+      <div id="hangout-requests-card" class="glass-box" style="border: 1px solid rgba(0, 242, 254, 0.35); background: linear-gradient(135deg, rgba(7, 9, 19, 0.95), rgba(18, 24, 43, 0.9));">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <h4 style="color: #00f2fe; margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+              <span>📩</span> Meetup Invitations & Approvals
+            </h4>
+            <span style="font-size: 0.76rem; color: #94a3b8;">Review incoming hangout invites. Approving will lock both calendars and send .ics invites.</span>
+          </div>
+          <button id="btn-refresh-requests" class="btn" style="padding: 4px 10px; font-size: 0.72rem;">↻ Refresh</button>
+        </div>
+
+        <div id="incoming-requests-list" style="display: grid; gap: 8px;">
+          <span style="color: #94a3b8; font-size: 0.78rem;">Loading invitations...</span>
+        </div>
+      </div>
+
+      <!-- 2. KİŞİSEL MÜSAİTLİK MATRİSİ (CYBERPUNK NEON GRID) -->
       <div class="glass-box" style="border: 1px solid rgba(0, 242, 254, 0.25); background: linear-gradient(135deg, rgba(7, 9, 19, 0.95), rgba(18, 24, 43, 0.85));">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
           <div>
@@ -40,16 +57,15 @@ export async function initPlugin(contextId, containerId) {
         <div id="my-hours-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 8px;"></div>
       </div>
 
-      <!-- 2. BİREBİR EŞLEŞME & AKILLI BULUŞMA MERKEZİ -->
+      <!-- 3. BİREBİR EŞLEŞME & TALEP GÖNDERME MERKEZİ -->
       <div class="glass-box" style="border: 1px solid rgba(255, 0, 127, 0.3); background: linear-gradient(135deg, rgba(18, 24, 43, 0.85), rgba(7, 9, 19, 0.95));">
         <div style="margin-bottom: 14px;">
           <h4 style="color: #ff007f; margin: 0 0 4px 0; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
             <span>⚡</span> Smart 1-on-1 Hangout Matcher
           </h4>
-          <span style="font-size: 0.76rem; color: #94a3b8;">Select a friend to compare calendars and discover mutual open hours.</span>
+          <span style="font-size: 0.76rem; color: #94a3b8;">Select a friend to compare schedules and send a hangout invitation.</span>
         </div>
 
-        <!-- Filtre Seçim Barı -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px;">
           <div>
             <label style="display: block; font-size: 0.75rem; color: #00f2fe; margin-bottom: 4px;">Choose Member:</label>
@@ -67,7 +83,6 @@ export async function initPlugin(contextId, containerId) {
           🔍 Scan Mutual Free Slots
         </button>
 
-        <!-- Kesişen Saatler Listesi -->
         <div id="mutual-results-wrapper" style="display: none; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
           <h5 style="color: #22c55e; margin: 0 0 10px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
             <span>🟢</span> Mutual Available Hours:
@@ -75,19 +90,19 @@ export async function initPlugin(contextId, containerId) {
           <div id="mutual-slots-container" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
         </div>
 
-        <!-- AŞAĞIDA AÇILAN ÖNERİ & BULUŞMA DETAY FORMU (POPUP YERİNE ŞIK KART) -->
-        <div id="booking-proposal-card" style="display: none; margin-top: 16px; background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.4); border-radius: 12px; padding: 16px; animation: fadeIn 0.25s ease-out;">
+        <!-- BULUŞMA TALEP ÖNERİ FORMU -->
+        <div id="booking-proposal-card" style="display: none; margin-top: 16px; background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.4); border-radius: 12px; padding: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <h5 style="color: #00f2fe; margin: 0; font-size: 0.9rem;">✨ Propose Meetup Plan</h5>
+            <h5 style="color: #00f2fe; margin: 0; font-size: 0.9rem;">✨ Send Hangout Request</h5>
             <span id="selected-hour-badge" style="background: rgba(0, 242, 254, 0.2); border: 1px solid #00f2fe; color: #00f2fe; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;"></span>
           </div>
-          <p style="color: #94a3b8; font-size: 0.76rem; margin: 0 0 10px 0;">Both of you are free at this hour. Enter activity agenda to lock calendars.</p>
+          <p style="color: #94a3b8; font-size: 0.76rem; margin: 0 0 10px 0;">This will send a notification to your friend. The slot will lock once they approve.</p>
           
-          <input type="text" id="proposal-plan-input" class="input-field" placeholder="Activity / Spot (e.g. Coffee at Knez, Dinner, Studio Session)..." style="margin-bottom: 10px;">
+          <input type="text" id="proposal-plan-input" class="input-field" placeholder="Agenda / Activity (e.g. Coffee at Knez, Dinner, Project Chat)..." style="margin-bottom: 10px;">
           
           <div style="display: flex; gap: 8px;">
-            <button id="btn-confirm-lock-meetup" class="btn" style="flex: 2; background: linear-gradient(135deg, #00f2fe, #4facfe); color: #070913; font-weight: 800; border: none; font-size: 0.82rem;">
-              Confirm & Lock Both Calendars
+            <button id="btn-send-meetup-request" class="btn" style="flex: 2; background: linear-gradient(135deg, #00f2fe, #4facfe); color: #070913; font-weight: 800; border: none; font-size: 0.82rem;">
+              Send Invitation Request
             </button>
             <button id="btn-cancel-proposal" class="btn" style="flex: 1; border-color: rgba(255,255,255,0.2); font-size: 0.82rem;">Cancel</button>
           </div>
@@ -99,7 +114,140 @@ export async function initPlugin(contextId, containerId) {
     </div>
   `;
 
-  // 1. Kendi Slot Matrisini Yönet (08:00 - 23:00)
+  // ========================================================
+  // 1. GELEN VE GİDEN BULUŞMA TALEPLERİNİ YÜKLE
+  // ========================================================
+  async function loadInvitations() {
+    const list = document.getElementById('incoming-requests-list');
+    list.innerHTML = '<span style="color: #94a3b8; font-size: 0.78rem;">Checking invitations...</span>';
+
+    // Gelen ve Giden bekleyen talepleri çek
+    const { data: requests, error } = await supabase
+      .from('meetup_requests')
+      .select('*, requester:users!requester_id(username, email), target:users!target_user_id(username, email)')
+      .or(`target_user_id.eq.${currentUser.id},requester_id.eq.${currentUser.id}`)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error || !requests || requests.length === 0) {
+      list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No pending hangout requests right now.</span>';
+      return;
+    }
+
+    list.innerHTML = '';
+    requests.forEach(req => {
+      const isIncoming = req.target_user_id === currentUser.id;
+      const otherUser = isIncoming ? req.requester : req.target;
+      const hStr = `${req.slot_hour < 10 ? '0' + req.slot_hour : req.slot_hour}:00 - ${(req.slot_hour+1) < 10 ? '0' + (req.slot_hour+1) : (req.slot_hour+1)}:00`;
+
+      const card = document.createElement('div');
+      card.style.cssText = `
+        background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+        padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+      `;
+
+      card.innerHTML = `
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; background: ${isIncoming ? 'rgba(0, 242, 254, 0.15); color: #00f2fe;' : 'rgba(255, 0, 127, 0.15); color: #ff007f;'}">
+              ${isIncoming ? '📥 Incoming' : '📤 Sent'}
+            </span>
+            <strong style="color: #f8fafc; font-size: 0.9rem;">${otherUser?.username || 'Member'}</strong>
+          </div>
+          <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">
+            📅 <strong>${req.slot_date}</strong> (⏰ ${hStr})
+          </div>
+          <div style="font-size: 0.78rem; color: #e2e8f0; margin-top: 2px;">
+            📝 Note: <em>"${req.note || 'Hangout'}"</em>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 6px;">
+          ${isIncoming ? `
+            <button class="btn btn-accept-req" data-id="${req.id}" style="padding: 5px 12px; font-size: 0.75rem; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #22c55e; font-weight: bold;">
+              ✓ Accept & Lock
+            </button>
+            <button class="btn btn-reject-req" data-id="${req.id}" style="padding: 5px 12px; font-size: 0.75rem; background: rgba(244, 63, 94, 0.15); border: 1px solid #f43f5e; color: #f43f5e;">
+              ✕ Decline
+            </button>
+          ` : `
+            <span style="font-size: 0.75rem; color: #94a3b8; font-style: italic;">Awaiting approval...</span>
+          `}
+        </div>
+      `;
+
+      // KABUL ETME BUTONU
+      if (isIncoming) {
+        card.querySelector('.btn-accept-req').onclick = async () => {
+          card.style.opacity = '0.5';
+          try {
+            // 1. İki tarafın da takvimindeki o saati KİLİTLE (Slot Kapanır)
+            await supabase.from('user_availability').upsert([
+              {
+                user_id: req.requester_id,
+                slot_date: req.slot_date,
+                slot_hour: req.slot_hour,
+                is_booked: true,
+                locked_reason: `Hangout with ${currentUser.username}: ${req.note}`
+              },
+              {
+                user_id: req.target_user_id,
+                slot_date: req.slot_date,
+                slot_hour: req.slot_hour,
+                is_booked: true,
+                locked_reason: `Hangout with ${otherUser?.username}: ${req.note}`
+              }
+            ], { onConflict: 'user_id,slot_date,slot_hour' });
+
+            // 2. İsteğin durumunu 'accepted' yap
+            await supabase.from('meetup_requests').update({ status: 'accepted' }).eq('id', req.id);
+
+            // 3. İki tarafa da Onay & .ICS Takvim Maili Gönder
+            if (EMAIL_WEBHOOK_URL) {
+              fetch(EMAIL_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                  action: 'notify_meetup_confirmed',
+                  user1Email: req.requester?.email,
+                  user1Name: req.requester?.username,
+                  user2Email: currentUser.email,
+                  user2Name: currentUser.username,
+                  date: req.slot_date,
+                  slotTime: hStr,
+                  note: req.note
+                })
+              }).catch(e => console.warn(e));
+            }
+
+            alert('✓ Hangout accepted! Both calendars are locked and .ics calendar invites have been sent.');
+            loadInvitations();
+            renderMyHoursGrid(myDatePicker.value);
+
+          } catch (err) {
+            alert('Error accepting invite: ' + err.message);
+            card.style.opacity = '1';
+          }
+        };
+
+        // REDDETME BUTONU
+        card.querySelector('.btn-reject-req').onclick = async () => {
+          if (!confirm('Decline this hangout invitation?')) return;
+          await supabase.from('meetup_requests').update({ status: 'rejected' }).eq('id', req.id);
+          loadInvitations();
+        };
+      }
+
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById('btn-refresh-requests').onclick = loadInvitations;
+  loadInvitations();
+
+  // ========================================================
+  // 2. KİŞİSEL SLOT MATRİSİNİ YÖNET (08:00 - 23:00)
+  // ========================================================
   const myDatePicker = document.getElementById('my-cal-date-picker');
   const todayStr = new Date().toISOString().split('T')[0];
   myDatePicker.value = todayStr;
@@ -169,7 +317,9 @@ export async function initPlugin(contextId, containerId) {
   myDatePicker.onchange = () => renderMyHoursGrid(myDatePicker.value);
   renderMyHoursGrid(todayStr);
 
-  // 2. Kullanıcı Listesini Çek
+  // ========================================================
+  // 3. KARŞILAŞTIRMA & TALEP GÖNDERME
+  // ========================================================
   const targetSelect = document.getElementById('hangout-target-user');
   const hDateInput = document.getElementById('hangout-date-input');
   hDateInput.value = todayStr;
@@ -183,7 +333,6 @@ export async function initPlugin(contextId, containerId) {
     targetSelect.appendChild(opt);
   });
 
-  // 3. Karşılıklı Boş Saatleri Bul & Listele
   const resultsWrapper = document.getElementById('mutual-results-wrapper');
   const slotsContainer = document.getElementById('mutual-slots-container');
   const proposalCard = document.getElementById('booking-proposal-card');
@@ -229,7 +378,6 @@ export async function initPlugin(contextId, containerId) {
       pill.textContent = `⏰ ${hStr}`;
 
       pill.onclick = () => {
-        // Seçilen saati vurgula
         slotsContainer.querySelectorAll('button').forEach(b => {
           b.style.background = 'rgba(34, 197, 94, 0.15)';
           b.style.color = '#22c55e';
@@ -253,8 +401,8 @@ export async function initPlugin(contextId, containerId) {
     proposalCard.style.display = 'none';
   };
 
-  // 4. Buluşmayı Onayla, Slotları Kapat & Mail Gönder
-  document.getElementById('btn-confirm-lock-meetup').onclick = async () => {
+  // TALEP GÖNDER (SLOTLARI KİLİTLEMEZ - SADECE BİLDİRİM ATAR)
+  document.getElementById('btn-send-meetup-request').onclick = async () => {
     if (selectedSlotHour === null || !selectedTargetUser) return;
 
     const targetDate = hDateInput.value;
@@ -262,59 +410,48 @@ export async function initPlugin(contextId, containerId) {
     const hStr = `${selectedSlotHour < 10 ? '0' + selectedSlotHour : selectedSlotHour}:00 - ${(selectedSlotHour+1) < 10 ? '0' + (selectedSlotHour+1) : (selectedSlotHour+1)}:00`;
 
     statusEl.style.color = '#00f2fe';
-    statusEl.textContent = 'Locking schedules & generating calendar invites...';
+    statusEl.textContent = 'Sending invitation request to friend...';
 
     try {
-      // 1. İki tarafın da takvimindeki bu saati kilitli yap
-      await supabase.from('user_availability').upsert([
-        {
-          user_id: currentUser.id,
-          slot_date: targetDate,
-          slot_hour: selectedSlotHour,
-          is_booked: true,
-          locked_reason: `Hangout with ${selectedTargetUser.username}: ${planText}`
-        },
-        {
-          user_id: selectedTargetUser.id,
-          slot_date: targetDate,
-          slot_hour: selectedSlotHour,
-          is_booked: true,
-          locked_reason: `Hangout with ${currentUser.username}: ${planText}`
-        }
-      ], { onConflict: 'user_id,slot_date,slot_hour' });
+      // 1. Talebi veritabanına ekle
+      const { error } = await supabase.from('meetup_requests').insert([{
+        requester_id: currentUser.id,
+        target_user_id: selectedTargetUser.id,
+        slot_date: targetDate,
+        slot_hour: selectedSlotHour,
+        note: planText,
+        status: 'pending'
+      }]);
 
-      // 2. Apps Script Webhook'una Mail & Takvim Tetiği Gönder
+      if (error) throw error;
+
+      // 2. Karşı tarafa "Yeni Buluşma Talebi" Maili Gönder
       if (EMAIL_WEBHOOK_URL) {
         fetch(EMAIL_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
-            action: 'notify_meetup_confirmed',
-            user1Email: currentUser.email,
-            user1Name: currentUser.username,
-            user2Email: selectedTargetUser.email,
-            user2Name: selectedTargetUser.username,
+            action: 'notify_meetup_request',
+            targetEmail: selectedTargetUser.email,
+            requesterName: currentUser.username,
             date: targetDate,
             slotTime: hStr,
             note: planText
           })
-        }).catch(err => console.warn('Email webhook trigger error:', err));
+        }).catch(err => console.warn('Email trigger warning:', err));
       }
 
       statusEl.style.color = '#22c55e';
-      statusEl.textContent = '✓ Confirmed! Both schedules are now locked and invites sent.';
-
-      // Grid'leri yenile
-      renderMyHoursGrid(myDatePicker.value);
+      statusEl.textContent = '✓ Invitation sent! Your friend can now approve it from their profile.';
 
       setTimeout(() => {
         proposalCard.style.display = 'none';
-        document.getElementById('btn-find-mutual-slots').click();
-      }, 2000);
+        loadInvitations();
+      }, 1800);
 
     } catch (err) {
       statusEl.style.color = '#f43f5e';
-      statusEl.textContent = 'Error locking slots: ' + err.message;
+      statusEl.textContent = 'Error sending request: ' + err.message;
     }
   };
 }

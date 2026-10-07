@@ -1,34 +1,56 @@
-// modules/loader.js - index.html'i rahat bırakan otomatik yükleyici
+// modules/loader.js
 import { supabase } from '../config.js';
 
-export async function loadActivePlugins(contextId, containerElementId) {
-  const container = document.getElementById(containerElementId);
-  if (!container) return;
+export async function loadActivePlugins(contextId, targetContainerId) {
+  const container = document.getElementById(targetContainerId);
+  if (!container) {
+    console.warn(`Target container #${targetContainerId} not found in DOM.`);
+    return;
+  }
 
-  const { data: plugins } = await supabase
+  // Veritabanından bu kapsayıcıya ait aktif eklentileri çek
+  const { data: plugins, error } = await supabase
     .from('portal_plugins')
     .select('*')
     .eq('is_enabled', true);
 
-  if (!plugins || plugins.length === 0) return;
+  if (error) {
+    console.error('Failed to fetch plugins:', error);
+    return;
+  }
+
+  if (!plugins || plugins.length === 0) {
+    console.log('No active plugins configured.');
+    return;
+  }
 
   for (const p of plugins) {
+    // Sadece bu konteyner için tanımlanmış olanları yükle
+    if (p.target_container && p.target_container !== targetContainerId) {
+      continue;
+    }
+
     try {
-      // Dinamik dosya yükleme - index'e kod yazmaya gerek kalmaz
-      const module = await import(p.script_url);
+      // Göreli yolu temizle ve modülü yükle
+      const scriptPath = p.script_url.startsWith('.') ? p.script_url : `./${p.script_url}`;
+      const module = await import(scriptPath);
       
-      // Modülün başlatıcı fonksiyonunu çalıştır
       const initFn = module.initPlugin || module.default;
       if (typeof initFn === 'function') {
-        const pluginBox = document.createElement('div');
-        pluginBox.id = `plugin-${p.id}-wrap`;
-        pluginBox.style.marginBottom = '20px';
-        container.appendChild(pluginBox);
+        let pluginBox = document.getElementById(`plugin-${p.id}-box`);
+        if (!pluginBox) {
+          pluginBox = document.createElement('div');
+          pluginBox.id = `plugin-${p.id}-box`;
+          pluginBox.style.marginBottom = '16px';
+          container.appendChild(pluginBox);
+        }
 
         await initFn(contextId, pluginBox.id);
+      } else {
+        console.warn(`Plugin [${p.id}] has no initPlugin export.`);
       }
     } catch (err) {
-      console.warn(`Plugin [${p.name}] could not load:`, err);
+      console.error(`Error executing plugin [${p.id}]:`, err);
     }
   }
 }

@@ -11,4 +11,4 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   }
 });
 
-export const EMAIL_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby8j5x6gQ-uK5E0i9t8l7N1V9xZ0yB1_dummy/exec'; // Kendi Apps Script URL'ini koru
+export const EMAIL_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxqO8la--6tIYwBSYShpqvWbDVuGDQTYYb0-uBcFD1HmvH401-GMatlASZk-yancE4feA/exec';

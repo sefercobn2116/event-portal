@@ -73,7 +73,6 @@
         <button id="btn-toggle-profile-edit" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Edit Profile</button>
       </div>
 
-      <!-- Düzenleme Alanı -->
       <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
         <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
           <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
@@ -130,7 +129,6 @@
       <!-- ETKİNLİK ODASI -->
       <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
         
-        <!-- BAŞLIK & BUTONLAR -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
           <div>
             <h3 id="room-title" style="color: #00f2fe; margin: 0 0 4px 0;">Event Space</h3>
@@ -145,7 +143,7 @@
           </div>
         </div>
 
-        <!-- YÖNETİCİ/HOST İÇİN: KATILMAK İSTEYENLER PANELİ -->
+        <!-- KATILMAK İSTEYENLER PANELİ -->
         <div id="room-join-requests-panel" style="display: none; background: rgba(255, 0, 127, 0.1); border: 1px solid #ff007f; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
           <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.88rem;">🔔 Katılmak İsteyenler (Pending Requests):</h4>
           <div id="room-join-requests-list" style="display: grid; gap: 6px;"></div>
@@ -183,7 +181,7 @@
             <div id="room-tasks-section" style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <input type="text" id="inline-task-input" class="input-field" placeholder="Bring item / Task (e.g. Ice, Speaker, Drinks)..." style="margin-bottom: 0;">
+                <input type="text" id="inline-task-input" class="input-field" placeholder="Bring item / Task (e.g. Ice, Speaker)..." style="margin-bottom: 0;">
                 <button id="inline-btn-add-task" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem; white-space: nowrap;">+ Add</button>
               </div>
               <div id="inline-tasks-list" style="display: grid; gap: 6px;"></div>
@@ -247,6 +245,9 @@
     let isRegisterMode = false;
     let currentOpenEvent = null;
     let roomLiveChannel = null;
+
+    // Kullanıcı adlarını önbelleğe alacak harita (Join hatasını bitiren yapı)
+    let userNamesMap = new Map();
 
     function getSessionUser() {
       try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch(e){ return null; }
@@ -325,7 +326,10 @@
       setupProfile(user);
       setupQR();
 
-      // Plugin Yükle
+      // Tüm kullanıcı adlarını hafızaya al
+      const { data: allUsers } = await supabase.from('users').select('id, username');
+      (allUsers || []).forEach(u => userNamesMap.set(Number(u.id), u.username));
+
       try {
         const { loadActivePlugins } = await import('./modules/loader.js');
         await loadActivePlugins(user.id, 'dynamic-plugins-zone');
@@ -338,7 +342,6 @@
 
       loadEvents(user);
 
-      // Realtime Yeni Etkinlik Dinleyicisi
       supabase.channel('events_live_dashboard')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
           loadEvents(user);
@@ -448,7 +451,7 @@
 
         const start = parseInt(sH.value);
         const end = parseInt(eH.value);
-        const { data: newEvt } = await supabase.from('events').insert([{
+        const { data: newEvt, error } = await supabase.from('events').insert([{
           title,
           description: document.getElementById('uevt-desc').value.trim(),
           location: document.getElementById('uevt-loc').value.trim(),
@@ -462,13 +465,14 @@
           created_by: user.id
         }]).select().single();
 
+        if (error) return alert('Event creation error: ' + error.message);
+
         await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
         form.style.display = 'none';
         loadEvents(user);
       };
     }
 
-    // TÜM ETKİNLİKLERİ YÜKLE
     async function loadEvents(user) {
       const container = document.getElementById('events-grid-list');
       const [{ data: events }, { data: access }, { data: joinReqs }] = await Promise.all([
@@ -477,14 +481,15 @@
         supabase.from('event_join_requests').select('event_id, status').eq('user_id', user.id)
       ]);
 
-      const accessSet = new Set((access || []).map(a => a.event_id));
-      const reqMap = new Map((joinReqs || []).map(r => [r.event_id, r.status]));
+      const accessSet = new Set((access || []).map(a => Number(a.event_id)));
+      const reqMap = new Map((joinReqs || []).map(r => [Number(r.event_id), r.status]));
       const isAdmin = user.is_admin || user.role === 'admin';
 
       container.innerHTML = '';
       (events || []).forEach(evt => {
-        const hasAccess = isAdmin || evt.created_by === user.id || accessSet.has(evt.id);
-        const reqStatus = reqMap.get(evt.id);
+        const evId = Number(evt.id);
+        const hasAccess = isAdmin || Number(evt.created_by) === Number(user.id) || accessSet.has(evId);
+        const reqStatus = reqMap.get(evId);
 
         const card = document.createElement('div');
         card.className = 'glass-box';
@@ -518,7 +523,7 @@
             reqBtn.onclick = async () => {
               reqBtn.disabled = true;
               reqBtn.textContent = 'Sending...';
-              await supabase.from('event_join_requests').upsert([{ event_id: evt.id, user_id: user.id, status: 'pending' }]);
+              await supabase.from('event_join_requests').upsert([{ event_id: evId, user_id: user.id, status: 'pending' }]);
               alert('✓ Katılma isteği iletildi!');
               loadEvents(user);
             };
@@ -530,7 +535,7 @@
     }
 
     // ========================================================
-    // ETKİNLİK ODASI & TÜM CANLI MODÜLLER (INLINE REALTIME)
+    // ETKİNLİK ODASI & TÜM CANLI MODÜLLER
     // ========================================================
     async function openRoom(event, user) {
       currentOpenEvent = event;
@@ -542,8 +547,7 @@
 
       loadAttendees(targetEventId);
 
-      // KATILMAK İSTEYENLER PANELİ
-      const isHostOrAdmin = user.is_admin || user.role === 'admin' || event.created_by === user.id;
+      const isHostOrAdmin = user.is_admin || user.role === 'admin' || Number(event.created_by) === Number(user.id);
       if (isHostOrAdmin) {
         loadJoinRequests(targetEventId);
       } else {
@@ -566,18 +570,21 @@
       async function loadInlineExpenses() {
         const list = document.getElementById('inline-expenses-list');
         const badge = document.getElementById('inline-exp-total-badge');
-        const { data: exps } = await supabase.from('event_expenses').select('*, payer:users!paid_by(username)').eq('event_id', targetEventId).order('created_at', { ascending: false });
+        const { data: exps, error } = await supabase.from('event_expenses').select('*').eq('event_id', targetEventId).order('created_at', { ascending: false });
+
+        if (error) console.error('Expenses read error:', error);
 
         let sum = 0;
         list.innerHTML = '';
         (exps || []).forEach(e => {
           sum += Number(e.amount);
+          const payerName = userNamesMap.get(Number(e.paid_by)) || 'Member';
           const row = document.createElement('div');
           row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
           row.innerHTML = `
             <div>
               <span style="font-size: 0.82rem; color: #f8fafc; font-weight: 500;">${e.description}</span>
-              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">paid by ${e.payer?.username || 'Member'}</span>
+              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">paid by ${payerName}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <strong style="color: #22c55e; font-size: 0.85rem;">${Number(e.amount).toFixed(2)} €</strong>
@@ -599,8 +606,16 @@
         const desc = d.value.trim();
         const amt = parseFloat(a.value);
         if (!desc || isNaN(amt) || amt <= 0) return alert('Enter description & amount');
+        
+        const { error } = await supabase.from('event_expenses').insert([{ 
+          event_id: targetEventId, 
+          paid_by: Number(user.id), 
+          description: desc, 
+          amount: amt 
+        }]);
+
+        if (error) return alert('Expense insert error: ' + error.message);
         d.value = ''; a.value = '';
-        await supabase.from('event_expenses').insert([{ event_id: targetEventId, paid_by: user.id, description: desc, amount: amt }]);
         loadInlineExpenses();
       };
       loadInlineExpenses();
@@ -610,7 +625,9 @@
       // ----------------------------------------------------
       async function loadInlineTasks() {
         const list = document.getElementById('inline-tasks-list');
-        const { data: tasks } = await supabase.from('event_tasks').select('*, assignee:users!assigned_to(username)').eq('event_id', targetEventId).order('created_at', { ascending: true });
+        const { data: tasks, error } = await supabase.from('event_tasks').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
+
+        if (error) console.error('Tasks read error:', error);
 
         list.innerHTML = '';
         if (!tasks || tasks.length === 0) {
@@ -619,13 +636,14 @@
         }
 
         tasks.forEach(t => {
+          const assigneeName = t.assigned_to ? (userNamesMap.get(Number(t.assigned_to)) || 'Member') : null;
           const row = document.createElement('div');
           row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;';
           row.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px;">
               <input type="checkbox" class="task-chk" ${t.is_completed ? 'checked' : ''} style="cursor: pointer;">
               <span style="font-size: 0.82rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">${t.title}</span>
-              <span style="font-size: 0.7rem; color: #00f2fe; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">${t.assignee?.username ? `👤 ${t.assignee.username}` : 'Unassigned'}</span>
+              <span style="font-size: 0.7rem; color: #00f2fe; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">${assigneeName ? `👤 ${assigneeName}` : 'Unassigned'}</span>
             </div>
             <div style="display: flex; gap: 6px;">
               ${!t.assigned_to ? `<button class="btn btn-claim" style="padding: 2px 8px; font-size: 0.7rem;">I'll bring this</button>` : ''}
@@ -639,7 +657,7 @@
           };
           const cl = row.querySelector('.btn-claim');
           if (cl) cl.onclick = async () => {
-            await supabase.from('event_tasks').update({ assigned_to: user.id }).eq('id', t.id);
+            await supabase.from('event_tasks').update({ assigned_to: Number(user.id) }).eq('id', t.id);
             loadInlineTasks();
           };
           row.querySelector('.btn-del-t').onclick = async () => {
@@ -654,18 +672,28 @@
         const inp = document.getElementById('inline-task-input');
         const txt = inp.value.trim();
         if (!txt) return;
+
+        const { error } = await supabase.from('event_tasks').insert([{ 
+          event_id: targetEventId, 
+          title: txt,
+          assigned_to: null,
+          is_completed: false
+        }]);
+
+        if (error) return alert('Task insert error: ' + error.message);
         inp.value = '';
-        await supabase.from('event_tasks').insert([{ event_id: targetEventId, title: txt }]);
         loadInlineTasks();
       };
       loadInlineTasks();
 
       // ----------------------------------------------------
-      // 3. CANLI ÖNERİLER (EN ÇOK OY ALAN EN ÜSTTE)
+      // 3. CANLI ÖNERİLER & OYLAMA
       // ----------------------------------------------------
       async function loadInlineSuggestions() {
         const list = document.getElementById('inline-suggestions-list');
-        const { data: sugs } = await supabase.from('event_suggestions').select('*, users(username)').eq('event_id', targetEventId).order('votes', { ascending: false }).order('created_at', { ascending: false });
+        const { data: sugs, error } = await supabase.from('event_suggestions').select('*').eq('event_id', targetEventId).order('votes', { ascending: false }).order('created_at', { ascending: false });
+
+        if (error) console.error('Suggestions read error:', error);
 
         list.innerHTML = '';
         if (!sugs || sugs.length === 0) {
@@ -674,17 +702,18 @@
         }
 
         sugs.forEach(s => {
+          const authorName = userNamesMap.get(Number(s.user_id)) || 'Member';
           const card = document.createElement('div');
           card.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;';
           card.innerHTML = `
             <div>
               <span style="color: #f8fafc; font-size: 0.82rem; font-weight: 500;">${s.text}</span>
-              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">by ${s.users?.username || 'Member'}</span>
+              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">by ${authorName}</span>
             </div>
             <button class="btn btn-vote-s" style="padding: 3px 10px; font-size: 0.75rem; border-color: #22c55e; color: #22c55e;">👍 ${s.votes || 0}</button>
           `;
           card.querySelector('.btn-vote-s').onclick = async () => {
-            await supabase.from('event_suggestions').update({ votes: (s.votes || 0) + 1 }).eq('id', s.id);
+            await supabase.from('event_suggestions').update({ votes: (Number(s.votes) || 0) + 1 }).eq('id', s.id);
             loadInlineSuggestions();
           };
           list.appendChild(card);
@@ -695,8 +724,16 @@
         const inp = document.getElementById('inline-sug-input');
         const txt = inp.value.trim();
         if (!txt) return;
+
+        const { error } = await supabase.from('event_suggestions').insert([{ 
+          event_id: targetEventId, 
+          user_id: Number(user.id), 
+          text: txt, 
+          votes: 0 
+        }]);
+
+        if (error) return alert('Suggestion insert error: ' + error.message);
         inp.value = '';
-        await supabase.from('event_suggestions').insert([{ event_id: targetEventId, user_id: user.id, text: txt, votes: 0 }]);
         loadInlineSuggestions();
       };
       loadInlineSuggestions();
@@ -706,13 +743,14 @@
       // ----------------------------------------------------
       async function loadInlineChat() {
         const box = document.getElementById('inline-chat-messages');
-        const { data: msgs } = await supabase.from('event_chat').select('*, users(username)').eq('event_id', targetEventId).order('created_at', { ascending: true });
+        const { data: msgs } = await supabase.from('event_chat').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
 
         box.innerHTML = '';
         (msgs || []).forEach(m => {
+          const senderName = userNamesMap.get(Number(m.user_id)) || 'Member';
           const div = document.createElement('div');
           div.style.cssText = 'margin-bottom: 6px; font-size: 0.82rem; word-break: break-word;';
-          div.innerHTML = `<strong style="color: #00f2fe;">${m.users?.username || 'Member'}:</strong> <span style="color: #f8fafc; margin-left: 4px;">${m.message}</span>`;
+          div.innerHTML = `<strong style="color: #00f2fe;">${senderName}:</strong> <span style="color: #f8fafc; margin-left: 4px;">${m.message}</span>`;
           box.appendChild(div);
         });
         box.scrollTop = box.scrollHeight;
@@ -722,8 +760,15 @@
         const inp = document.getElementById('inline-chat-input');
         const txt = inp.value.trim();
         if (!txt) return;
+
+        const { error } = await supabase.from('event_chat').insert([{ 
+          event_id: targetEventId, 
+          user_id: Number(user.id), 
+          message: txt 
+        }]);
+
+        if (error) return alert('Chat send error: ' + error.message);
         inp.value = '';
-        await supabase.from('event_chat').insert([{ event_id: targetEventId, user_id: user.id, message: txt }]);
         loadInlineChat();
       };
       loadInlineChat();
@@ -769,7 +814,7 @@
 
       const { data: reqs } = await supabase
         .from('event_join_requests')
-        .select('*, users(id, username, email, avatar_url)')
+        .select('*')
         .eq('event_id', eventId)
         .eq('status', 'pending');
 
@@ -782,12 +827,15 @@
       list.innerHTML = '';
 
       reqs.forEach(r => {
+        const reqUsername = userNamesMap.get(Number(r.user_id)) || 'Member';
+        const av = `https://api.dicebear.com/7.x/bottts/svg?seed=${reqUsername}`;
+
         const row = document.createElement('div');
         row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px;';
         row.innerHTML = `
           <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="${r.users?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${r.users?.username}`}" style="width: 26px; height: 26px; border-radius: 50%;">
-            <strong style="color: #f8fafc; font-size: 0.82rem;">${r.users?.username}</strong>
+            <img src="${av}" style="width: 26px; height: 26px; border-radius: 50%;">
+            <strong style="color: #f8fafc; font-size: 0.82rem;">${reqUsername}</strong>
             <span style="color: #94a3b8; font-size: 0.72rem;">wants to join</span>
           </div>
           <div style="display: flex; gap: 6px;">
@@ -817,18 +865,19 @@
       const mList = document.getElementById('room-mobile-attendees-list');
       const spans = document.querySelectorAll('.room-member-count-span');
 
-      const { data } = await supabase.from('event_access').select('users(username, avatar_url, phone)').eq('event_id', eventId);
-      const members = (data || []).map(d => d.users).filter(Boolean);
+      const { data } = await supabase.from('event_access').select('user_id').eq('event_id', eventId);
+      const userIds = (data || []).map(d => Number(d.user_id));
 
-      spans.forEach(s => s.textContent = members.length);
+      spans.forEach(s => s.textContent = userIds.length);
       dList.innerHTML = '';
       mList.innerHTML = '';
 
-      members.forEach(u => {
-        const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+      userIds.forEach(uid => {
+        const uName = userNamesMap.get(uid) || 'Member';
+        const av = `https://api.dicebear.com/7.x/bottts/svg?seed=${uName}`;
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; align-items:center; gap:8px; padding:4px;';
-        row.innerHTML = `<img src="${av}" style="width:28px; height:28px; border-radius:50%;"><strong style="font-size:0.8rem;">${u.username}</strong>`;
+        row.innerHTML = `<img src="${av}" style="width:28px; height:28px; border-radius:50%;"><strong style="font-size:0.8rem;">${uName}</strong>`;
         dList.appendChild(row);
         mList.appendChild(row.cloneNode(true));
       });

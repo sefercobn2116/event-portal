@@ -75,22 +75,27 @@
       </button>
     </div>
 
-    <!-- 👤 PROFİL & FOTOĞRAF AYARLARI KARTI (SABİT & GARANTİ ÇALIŞAN ALAN) -->
+    <!-- 👤 PROFİL & İLETİŞİM AYARLARI KARTI -->
     <div class="glass-box" style="margin-bottom: 20px; border: 1px solid rgba(0, 242, 254, 0.25); background: linear-gradient(135deg, rgba(18, 24, 43, 0.8), rgba(7, 9, 19, 0.95));">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <img id="prof-card-avatar" src="" style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid #00f2fe; background: #070913; object-fit: cover; box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);" alt="Avatar">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <img id="prof-card-avatar" src="" style="width: 56px; height: 56px; border-radius: 50%; border: 2px solid #00f2fe; background: #070913; object-fit: cover; box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);" alt="Avatar">
           <div>
-            <h4 style="color: #00f2fe; margin: 0; font-size: 1rem;">Profile & Avatar Settings</h4>
-            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8;">Loading user info...</span>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h4 id="prof-card-username" style="color: #00f2fe; margin: 0; font-size: 1.05rem;">User</h4>
+              <span id="prof-badge-ig" style="display: none;"></span>
+            </div>
+            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8; display: block; margin-top: 2px;">Loading info...</span>
+            <div id="prof-card-contact" style="font-size: 0.76rem; color: #22c55e; margin-top: 4px; display: none;"></div>
           </div>
         </div>
         <button id="btn-toggle-profile-edit" class="btn" style="padding: 5px 14px; font-size: 0.78rem;">Edit Profile</button>
       </div>
 
       <!-- Düzenleme Alanı -->
-      <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 12px;">
-        <!-- Kendi Fotoğrafını Yükleme -->
+      <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
+        
+        <!-- 1. Kendi Fotoğrafını Yükleme -->
         <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 14px; border-radius: 10px; margin-bottom: 14px; text-align: center;">
           <label style="display: block; font-size: 0.82rem; color: #00f2fe; margin-bottom: 8px; font-weight: 700;">
             📸 Upload Your Own Picture
@@ -102,15 +107,27 @@
           <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">Supports JPG, PNG, WEBP (Auto-cropped to square)</div>
         </div>
 
-        <!-- Veya Hazır Karakter Seç -->
+        <!-- 2. Veya Hazır Karakter Seç -->
         <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">Or pick a preset avatar:</label>
         <div id="prof-preset-grid" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;"></div>
 
-        <!-- Şifre Güncelleme -->
-        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Update Password (Leave blank to keep unchanged):</label>
-        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password" style="margin-bottom: 12px;">
+        <!-- 3. İletişim & Instagram Bilgileri -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
+          <div>
+            <label style="display: block; font-size: 0.75rem; color: #00f2fe; margin-bottom: 4px;">📱 Phone / WhatsApp / Telegram:</label>
+            <input type="text" id="prof-contact-input" class="input-field" placeholder="+381... / @username" style="margin-bottom: 0;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.75rem; color: #ff007f; margin-bottom: 4px;">📸 Instagram Handle / URL:</label>
+            <input type="text" id="prof-ig-input" class="input-field" placeholder="username (without @) or link" style="margin-bottom: 0;">
+          </div>
+        </div>
 
-        <button type="button" id="btn-save-profile" class="btn" style="width: 100%; min-height: 40px; font-size: 0.85rem; font-weight: 700;">Save Profile & Picture</button>
+        <!-- 4. Şifre Güncelleme -->
+        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Update Password (Leave blank to keep unchanged):</label>
+        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password" style="margin-bottom: 14px;">
+
+        <button type="button" id="btn-save-profile" class="btn" style="width: 100%; min-height: 40px; font-size: 0.85rem; font-weight: 700;">Save Profile & Info</button>
         <div id="prof-save-status" style="margin-top: 8px; font-size: 0.8rem; text-align: center;"></div>
       </div>
     </div>
@@ -233,7 +250,7 @@
         </div>
 
         <!-- 2. GÖREVLER & GETİRİLECEKLER LİSTESİ (TASKS CHECKLIST) -->
-        <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+        <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,200,0.08); padding-top: 16px;">
           <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
           <div id="room-tasks-container"></div>
         </div>
@@ -424,13 +441,13 @@
         window.location.reload();
       };
 
-      // 1. Profil Kartını Çalıştır
+      // Profil Kartını İletişim & Instagram ile Kur
       setupProfileCard(user);
 
-      // 2. QR Davet Butonunu Kur
+      // QR Davet
       setupInviteQR();
 
-      // 3. Sekmeler
+      // Sekmeler
       const secBooking = document.getElementById('section-booking');
       const secEvents = document.getElementById('section-events');
 
@@ -461,22 +478,63 @@
       document.getElementById('nav-btn-booking').click();
     }
 
-    // DOĞRUDAN VE GARANTİLİ PROFİL KARTI YÖNETİCİSİ
+    // GELİŞMİŞ PROFİL, İLETİŞİM & INSTAGRAM YÖNETİCİSİ
     function setupProfileCard(user) {
       let currentAvatar = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
       const cardAvatar = document.getElementById('prof-card-avatar');
+      const cardUsername = document.getElementById('prof-card-username');
       const cardDetails = document.getElementById('prof-card-details');
+      const cardContact = document.getElementById('prof-card-contact');
+      const badgeIg = document.getElementById('prof-badge-ig');
+
       const toggleBtn = document.getElementById('btn-toggle-profile-edit');
       const form = document.getElementById('prof-edit-form');
       const presetGrid = document.getElementById('prof-preset-grid');
       const triggerBtn = document.getElementById('btn-trigger-upload');
       const fileInput = document.getElementById('prof-file-input');
       const uploadStatus = document.getElementById('prof-upload-status');
+      
+      const inputContact = document.getElementById('prof-contact-input');
+      const inputIg = document.getElementById('prof-ig-input');
+      const inputPass = document.getElementById('prof-new-pass');
+      
       const saveBtn = document.getElementById('btn-save-profile');
       const saveStatus = document.getElementById('prof-save-status');
 
-      cardAvatar.src = currentAvatar;
-      cardDetails.textContent = `${user.username} • ${user.email}`;
+      // Bilgileri Ekrana Bas
+      function renderUserDisplay() {
+        cardAvatar.src = currentAvatar;
+        cardUsername.textContent = user.username;
+        cardDetails.textContent = user.email;
+
+        // İletişim Alanı
+        if (user.phone && user.phone.trim()) {
+          cardContact.textContent = `📞 ${user.phone.trim()}`;
+          cardContact.style.display = 'block';
+        } else {
+          cardContact.style.display = 'none';
+        }
+
+        // Instagram Rozeti
+        if (user.instagram && user.instagram.trim()) {
+          let igHandle = user.instagram.trim().replace('@', '');
+          let igUrl = igHandle.startsWith('http') ? igHandle : `https://instagram.com/${igHandle}`;
+          badgeIg.innerHTML = `
+            <a href="${igUrl}" target="_blank" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 0 8px rgba(220, 39, 67, 0.4);">
+              📸 @${igHandle.replace('https://instagram.com/', '').replace('/', '')} ↗
+            </a>
+          `;
+          badgeIg.style.display = 'inline-block';
+        } else {
+          badgeIg.style.display = 'none';
+        }
+
+        // Form alanlarını doldur
+        inputContact.value = user.phone || '';
+        inputIg.value = user.instagram || '';
+      }
+
+      renderUserDisplay();
 
       toggleBtn.onclick = () => {
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
@@ -526,20 +584,28 @@
             cardAvatar.src = currentAvatar;
             presetGrid.querySelectorAll('img').forEach(i => i.style.borderColor = 'transparent');
             uploadStatus.style.color = '#22c55e';
-            uploadStatus.textContent = '✓ Ready! Click "Save Profile & Picture" below.';
+            uploadStatus.textContent = '✓ Ready! Click "Save Profile & Info" below.';
           };
           img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
       };
 
-      // Kaydet
+      // Bilgileri Kaydet
       saveBtn.onclick = async () => {
-        const newPass = document.getElementById('prof-new-pass').value.trim();
+        const newPass = inputPass.value.trim();
+        const contactVal = inputContact.value.trim();
+        const igVal = inputIg.value.trim();
+
         saveStatus.style.color = '#00f2fe';
         saveStatus.textContent = 'Saving changes...';
 
-        const payload = { avatar_url: currentAvatar };
+        const payload = {
+          avatar_url: currentAvatar,
+          phone: contactVal,
+          instagram: igVal
+        };
+
         if (newPass) {
           if (newPass.length < 4) {
             saveStatus.style.color = '#f43f5e';
@@ -555,14 +621,22 @@
           saveStatus.textContent = error.message;
         } else {
           saveStatus.style.color = '#22c55e';
-          saveStatus.textContent = '✓ Profile & Picture updated!';
+          saveStatus.textContent = '✓ Profile, Contact & Instagram updated!';
+          
           user.avatar_url = currentAvatar;
+          user.phone = contactVal;
+          user.instagram = igVal;
           if (newPass) user.password_hash = newPass;
+          
           localStorage.setItem('portal_user', JSON.stringify(user));
           document.getElementById('user-nav-avatar').src = currentAvatar;
+          
+          renderUserDisplay();
+
           setTimeout(() => {
             form.style.display = 'none';
             saveStatus.textContent = '';
+            inputPass.value = '';
           }, 1500);
         }
       };

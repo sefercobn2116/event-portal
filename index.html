@@ -25,8 +25,71 @@
       color: #00f2fe;
       box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
     }
+
+    /* Aylık Takvim Izgarası */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .calendar-weekday {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #00f2fe;
+      padding: 6px 0;
+    }
+    .calendar-day-cell {
+      min-height: 52px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 8px;
+      padding: 6px 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .calendar-day-cell:hover {
+      border-color: rgba(0, 242, 254, 0.4);
+      background: rgba(0, 242, 254, 0.05);
+    }
+    .calendar-day-cell.selected {
+      border-color: #00f2fe !important;
+      background: rgba(0, 242, 254, 0.15) !important;
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+    }
+    .calendar-day-cell.empty {
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+    }
+    .calendar-day-num {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .calendar-day-cell.today .calendar-day-num {
+      color: #ff007f;
+      font-weight: 800;
+    }
+    .cell-indicators {
+      display: flex;
+      gap: 3px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+    .dot-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    /* Saat Kutucukları */
     .hour-chip {
-      padding: 10px 8px;
+      padding: 8px 4px;
       border-radius: 8px;
       text-align: center;
       cursor: pointer;
@@ -35,7 +98,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 54px;
+      min-height: 50px;
     }
   </style>
 </head>
@@ -229,7 +292,7 @@
               <div id="room-gallery-container"></div>
             </div>
 
-            <!-- 4. CANLI ÖNERİLER (EN ÇOK OY ALAN ÜSTTE) -->
+            <!-- 4. ÖNERİLER (EN ÇOK OY ALAN ÜSTTE) -->
             <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
@@ -239,7 +302,7 @@
               <div id="inline-suggestions-list" style="max-height: 160px; overflow-y: auto; display: grid; gap: 6px;"></div>
             </div>
 
-            <!-- 5. CANLI CHAT -->
+            <!-- 5. CHAT -->
             <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
               <div id="inline-chat-messages" style="height: 180px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;"></div>
@@ -259,38 +322,67 @@
     <div id="panel-schedule-view" style="display: none;">
       
       <!-- ONAYLI BULUŞMALAR & İPTAL YÖNETİMİ -->
-      <div class="glass-box" style="border-color: rgba(34, 197, 94, 0.35);">
-        <h4 style="color: #22c55e; margin: 0 0 6px 0; font-size: 1rem;">🗓️ Onaylanmış Randevularım (Active Hangouts)</h4>
+      <div class="glass-box" style="border-color: rgba(34, 197, 94, 0.35); margin-bottom: 20px;">
+        <h4 style="color: #22c55e; margin: 0 0 6px 0; font-size: 1rem;">🗓️ Onaylanmış Randevularım (Confirmed Hangouts)</h4>
         <span style="font-size: 0.76rem; color: #94a3b8; display: block; margin-bottom: 12px;">İptal ettiğinde her iki tarafın takvimindeki saat otomatik olarak açılır.</span>
         <div id="my-confirmed-hangouts-list" style="display: grid; gap: 8px;"></div>
       </div>
 
-      <!-- AKILLI TAKVİM & GÜNLÜK PROGRAM -->
-      <div class="glass-box" style="border-color: rgba(0, 242, 254, 0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <h4 style="color: #00f2fe; margin: 0; font-size: 1.05rem;">📅 Günlük Takvim & Neredeyim?</h4>
-            <span style="font-size: 0.76rem; color: #94a3b8;">Günü seç; o günkü etkinliklerini, randevularını ve boş saatlerini gör.</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <label style="font-size: 0.8rem; color: #00f2fe; font-weight: bold;">Tarih Seç:</label>
-            <input type="date" id="schedule-date-picker" class="input-field" style="max-width: 160px; margin-bottom: 0; padding: 6px 10px; font-size: 0.82rem;">
-          </div>
-        </div>
-
-        <!-- Renk Açıklaması -->
-        <div style="display: flex; gap: 16px; margin-bottom: 14px; font-size: 0.72rem; color: #94a3b8; flex-wrap: wrap;">
-          <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e; display: inline-block;"></span> Boş / Müsait</span>
-          <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #f43f5e; display: inline-block;"></span> Dolu (Etkinlik / Randevu)</span>
-          <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.1); display: inline-block;"></span> Kapalı / Belirtilmemiş</span>
-        </div>
-
-        <!-- Saat Izgarası -->
-        <div id="schedule-hours-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 8px;"></div>
+      <!-- BEKLEYEN TALEPLERİM -->
+      <div class="glass-box" style="border-color: rgba(0, 242, 254, 0.35); margin-bottom: 20px;">
+        <h4 style="color: #00f2fe; margin: 0 0 6px 0; font-size: 1rem;">📩 Bekleyen Buluşma Talepleri (Pending Invitations)</h4>
+        <div id="my-pending-hangouts-list" style="display: grid; gap: 8px;"></div>
       </div>
 
-      <!-- 1-ON-1 BULUŞMA TALEP MERKEZİ -->
-      <div id="dynamic-plugins-zone"></div>
+      <!-- PROFESYONEL AYLIK / YILLIK TAKVİM DASHBOARD -->
+      <div class="glass-box" style="border-color: rgba(0, 242, 254, 0.3);">
+        
+        <!-- ÜST KONTROL: AY & YIL GEÇİŞİ -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="cal-prev-month" class="btn" style="padding: 4px 10px; font-size: 0.8rem;">◀</button>
+            <h3 id="cal-month-year-label" style="color: #00f2fe; margin: 0; font-size: 1.15rem; min-width: 150px; text-align: center;">Ekim 2026</h3>
+            <button id="cal-next-month" class="btn" style="padding: 4px 10px; font-size: 0.8rem;">▶</button>
+          </div>
+          
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="cal-select-month" class="input-field" style="margin-bottom: 0; padding: 4px 8px; font-size: 0.8rem;"></select>
+            <select id="cal-select-year" class="input-field" style="margin-bottom: 0; padding: 4px 8px; font-size: 0.8rem;"></select>
+          </div>
+        </div>
+
+        <!-- Açıklama Etiketleri -->
+        <div style="display: flex; gap: 14px; margin-bottom: 12px; font-size: 0.72rem; color: #94a3b8; flex-wrap: wrap;">
+          <span style="display: flex; align-items: center; gap: 5px;"><span class="dot-indicator" style="background: #22c55e;"></span> Boş / Müsait Saat Var</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span class="dot-indicator" style="background: #f43f5e;"></span> Dolu (Etkinlik / Randevu)</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="color: #00f2fe; font-weight: bold;">Seçili Gün (Aşağıda Açılır)</span></span>
+        </div>
+
+        <!-- 7 Gün Başlıkları -->
+        <div class="calendar-grid" style="margin-bottom: 4px;">
+          <div class="calendar-weekday">Pzt</div>
+          <div class="calendar-weekday">Sal</div>
+          <div class="calendar-weekday">Çar</div>
+          <div class="calendar-weekday">Per</div>
+          <div class="calendar-weekday">Cum</div>
+          <div class="calendar-weekday">Cmt</div>
+          <div class="calendar-weekday">Paz</div>
+        </div>
+
+        <!-- Gün Hücreleri -->
+        <div id="calendar-days-container" class="calendar-grid" style="margin-bottom: 20px;"></div>
+
+        <!-- SEÇİLEN GÜNÜN SAAT DETAYLARI -->
+        <div id="selected-day-schedule-panel" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+            <h4 id="selected-date-heading" style="color: #00f2fe; margin: 0; font-size: 0.95rem;">📅 Günlük Saat Dağılımı</h4>
+            <span style="font-size: 0.72rem; color: #94a3b8;">Saatlere tıklayarak boş/kapalı durumunu değiştirebilirsiniz.</span>
+          </div>
+          <div id="schedule-hours-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px;"></div>
+        </div>
+
+      </div>
+
     </div>
 
   </div>
@@ -323,6 +415,15 @@
     let currentOpenEvent = null;
     let roomLiveChannel = null;
     let userNamesMap = new Map();
+
+    // Takvim Durumu
+    let currentCalDate = new Date();
+    let selectedActiveDateStr = new Date().toISOString().split('T')[0];
+
+    const monthNamesTr = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
 
     function getSessionUser() {
       try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch(e){ return null; }
@@ -414,18 +515,12 @@
       tabSch.onclick = () => {
         tabSch.classList.add('active'); tabEvt.classList.remove('active');
         panelSch.style.display = 'block'; panelEvt.style.display = 'none';
-        initScheduleView(user);
+        initScheduleDashboard(user);
       };
 
       // Kullanıcı listesi
       const { data: allUsers } = await supabase.from('users').select('id, username');
       (allUsers || []).forEach(u => userNamesMap.set(Number(u.id), u.username));
-
-      // Smart Meetup Eklentisi
-      try {
-        const { loadActivePlugins } = await import('./modules/loader.js');
-        await loadActivePlugins(user.id, 'dynamic-plugins-zone');
-      } catch(e){}
 
       if (user.can_create_events || user.is_admin || user.role === 'admin') {
         document.getElementById('user-create-event-panel').style.display = 'block';
@@ -561,7 +656,7 @@
 
         await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
         
-        // Etkinlik sahibinin takvimini kilitle
+        // Hostun saatlerini kilitle
         for (let h = start; h < end; h++) {
           await supabase.from('user_availability').upsert([{
             user_id: user.id,
@@ -785,7 +880,7 @@
       };
       loadInlineTasks();
 
-      // 3. CANLI ÖNERİLER (EN ÇOK OY ALAN ÜSTTE)
+      // 3. ÖNERİLER (EN ÇOK OY ALAN ÜSTTE)
       async function loadInlineSuggestions() {
         const list = document.getElementById('inline-suggestions-list');
         const { data: sugs } = await supabase.from('event_suggestions').select('*').eq('event_id', targetEventId).order('votes', { ascending: false }).order('created_at', { ascending: false });
@@ -820,7 +915,6 @@
         const txt = inp.value.trim();
         if (!txt) return;
 
-        // user_id String olarak gönderilir (UUID/Integer uyumlu)
         const { error } = await supabase.from('event_suggestions').insert([{ 
           event_id: targetEventId, 
           user_id: String(user.id), 
@@ -834,7 +928,7 @@
       };
       loadInlineSuggestions();
 
-      // 4. CANLI CHAT
+      // 4. CHAT
       async function loadInlineChat() {
         const box = document.getElementById('inline-chat-messages');
         const { data: msgs } = await supabase.from('event_chat').select('*').eq('event_id', targetEventId).order('created_at', { ascending: true });
@@ -899,7 +993,7 @@
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // KATILMA İSTEKLERİ VE KABUL EDİLDİĞİNDE TAKVİMİ KİLİTLEME
+    // KATILMA İSTEKLERİ & KABULDE TAKVİM KİLİTLEME
     async function loadJoinRequests(eventId, eventObj) {
       const panel = document.getElementById('room-join-requests-panel');
       const list = document.getElementById('room-join-requests-list');
@@ -940,7 +1034,7 @@
           await supabase.from('event_access').insert([{ event_id: eventId, user_id: r.user_id }]);
           await supabase.from('event_join_requests').update({ status: 'accepted' }).eq('id', r.id);
 
-          // Katılan kişinin takviminde etkinlik saatlerini otomatik KİLİTLE
+          // Katılanın takvimini kilitle
           if (eventObj && eventObj.event_date && eventObj.start_hour) {
             const sH = eventObj.start_hour;
             const eH = eventObj.end_hour || (sH + 2);
@@ -992,17 +1086,55 @@
     }
 
     // ========================================================
-    // AKILLI TAKVİM & RANDEVULARIM (SEKME B)
+    // AKILLI DASHBOARD TAKVİMİ & RANDEVULARIM (SEKME B)
     // ========================================================
-    async function initScheduleView(user) {
-      const datePicker = document.getElementById('schedule-date-picker');
-      const today = new Date().toISOString().split('T')[0];
-      if (!datePicker.value) datePicker.value = today;
-
+    async function initScheduleDashboard(user) {
+      setupMonthYearSelectors();
       loadMyConfirmedHangouts(user);
-      renderScheduleGrid(user, datePicker.value);
+      loadMyPendingInvitations(user);
+      renderFullMonthCalendar(user);
+    }
 
-      datePicker.onchange = () => renderScheduleGrid(user, datePicker.value);
+    // AY VE YIL AÇILIR MENÜLERİNİ OLUŞTUR
+    function setupMonthYearSelectors() {
+      const mSelect = document.getElementById('cal-select-month');
+      const ySelect = document.getElementById('cal-select-year');
+      
+      mSelect.innerHTML = '';
+      monthNamesTr.forEach((m, idx) => {
+        mSelect.innerHTML += `<option value="${idx}">${m}</option>`;
+      });
+
+      const curY = new Date().getFullYear();
+      ySelect.innerHTML = '';
+      for (let y = curY - 1; y <= curY + 3; y++) {
+        ySelect.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+
+      mSelect.value = currentCalDate.getMonth();
+      ySelect.value = currentCalDate.getFullYear();
+
+      mSelect.onchange = () => {
+        currentCalDate.setMonth(parseInt(mSelect.value));
+        renderFullMonthCalendar(getSessionUser());
+      };
+      ySelect.onchange = () => {
+        currentCalDate.setFullYear(parseInt(ySelect.value));
+        renderFullMonthCalendar(getSessionUser());
+      };
+
+      document.getElementById('cal-prev-month').onclick = () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() - 1);
+        mSelect.value = currentCalDate.getMonth();
+        ySelect.value = currentCalDate.getFullYear();
+        renderFullMonthCalendar(getSessionUser());
+      };
+      document.getElementById('cal-next-month').onclick = () => {
+        currentCalDate.setMonth(currentCalDate.getMonth() + 1);
+        mSelect.value = currentCalDate.getMonth();
+        ySelect.value = currentCalDate.getFullYear();
+        renderFullMonthCalendar(getSessionUser());
+      };
     }
 
     // ONAYLANMIŞ BULUŞMALAR
@@ -1017,7 +1149,7 @@
 
       list.innerHTML = '';
       if (!hangouts || hangouts.length === 0) {
-        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Aktif onaylanmış birebir buluşmanız bulunmuyor.</span>';
+        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Aktif onaylanmış randevunuz bulunmuyor.</span>';
         return;
       }
 
@@ -1033,13 +1165,12 @@
             <strong style="color: #22c55e; font-size: 0.88rem;">☕ Buluşma: ${otherName}</strong>
             <span style="display: block; font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">📅 ${h.slot_date} (⏰ ${timeStr}) • 📝 ${h.note || 'Hangout'}</span>
           </div>
-          <button class="btn btn-cancel-hangout" style="padding: 4px 10px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Randevuyu İptal Et</button>
+          <button class="btn btn-cancel-hangout" style="padding: 4px 10px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ İptal Et</button>
         `;
 
         card.querySelector('.btn-cancel-hangout').onclick = async () => {
           if (!confirm(`Randevuyu iptal etmek istediğinize emin misiniz? Her iki tarafın saatleri tekrar açılacaktır.`)) return;
           
-          // Slotları boşalt
           await supabase.from('user_availability')
             .update({ is_booked: false, locked_reason: null })
             .in('user_id', [h.requester_id, h.target_user_id])
@@ -1048,25 +1179,175 @@
 
           await supabase.from('meetup_requests').update({ status: 'cancelled' }).eq('id', h.id);
           
-          alert('✓ Randevu iptal edildi. Takviminiz güncellendi.');
+          alert('✓ Randevu iptal edildi.');
           loadMyConfirmedHangouts(user);
-          renderScheduleGrid(user, document.getElementById('schedule-date-picker').value);
+          renderFullMonthCalendar(user);
         };
 
         list.appendChild(card);
       });
     }
 
-    // GÜNLÜK SAAT IZGARASI & NEREDEYİM MOTORU
-    async function renderScheduleGrid(user, selectedDate) {
+    // BEKLEYEN TALEPLER
+    async function loadMyPendingInvitations(user) {
+      const list = document.getElementById('my-pending-hangouts-list');
+      const { data: requests } = await supabase
+        .from('meetup_requests')
+        .select('*')
+        .or(`target_user_id.eq.${user.id},requester_id.eq.${user.id}`)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      list.innerHTML = '';
+      if (!requests || requests.length === 0) {
+        list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">Bekleyen istek bulunmuyor.</span>';
+        return;
+      }
+
+      requests.forEach(r => {
+        const isIncoming = r.target_user_id === user.id;
+        const otherId = isIncoming ? r.requester_id : r.target_user_id;
+        const otherName = userNamesMap.get(Number(otherId)) || 'Member';
+        const timeStr = `${r.slot_hour < 10 ? '0' + r.slot_hour : r.slot_hour}:00 - ${(r.slot_hour+1) < 10 ? '0' + (r.slot_hour+1) : (r.slot_hour+1)}:00`;
+
+        const card = document.createElement('div');
+        card.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;';
+        card.innerHTML = `
+          <div>
+            <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: ${isIncoming ? 'rgba(0, 242, 254, 0.15); color: #00f2fe;' : 'rgba(255, 0, 127, 0.15); color: #ff007f;'}">${isIncoming ? '📥 Gelen İstek' : '📤 Gönderilen'}</span>
+            <strong style="color: #f8fafc; font-size: 0.85rem; margin-left: 6px;">${otherName}</strong>
+            <span style="display: block; font-size: 0.76rem; color: #94a3b8; margin-top: 2px;">📅 ${r.slot_date} (⏰ ${timeStr}) • 📝 ${r.note || 'Hangout'}</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            ${isIncoming ? `
+              <button class="btn btn-acc-p" style="padding: 3px 8px; font-size: 0.72rem; color: #22c55e; border-color: #22c55e;">✓ Kabul Et</button>
+              <button class="btn btn-dec-p" style="padding: 3px 8px; font-size: 0.72rem; color: #f43f5e; border-color: #f43f5e;">✕ Reddet</button>
+            ` : '<span style="font-size: 0.72rem; color: #94a3b8;">Onay bekleniyor...</span>'}
+          </div>
+        `;
+
+        if (isIncoming) {
+          card.querySelector('.btn-acc-p').onclick = async () => {
+            await supabase.from('user_availability').upsert([
+              { user_id: r.requester_id, slot_date: r.slot_date, slot_hour: r.slot_hour, is_booked: true, locked_reason: `☕ Hangout with ${user.username}` },
+              { user_id: r.target_user_id, slot_date: r.slot_date, slot_hour: r.slot_hour, is_booked: true, locked_reason: `☕ Hangout with ${otherName}` }
+            ], { onConflict: 'user_id,slot_date,slot_hour' });
+
+            await supabase.from('meetup_requests').update({ status: 'accepted' }).eq('id', r.id);
+            alert('✓ Randevu onaylandı ve her iki takvime işlendi!');
+            loadMyPendingInvitations(user);
+            loadMyConfirmedHangouts(user);
+            renderFullMonthCalendar(user);
+          };
+
+          card.querySelector('.btn-dec-p').onclick = async () => {
+            await supabase.from('meetup_requests').update({ status: 'rejected' }).eq('id', r.id);
+            loadMyPendingInvitations(user);
+          };
+        }
+
+        list.appendChild(card);
+      });
+    }
+
+    // AYLIK TAKVİM MOTORU (MONTHLY GRID VIEW)
+    async function renderFullMonthCalendar(user) {
+      const daysContainer = document.getElementById('calendar-days-container');
+      const label = document.getElementById('cal-month-year-label');
+
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth();
+
+      label.textContent = `${monthNamesTr[month]} ${year}`;
+
+      // Bu ayın tüm müsaitlik ve randevu verilerini bir seferde çek
+      const startOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+      const endDay = new Date(year, month + 1, 0).getDate();
+      const endOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
+
+      const { data: monthSlots } = await supabase
+        .from('user_availability')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('slot_date', startOfMonth)
+        .lte('slot_date', endOfMonth);
+
+      // Gün gün haritalandır
+      const daySlotsMap = new Map();
+      (monthSlots || []).forEach(s => {
+        if (!daySlotsMap.has(s.slot_date)) daySlotsMap.set(s.slot_date, []);
+        daySlotsMap.get(s.slot_date).push(s);
+      });
+
+      // Ayın ilk gününün haftanın hangi günü olduğunu bul (0: Pazartesi olacak şekilde hizala)
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+      const totalDays = endDay;
+
+      daysContainer.innerHTML = '';
+
+      // Baştaki boşluklar
+      for (let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-day-cell empty';
+        daysContainer.appendChild(emptyCell);
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Günleri oluştur
+      for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = dateStr === todayStr;
+        const isSelected = dateStr === selectedActiveDateStr;
+
+        const cell = document.createElement('div');
+        cell.className = `calendar-day-cell ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
+
+        const slots = daySlotsMap.get(dateStr) || [];
+        const hasFree = slots.some(s => !s.is_booked);
+        const hasBooked = slots.some(s => s.is_booked);
+
+        let indicatorHtml = '';
+        if (hasFree) indicatorHtml += `<span class="dot-indicator" style="background: #22c55e;" title="Müsait"></span>`;
+        if (hasBooked) indicatorHtml += `<span class="dot-indicator" style="background: #f43f5e;" title="Dolu"></span>`;
+
+        cell.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="calendar-day-num">${day}</span>
+            ${isToday ? '<span style="font-size:0.6rem; color:#ff007f; font-weight:bold;">Bugün</span>' : ''}
+          </div>
+          <div class="cell-indicators">${indicatorHtml}</div>
+        `;
+
+        cell.onclick = () => {
+          document.querySelectorAll('.calendar-day-cell').forEach(c => c.classList.remove('selected'));
+          cell.classList.add('selected');
+          selectedActiveDateStr = dateStr;
+          renderHoursGridForDay(user, dateStr);
+        };
+
+        daysContainer.appendChild(cell);
+      }
+
+      // Seçili günün saatlerini altta aç
+      renderHoursGridForDay(user, selectedActiveDateStr);
+    }
+
+    // SEÇİLEN GÜNÜN SAATLERİNİ OLUŞTUR & DEĞİŞTİR
+    async function renderHoursGridForDay(user, dateStr) {
+      const heading = document.getElementById('selected-date-heading');
       const grid = document.getElementById('schedule-hours-grid');
-      
-      // Kullanıcının müsaitlik tablosunu çek
+
+      const parts = dateStr.split('-');
+      const dObj = new Date(parts[0], parts[1] - 1, parts[2]);
+      const dateFormatted = `${parts[2]} ${monthNamesTr[dObj.getMonth()]} ${parts[0]}`;
+      heading.textContent = `📅 ${dateFormatted} - Neredeyim & Saatlik Durum:`;
+
       const { data: slots } = await supabase
         .from('user_availability')
         .select('*')
         .eq('user_id', user.id)
-        .eq('slot_date', selectedDate);
+        .eq('slot_date', dateStr);
 
       const slotMap = new Map((slots || []).map(s => [s.slot_hour, s]));
 
@@ -1087,7 +1368,7 @@
           chip.innerHTML = `
             <span style="font-weight: bold; font-size: 0.78rem;">${hourLabel}</span>
             <span style="font-size: 0.62rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" title="${slot.locked_reason || 'Dolu'}">
-              🔒 ${slot.locked_reason ? slot.locked_reason.substring(0, 10) + '..' : 'Dolu'}
+              🔒 ${slot.locked_reason ? slot.locked_reason.substring(0, 8) + '..' : 'Dolu'}
             </span>
           `;
           chip.onclick = () => alert(`📅 Saat: ${hourLabel}\nDurum: DOLU\nDetay: ${slot.locked_reason || 'Planlanmış Program'}`);
@@ -1100,9 +1381,8 @@
             <span style="font-size: 0.65rem; margin-top: 2px;">✓ Müsait</span>
           `;
           chip.onclick = async () => {
-            // Tıklayınca müsaitliği kapat
             await supabase.from('user_availability').delete().eq('id', slot.id);
-            renderScheduleGrid(user, selectedDate);
+            renderFullMonthCalendar(user);
           };
         } else {
           chip.style.background = 'rgba(255, 255, 255, 0.03)';
@@ -1113,14 +1393,13 @@
             <span style="font-size: 0.62rem; margin-top: 2px;">Kapalı</span>
           `;
           chip.onclick = async () => {
-            // Tıklayınca müsait (Free) yap
             await supabase.from('user_availability').insert([{
               user_id: user.id,
-              slot_date: selectedDate,
+              slot_date: dateStr,
               slot_hour: h,
               is_booked: false
             }]);
-            renderScheduleGrid(user, selectedDate);
+            renderFullMonthCalendar(user);
           };
         }
 

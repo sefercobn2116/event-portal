@@ -75,7 +75,7 @@
       </button>
     </div>
 
-    <!-- 👤 PROFİL & İLETİŞİM KARTI -->
+    <!-- 👤 PROFİL KARTI -->
     <div class="glass-box" style="margin-bottom: 20px; border: 1px solid rgba(0, 242, 254, 0.25); background: linear-gradient(135deg, rgba(18, 24, 43, 0.8), rgba(7, 9, 19, 0.95));">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; align-items: center; gap: 14px;">
@@ -123,10 +123,10 @@
       </div>
     </div>
 
-    <!-- DİNAMİK EKLENTİ YUVASI (SMART_MEETUP VB.) -->
+    <!-- DİNAMİK EKLENTİ YUVASI (SMART_MEETUP MATRİSİ) -->
     <div id="dynamic-plugins-zone"></div>
 
-    <!-- ETKİNLİKLER VE ETKİNLİK OLUŞTURMA ALANI -->
+    <!-- ETKİNLİKLER BÖLÜMÜ -->
     <div id="section-events">
       <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
         <div class="glass-box">
@@ -162,25 +162,29 @@
             </label>
 
             <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; margin-bottom: 14px;">
-              <h5 style="color: #ff007f; margin: 0 0 8px 0;">Who Can See This Event?</h5>
+              <h5 style="color: #ff007f; margin: 0 0 8px 0;">Who Can Directly Enter? (Others can request to join)</h5>
               <input type="text" id="uevt-user-search" class="input-field" placeholder="🔍 Search members by name or email..." style="margin-bottom: 8px;">
               <div id="uevt-users-checklist" style="max-height: 150px; overflow-y: auto; display: grid; gap: 6px;"></div>
             </div>
 
-            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event & Lock Slots</button>
+            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event & Launch Space</button>
             <div id="uevt-status" style="margin-top: 8px; font-size: 0.85rem; text-align: center;"></div>
           </div>
         </div>
       </div>
 
       <div class="glass-box">
-        <h3 style="color: #00f2fe; margin-bottom: 16px;">Active Events</h3>
+        <h3 style="color: #00f2fe; margin-bottom: 16px;">All Events</h3>
         <div id="events-grid-list" style="display: grid; gap: 12px;"></div>
       </div>
 
-      <!-- ETKİNLİK ODASI -->
+      <!-- ========================================== -->
+      <!-- ETKİNLİK ODASI (DESKTOP: SOL PANEL, MOBİL: BUTON) -->
+      <!-- ========================================== -->
       <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        
+        <!-- ÜST BAŞLIK & MOBİL BUTON -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
           <div>
             <h3 id="room-title" style="color: #00f2fe; margin: 0 0 6px 0;">Event Space</h3>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -188,64 +192,93 @@
               <div id="room-duration-badge" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;"></div>
             </div>
           </div>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <!-- MOBİL KATILIMCILAR BUTONU (Sadece mobilde görünür) -->
+            <button id="btn-mobile-show-attendees" class="btn room-attendees-mobile-btn" style="padding: 6px 12px; font-size: 0.8rem; border-color: #00f2fe; color: #00f2fe;">
+              👥 Gelenler (<span class="room-member-count-span">0</span>)
+            </button>
             <button id="btn-room-add-members" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">👥 + Invite</button>
             <button id="btn-close-room" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Close Room</button>
           </div>
         </div>
 
-        <div id="room-participants-box" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 0.75rem; color: #00f2fe; font-weight: 700; text-transform: uppercase;">👥 Who's in the Room</span>
-            <span id="room-member-count-badge" style="font-size: 0.72rem; color: #94a3b8;">0 Members</span>
+        <!-- YÖNETİCİ İÇİN: KATILMAK İSTEYENLER (PENDİNG REQUESTS) BÖLÜMÜ -->
+        <div id="room-join-requests-panel" style="display: none; background: rgba(255, 0, 127, 0.1); border: 1px solid #ff007f; border-radius: 10px; padding: 12px; margin-bottom: 20px;">
+          <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.9rem;">🔔 Katılmak İsteyenler (Pending Requests):</h4>
+          <div id="room-join-requests-list" style="display: grid; gap: 6px;"></div>
+        </div>
+
+        <!-- ANA ÇİFT SÜTUNLU YAPI (MASAÜSTÜ: SOL PANEL GELENLER + SAĞ İÇERİK) -->
+        <div class="room-layout-container">
+          
+          <!-- SOL PANEL (MASAÜSTÜNDE GELENLER / ATTENDEES) -->
+          <div class="room-sidebar-desktop glass-box" style="padding: 14px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 242, 254, 0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
+              <span style="font-size: 0.8rem; color: #00f2fe; font-weight: 700; text-transform: uppercase;">👥 Gelenler</span>
+              <span class="room-member-count-span" style="font-size: 0.75rem; color: #94a3b8;">0</span>
+            </div>
+            <div id="room-desktop-attendees-list" style="display: grid; gap: 8px; max-height: 480px; overflow-y: auto;"></div>
           </div>
-          <div id="room-members-avatars-row" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; align-items: center;"></div>
-        </div>
 
-        <div id="room-spotify-wrap" style="display: none; margin-bottom: 20px;"></div>
+          <!-- SAĞ İÇERİK (SPOTİFY, HARCAMA, GÖREV, GALERİ, CHAT) -->
+          <div class="room-main-content">
+            <div id="room-spotify-wrap" style="display: none; margin-bottom: 20px;"></div>
 
-        <!-- 1. ORTAK HESAP (SPLIT BILL) -->
-        <div id="room-expenses-section" style="display: none; margin-bottom: 24px;">
-          <h4 style="color: #ff007f; font-size: 0.9rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
-          <div id="room-expenses-container"></div>
-        </div>
+            <!-- 1. ORTAK HESAP (SPLIT BILL) -->
+            <div id="room-expenses-section" style="display: none; margin-bottom: 24px;">
+              <h4 style="color: #ff007f; font-size: 0.9rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
+              <div id="room-expenses-container"></div>
+            </div>
 
-        <!-- 2. GÖREVLER (TASKS) -->
-        <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-          <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
-          <div id="room-tasks-container"></div>
-        </div>
+            <!-- 2. GÖREVLER (TASKS) -->
+            <div id="room-tasks-section" style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+              <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
+              <div id="room-tasks-container"></div>
+            </div>
 
-        <!-- 3. MEDYA GALERİSİ -->
-        <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Shared Media Gallery</h4>
-          <div id="room-gallery-container"></div>
-        </div>
+            <!-- 3. MEDYA GALERİSİ -->
+            <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+              <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">📸 Shared Media Gallery</h4>
+              <div id="room-gallery-container"></div>
+            </div>
 
-        <!-- 4. CANLI ÖNERİLER -->
-        <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-          <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
-          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea..." style="margin-bottom: 0;">
-            <button id="btn-send-suggestion" class="btn btn-pink" style="width: auto; padding: 0 18px; font-size: 0.85rem;">Post</button>
+            <!-- 4. CANLI ÖNERİLER -->
+            <div style="margin-bottom: 24px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+              <h4 style="color: #00f2fe; font-size: 0.9rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
+              <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea..." style="margin-bottom: 0;">
+                <button id="btn-send-suggestion" class="btn btn-pink" style="width: auto; padding: 0 18px; font-size: 0.85rem;">Post</button>
+              </div>
+              <div id="room-suggestions-list" style="max-height: 180px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- 5. CHAT -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+              <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
+              <div id="room-chat-messages" style="height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="chat-input-text" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
+                <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 24px;">Send</button>
+              </div>
+            </div>
           </div>
-          <div id="room-suggestions-list" style="max-height: 180px; overflow-y: auto;"></div>
+
         </div>
 
-        <!-- 5. CHAT -->
-        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-          <h4 style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
-          <div id="room-chat-messages" style="height: 220px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px;"></div>
-          <div style="display: flex; gap: 10px;">
-            <input type="text" id="chat-input-text" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
-            <button id="btn-send-chat" class="btn" style="width: auto; padding: 0 24px;">Send</button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- ÜYE POPUP MODALI -->
+  <!-- MOBİL GELENLER LİSTESİ MODALI -->
+  <div id="mobile-attendees-modal" class="lightbox-overlay" style="display: none;">
+    <div class="glass-box" style="max-width: 360px; width: 90%; position: relative;">
+      <button id="btn-close-mobile-attendees" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin: 0 0 10px 0; font-size: 1.1rem;">👥 Etkinliğe Gelenler</h3>
+      <div id="room-mobile-attendees-list" style="display: grid; gap: 8px; max-height: 320px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <!-- KULLANICI PROFİL DETAY MODALI -->
   <div id="user-info-modal" class="lightbox-overlay" style="display: none;">
     <div class="glass-box" style="max-width: 340px; text-align: center; position: relative;">
       <button id="btn-close-user-info" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
@@ -262,11 +295,11 @@
     </div>
   </div>
 
-  <!-- ÜYE DAVET MODALI -->
+  <!-- ÜYE DAVET ETME MODALI (ADMIN/HOST) -->
   <div id="room-members-modal" class="lightbox-overlay" style="display: none;">
     <div class="glass-box" style="max-width: 420px; width: 90%; position: relative;">
       <button id="btn-close-members-modal" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
-      <h3 style="color: #00f2fe; margin-bottom: 8px;">Invite Members</h3>
+      <h3 style="color: #00f2fe; margin-bottom: 8px;">Invite Members Directly</h3>
       <input type="text" id="modal-member-search" class="input-field" placeholder="🔍 Search user..." style="margin-bottom: 10px;">
       <div id="modal-members-list" style="max-height: 200px; overflow-y: auto; display: grid; gap: 6px; margin-bottom: 16px;"></div>
       <button id="btn-save-room-members" class="btn" style="width: 100%;">Save & Update Members</button>
@@ -290,7 +323,7 @@
     import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
 
     let isRegisterMode = false;
-    let currentOpenEventId = null;
+    let currentOpenEvent = null;
     let allPortalUsers = [];
 
     function getSessionUser() {
@@ -384,7 +417,7 @@
       setupProfileCard(user);
       setupInviteQR();
 
-      // DİNAMİK PLUGİNLERİ YÜKLE (SMART_MEETUP VE SAAT MATRİSİ)
+      // DİNAMİK PLUGİNLERİ YÜKLE
       try {
         const { loadActivePlugins } = await import('./modules/loader.js');
         await loadActivePlugins(user.id, 'dynamic-plugins-zone');
@@ -395,7 +428,7 @@
         setupUserEventCreation(user);
       }
 
-      loadUserEvents(user);
+      loadAllEvents(user);
     }
 
     function setupProfileCard(user) {
@@ -512,6 +545,9 @@
       };
     }
 
+    // ========================================================
+    // ETKİNLİK OLUŞTURMA & SLOT KİLİTLEME
+    // ========================================================
     async function setupUserEventCreation(user) {
       const toggleBtn = document.getElementById('btn-toggle-create-evt');
       const form = document.getElementById('create-evt-form');
@@ -546,7 +582,7 @@
         list.forEach(u => {
           const row = document.createElement('div');
           row.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:0.8rem;';
-          row.innerHTML = `<input type="checkbox" id="uchk-${u.id}" data-id="${u.id}" class="evt-u-chk" checked><label for="uchk-${u.id}">${u.username} (${u.email})</label>`;
+          row.innerHTML = `<input type="checkbox" id="uchk-${u.id}" data-id="${u.id}" class="evt-u-chk"><label for="uchk-${u.id}">${u.username} (${u.email})</label>`;
           checklist.appendChild(row);
         });
       }
@@ -561,32 +597,10 @@
         if (eHour <= sHour) return alert('End hour must be later than start hour!');
 
         submitBtn.disabled = true;
-        statusEl.textContent = 'Checking schedule conflicts...';
+        statusEl.textContent = 'Launching space...';
 
         const userIds = Array.from(document.querySelectorAll('.evt-u-chk:checked')).map(cb => parseInt(cb.dataset.id));
         userIds.push(user.id);
-
-        // 1. ÇAKIŞMA KONTROLÜ (Bu saatlerde dolu olan var mı?)
-        const { data: conflicts } = await supabase
-          .from('user_availability')
-          .select('user_id, slot_hour, users(username)')
-          .eq('slot_date', dateVal)
-          .eq('is_booked', true)
-          .in('user_id', userIds)
-          .gte('slot_hour', sHour)
-          .lt('slot_hour', eHour);
-
-        if (conflicts && conflicts.length > 0) {
-          const names = [...new Set(conflicts.map(c => c.users?.username || 'A member'))].join(', ');
-          const proceed = confirm(`⚠️ Schedule Conflict Warning:\n${names} already have a booked session/event during these hours.\n\nDo you want to proceed and overwrite anyway?`);
-          if (!proceed) {
-            submitBtn.disabled = false;
-            statusEl.textContent = 'Event creation aborted due to schedule conflict.';
-            return;
-          }
-        }
-
-        statusEl.textContent = 'Auto-generating Drive folder & locking calendars...';
 
         let fId = '';
         try {
@@ -614,7 +628,7 @@
 
         await supabase.from('event_access').insert(userIds.map(uid => ({ event_id: newEvt.id, user_id: uid })));
 
-        // 2. KATILIMCILARIN TAKVİMLERİNDE BU SAATLERİ KİLİTLE
+        // Slotları Kilitle
         const lockPayload = [];
         for (const uid of userIds) {
           for (let h = sHour; h < eHour; h++) {
@@ -629,50 +643,104 @@
         }
         await supabase.from('user_availability').upsert(lockPayload);
 
-        statusEl.textContent = '✓ Event launched and all member schedules locked!';
+        statusEl.textContent = '✓ Event launched!';
         submitBtn.disabled = false;
         form.style.display = 'none';
-        loadUserEvents(user);
+        loadAllEvents(user);
       };
     }
 
-    async function loadUserEvents(user) {
+    // ========================================================
+    // TÜM ETKİNLİKLERİ YÜKLE (KİLİTLİ / AÇIK & KATILMA İSTEĞİ)
+    // ========================================================
+    async function loadAllEvents(user) {
       const container = document.getElementById('events-grid-list');
       container.innerHTML = '<p style="color:#94a3b8;">Loading events...</p>';
 
-      let q = (user.is_admin || user.role === 'admin')
-        ? supabase.from('events').select('*').order('created_at', { ascending: false })
-        : supabase.from('events').select('*, event_access!inner(user_id)').eq('event_access.user_id', user.id).order('created_at', { ascending: false });
+      // 1. Tüm etkinlikleri çek
+      const { data: events, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
 
-      const { data: events } = await q;
-      if (!events || events.length === 0) {
-        container.innerHTML = '<p style="color:#64748b;">No active events assigned to you yet.</p>';
+      if (error || !events || events.length === 0) {
+        container.innerHTML = '<p style="color:#64748b;">No events scheduled yet.</p>';
         return;
       }
 
+      // 2. Kullanıcının erişimi olan ve istek gönderdiği etkinlikleri çek
+      const [{ data: userAccess }, { data: joinRequests }] = await Promise.all([
+        supabase.from('event_access').select('event_id').eq('user_id', user.id),
+        supabase.from('event_join_requests').select('event_id, status').eq('user_id', user.id)
+      ]);
+
+      const accessSet = new Set((userAccess || []).map(a => a.event_id));
+      const reqMap = new Map((joinRequests || []).map(r => [r.event_id, r.status]));
+      const isAdmin = user.is_admin || user.role === 'admin';
+
       container.innerHTML = '';
       events.forEach(evt => {
+        const hasAccess = isAdmin || evt.created_by === user.id || accessSet.has(evt.id);
+        const reqStatus = reqMap.get(evt.id);
+
         const card = document.createElement('div');
         card.className = 'glass-box';
-        card.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; cursor:pointer;';
-        
+        card.style.cssText = `
+          display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 12px;
+          border: 1px solid ${hasAccess ? 'rgba(0, 242, 254, 0.3)' : 'rgba(255, 255, 255, 0.08)'};
+          opacity: ${hasAccess ? '1' : '0.85'};
+        `;
+
         const sH = evt.start_hour ? `${evt.start_hour < 10 ? '0' + evt.start_hour : evt.start_hour}:00` : '18:00';
         const eH = evt.end_hour ? `${evt.end_hour < 10 ? '0' + evt.end_hour : evt.end_hour}:00` : '20:00';
 
         card.innerHTML = `
           <div>
-            <h4 style="color:#00f2fe; margin-bottom:4px;">${evt.title}</h4>
-            <span style="color:#94a3b8; font-size:0.8rem;">📅 ${evt.event_date || 'Date TBD'} (${sH} - ${eH}) • ${evt.location || 'Private Spot'}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.85rem;">${hasAccess ? '🟢' : '🔒'}</span>
+              <h4 style="color: ${hasAccess ? '#00f2fe' : '#94a3b8'}; margin: 0; font-size: 1rem;">${evt.title}</h4>
+            </div>
+            <span style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">
+              📅 ${evt.event_date || 'Date TBD'} (${sH} - ${eH}) • 📍 ${evt.location || 'Private Spot'}
+            </span>
           </div>
-          <button class="btn" style="padding:6px 14px; font-size:0.8rem;">Enter Space →</button>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            ${hasAccess ? `
+              <button class="btn btn-enter-room" style="padding: 6px 16px; font-size: 0.8rem;">Enter Space →</button>
+            ` : (reqStatus === 'pending' ? `
+              <span style="color: #ff007f; font-size: 0.78rem; font-weight: bold; background: rgba(255,0,127,0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid #ff007f;">
+                ⏳ Katılma İsteği Gönderildi
+              </span>
+            ` : `
+              <button class="btn btn-pink btn-request-join" style="padding: 6px 14px; font-size: 0.8rem; font-weight: bold;">
+                🙋 Katılma İsteği Gönder
+              </button>
+            `)}
+          </div>
         `;
-        card.onclick = () => openEventRoom(evt);
+
+        if (hasAccess) {
+          card.querySelector('.btn-enter-room').onclick = () => openEventRoom(evt, user);
+        } else if (!reqStatus || reqStatus === 'rejected') {
+          const reqBtn = card.querySelector('.btn-request-join');
+          if (reqBtn) {
+            reqBtn.onclick = async () => {
+              reqBtn.disabled = true;
+              reqBtn.textContent = 'Sending request...';
+              await supabase.from('event_join_requests').upsert([{ event_id: evt.id, user_id: user.id, status: 'pending' }]);
+              alert('✓ Katılma isteği etkinliği oluşturan kişiye ve adminlere iletildi!');
+              loadAllEvents(user);
+            };
+          }
+        }
+
         container.appendChild(card);
       });
     }
 
-    async function openEventRoom(event) {
-      currentOpenEventId = event.id;
+    // ========================================================
+    // ETKİNLİK ODASI & GELENLER (DESKTOP: SOL PANEL, MOBİL: BUTON)
+    // ========================================================
+    async function openEventRoom(event, user) {
+      currentOpenEvent = event;
       const room = document.getElementById('event-detail-room');
       document.getElementById('room-title').textContent = `Event Space: ${event.title}`;
       
@@ -688,7 +756,16 @@
         locWrap.style.display = 'block';
       } else locWrap.style.display = 'none';
 
-      loadRoomParticipants(event.id);
+      // 1. GELENLER LİSTESİNİ YÜKLE (Hem masaüstü sol panele hem mobile)
+      loadAttendees(event.id);
+
+      // 2. KATILMAK İSTEYENLER PANELİ (Sadece oluşturan veya admin görebilir)
+      const isHostOrAdmin = user.is_admin || user.role === 'admin' || event.created_by === user.id;
+      if (isHostOrAdmin) {
+        loadJoinRequests(event.id);
+      } else {
+        document.getElementById('room-join-requests-panel').style.display = 'none';
+      }
 
       // Spotify
       const spotWrap = document.getElementById('room-spotify-wrap');
@@ -722,39 +799,123 @@
       document.getElementById('btn-close-room').onclick = () => { room.style.display = 'none'; };
       document.getElementById('btn-room-add-members').onclick = () => openInviteModal(event.id);
 
+      // Mobil Gelenler Modalı Butonu
+      document.getElementById('btn-mobile-show-attendees').onclick = () => {
+        document.getElementById('mobile-attendees-modal').style.display = 'flex';
+      };
+      document.getElementById('btn-close-mobile-attendees').onclick = () => {
+        document.getElementById('mobile-attendees-modal').style.display = 'none';
+      };
+
       room.style.display = 'block';
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    async function loadRoomParticipants(eventId) {
-      const row = document.getElementById('room-members-avatars-row');
-      const badge = document.getElementById('room-member-count-badge');
+    // GELENLER LİSTESİ (DESKTOP SOL SİDEBAR & MOBİL LİSTE)
+    async function loadAttendees(eventId) {
+      const desktopList = document.getElementById('room-desktop-attendees-list');
+      const mobileList = document.getElementById('room-mobile-attendees-list');
+      const countSpans = document.querySelectorAll('.room-member-count-span');
+
       const { data } = await supabase.from('event_access').select('users(id, username, email, avatar_url, phone, instagram)').eq('event_id', eventId);
       const members = (data || []).map(d => d.users).filter(Boolean);
-      badge.textContent = `${members.length} Members`;
-      row.innerHTML = '';
+
+      countSpans.forEach(s => s.textContent = members.length);
+      desktopList.innerHTML = '';
+      mobileList.innerHTML = '';
+
       members.forEach(u => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; flex-direction:column; align-items:center; cursor:pointer; flex-shrink:0;';
-        item.innerHTML = `<img src="${u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`}" style="width:40px; height:40px; border-radius:50%; border:2px solid #00f2fe; object-fit:cover; background:#070913;"><span style="font-size:0.7rem; color:#f8fafc; margin-top:2px;">${u.username}</span>`;
-        item.onclick = () => {
-          document.getElementById('modal-info-avatar').src = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
-          document.getElementById('modal-info-username').textContent = u.username;
-          document.getElementById('modal-info-email').textContent = u.email;
-          const cw = document.getElementById('modal-info-contact-wrap');
-          const cl = document.getElementById('modal-info-contact-link');
-          if (u.phone) { cl.textContent = u.phone; cl.href = `tel:${u.phone}`; cw.style.display = 'block'; } else cw.style.display = 'none';
-          const iw = document.getElementById('modal-info-ig-wrap');
-          const il = document.getElementById('modal-info-ig-link');
-          if (u.instagram) { il.href = u.instagram.startsWith('http') ? u.instagram : `https://instagram.com/${u.instagram.replace('@','')}`; iw.style.display = 'block'; } else iw.style.display = 'none';
-          document.getElementById('user-info-modal').style.display = 'flex';
-        };
-        row.appendChild(item);
+        const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+
+        // Masaüstü Satırı
+        const dItem = document.createElement('div');
+        dItem.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 8px; background: rgba(255,255,255,0.03); cursor: pointer; transition: background 0.15s;';
+        dItem.innerHTML = `
+          <img src="${av}" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #00f2fe; object-fit: cover;">
+          <div style="min-width: 0;">
+            <strong style="color: #f8fafc; font-size: 0.8rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u.username}</strong>
+            <span style="color: #94a3b8; font-size: 0.68rem;">${u.phone || 'Member'}</span>
+          </div>
+        `;
+        dItem.onclick = () => openUserDetailModal(u);
+        desktopList.appendChild(dItem);
+
+        // Mobil Satırı
+        const mItem = dItem.cloneNode(true);
+        mItem.onclick = () => openUserDetailModal(u);
+        mobileList.appendChild(mItem);
       });
+    }
+
+    // KATILMAK İSTEYENLER (PENDİNG REQUESTS) ONAY/RED PANELİ
+    async function loadJoinRequests(eventId) {
+      const panel = document.getElementById('room-join-requests-panel');
+      const list = document.getElementById('room-join-requests-list');
+
+      const { data: requests } = await supabase
+        .from('event_join_requests')
+        .select('*, users(id, username, email, avatar_url)')
+        .eq('event_id', eventId)
+        .eq('status', 'pending');
+
+      if (!requests || requests.length === 0) {
+        panel.style.display = 'none';
+        return;
+      }
+
+      panel.style.display = 'block';
+      list.innerHTML = '';
+
+      requests.forEach(r => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px;';
+        row.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="${r.users?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${r.users?.username}`}" style="width: 28px; height: 28px; border-radius: 50%;">
+            <strong style="color: #f8fafc; font-size: 0.82rem;">${r.users?.username}</strong>
+            <span style="color: #94a3b8; font-size: 0.72rem;">wants to join this event</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-accept-join" style="padding: 4px 10px; font-size: 0.72rem; background: rgba(34,197,94,0.2); border: 1px solid #22c55e; color: #22c55e;">✓ Onayla</button>
+            <button class="btn btn-reject-join" style="padding: 4px 10px; font-size: 0.72rem; background: rgba(244,63,94,0.15); border: 1px solid #f43f5e; color: #f43f5e;">✕ Reddet</button>
+          </div>
+        `;
+
+        // ONAYLA: event_access'e ekle, isteği accepted yap
+        row.querySelector('.btn-accept-join').onclick = async () => {
+          await supabase.from('event_access').insert([{ event_id: eventId, user_id: r.user_id }]);
+          await supabase.from('event_join_requests').update({ status: 'accepted' }).eq('id', r.id);
+          alert(`✓ ${r.users?.username} etkinliğe dahil edildi!`);
+          loadAttendees(eventId);
+          loadJoinRequests(eventId);
+        };
+
+        // REDDET: isteği rejected yap
+        row.querySelector('.btn-reject-join').onclick = async () => {
+          await supabase.from('event_join_requests').update({ status: 'rejected' }).eq('id', r.id);
+          loadJoinRequests(eventId);
+        };
+
+        list.appendChild(row);
+      });
+    }
+
+    function openUserDetailModal(u) {
+      document.getElementById('modal-info-avatar').src = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+      document.getElementById('modal-info-username').textContent = u.username;
+      document.getElementById('modal-info-email').textContent = u.email;
+      const cw = document.getElementById('modal-info-contact-wrap');
+      const cl = document.getElementById('modal-info-contact-link');
+      if (u.phone) { cl.textContent = u.phone; cl.href = `tel:${u.phone}`; cw.style.display = 'block'; } else cw.style.display = 'none';
+      const iw = document.getElementById('modal-info-ig-wrap');
+      const il = document.getElementById('modal-info-ig-link');
+      if (u.instagram) { il.href = u.instagram.startsWith('http') ? u.instagram : `https://instagram.com/${u.instagram.replace('@','')}`; iw.style.display = 'block'; } else iw.style.display = 'none';
+      document.getElementById('user-info-modal').style.display = 'flex';
     }
 
     document.getElementById('btn-close-user-info').onclick = () => document.getElementById('user-info-modal').style.display = 'none';
 
+    // ÜYE DAVET ETME (HOST / ADMIN)
     async function openInviteModal(eventId) {
       const modal = document.getElementById('room-members-modal');
       const listEl = document.getElementById('modal-members-list');
@@ -777,7 +938,7 @@
         await supabase.from('event_access').delete().eq('event_id', eventId);
         if (ids.length) await supabase.from('event_access').insert(ids.map(uid => ({ event_id: eventId, user_id: uid })));
         statusEl.textContent = '✓ Updated!';
-        loadRoomParticipants(eventId);
+        loadAttendees(eventId);
         setTimeout(() => modal.style.display = 'none', 1000);
       };
       document.getElementById('btn-close-members-modal').onclick = () => modal.style.display = 'none';

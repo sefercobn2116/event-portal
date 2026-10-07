@@ -2,193 +2,96 @@
 import { supabase } from '../config.js';
 import { getSessionUser } from './auth.js';
 
-let activeTasksChannel = null;
+let tasksChannel = null;
 
 export async function initEventTasks(eventId, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  if (activeTasksChannel) {
-    supabase.removeChannel(activeTasksChannel);
-    activeTasksChannel = null;
-  }
-
-  container.innerHTML = '<p style="color: #00f2fe; font-size: 0.8rem;">Loading tasks...</p>';
-
-  await renderTasksUI(eventId, containerId);
-
-  // Realtime canlı görev güncellemesi
-  activeTasksChannel = supabase
-    .channel(`realtime_tasks_${eventId}`)
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'event_tasks',
-      filter: `event_id=eq.${eventId}`
-    }, () => {
-      renderTasksUI(eventId, containerId);
-    })
-    .subscribe();
-}
-
-async function renderTasksUI(eventId, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const user = getSessionUser();
-  const isAdmin = user && (user.is_admin || user.role === 'admin');
-
-  const { data: tasks, error } = await supabase
-    .from('event_tasks')
-    .select('*')
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    console.error('Tasks load error:', error);
-  }
-
-  const items = tasks || [];
+  const currentUser = getSessionUser();
+  if (tasksChannel) supabase.removeChannel(tasksChannel);
 
   container.innerHTML = `
-    <!-- Görev Ekleme Kutusu -->
-    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-      <input type="text" id="task-title-input" class="input-field" placeholder="Add task or item (e.g. Bluetooth speaker, Snacks)..." style="margin-bottom: 0;">
-      <button id="btn-add-task" class="btn btn-pink" style="padding: 0 18px; font-size: 0.82rem; white-space: nowrap;">+ Add</button>
-    </div>
-
-    <!-- Görev Listesi -->
-    <div id="tasks-items-list" style="max-height: 220px; overflow-y: auto; display: grid; gap: 6px;">
-      ${items.length === 0 ? '<span style="color: #64748b; font-size: 0.75rem;">No tasks assigned yet. Add one above!</span>' : ''}
+    <div>
+      <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+        <input type="text" id="new-task-input" class="input-field" placeholder="Bring item / Assign task (e.g. Speakers, Ice, Drinks)..." style="margin-bottom: 0;">
+        <button id="btn-add-task" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem; white-space: nowrap;">+ Add</button>
+      </div>
+      <div id="tasks-list-wrap" style="display: grid; gap: 6px;"></div>
     </div>
   `;
 
-  const listEl = document.getElementById('tasks-items-list');
-
-  items.forEach(t => {
-    const row = document.createElement('div');
-    row.style.cssText = `
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid ${t.is_completed ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.08)'};
-      padding: 8px 12px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-    `;
-
-    const isAssigned = !!t.assigned_to_name;
-    const isMe = user && (t.assigned_to_name === user.username || String(t.assigned_to_id) === String(user.id));
-    const canDelete = isAdmin || isMe || !isAssigned;
-
-    row.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-        <input type="checkbox" id="chk-task-${t.id}" ${t.is_completed ? 'checked' : ''} style="cursor: pointer; width: 18px; height: 18px; accent-color: #22c55e;">
-        <span id="text-task-${t.id}" style="font-size: 0.85rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; transition: all 0.2s;">
-          ${t.task_title}
-        </span>
-      </div>
-
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <!-- Kim Üstlendi Rozeti -->
-        ${isAssigned ? `
-          <span style="font-size: 0.72rem; background: rgba(0, 242, 254, 0.12); border: 1px solid rgba(0, 242, 254, 0.3); color: #00f2fe; padding: 3px 8px; border-radius: 6px;">
-            👤 ${t.assigned_to_name}
-          </span>
-          ${isMe ? `<button class="btn-unclaim-task" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.75rem; padding: 2px;" title="Leave task">✕</button>` : ''}
-        ` : `
-          <button class="btn-claim-task btn" style="padding: 2px 10px; font-size: 0.72rem; min-height: 26px;">I'll bring it</button>
-        `}
-
-        ${canDelete ? `
-          <button class="btn-del-task" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.9rem; padding: 4px;" title="Delete task">🗑️</button>
-        ` : ''}
-      </div>
-    `;
-
-    // 1. Checkbox: Anında üstünü çizme ve veritabanı güncellemesi
-    const chk = row.querySelector(`#chk-task-${t.id}`);
-    const textSpan = row.querySelector(`#text-task-${t.id}`);
-    chk.onchange = async () => {
-      const isChecked = chk.checked;
-      textSpan.style.textDecoration = isChecked ? 'line-through' : 'none';
-      textSpan.style.color = isChecked ? '#64748b' : '#f8fafc';
-      row.style.borderColor = isChecked ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.08)';
-
-      await supabase.from('event_tasks').update({ is_completed: isChecked }).eq('id', t.id);
-    };
-
-    // 2. Görevi Üstlenme Butonu
-    const claimBtn = row.querySelector('.btn-claim-task');
-    if (claimBtn) {
-      claimBtn.onclick = async () => {
-        if (!user) return alert('Please sign in first');
-        await supabase.from('event_tasks').update({
-          assigned_to_name: user.username,
-          assigned_to_id: user.id
-        }).eq('id', t.id);
-        renderTasksUI(eventId, containerId);
-      };
-    }
-
-    // 3. Görevi Bırakma Butonu
-    const unclaimBtn = row.querySelector('.btn-unclaim-task');
-    if (unclaimBtn) {
-      unclaimBtn.onclick = async () => {
-        await supabase.from('event_tasks').update({
-          assigned_to_name: null,
-          assigned_to_id: null
-        }).eq('id', t.id);
-        renderTasksUI(eventId, containerId);
-      };
-    }
-
-    // 4. Kesin Silme Butonu
-    const delBtn = row.querySelector('.btn-del-task');
-    if (delBtn) {
-      delBtn.onclick = async (e) => {
-        e.stopPropagation();
-        if (!confirm(`Delete task "${t.task_title}"?`)) return;
-        delBtn.disabled = true;
-        delBtn.textContent = '⏳';
-
-        const { error: delErr } = await supabase.from('event_tasks').delete().eq('id', t.id);
-        if (delErr) {
-          alert('Delete error: ' + delErr.message);
-          delBtn.disabled = false;
-          delBtn.textContent = '🗑️';
-        } else {
-          renderTasksUI(eventId, containerId);
-        }
-      };
-    }
-
-    listEl.appendChild(row);
-  });
-
-  // Görev Ekleme
+  const listWrap = document.getElementById('tasks-list-wrap');
+  const input = document.getElementById('new-task-input');
   const addBtn = document.getElementById('btn-add-task');
-  const inputEl = document.getElementById('task-title-input');
 
-  const handleAdd = async () => {
-    const val = inputEl.value.trim();
-    if (!val) return;
-    addBtn.disabled = true;
+  async function loadTasks() {
+    const { data: tasks } = await supabase
+      .from('event_tasks')
+      .select('*, assignee:users!assigned_to(username)')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: true });
 
-    await supabase.from('event_tasks').insert([{
-      event_id: eventId,
-      task_title: val
-    }]);
+    listWrap.innerHTML = '';
+    if (!tasks || tasks.length === 0) {
+      listWrap.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No tasks yet. Add what you or others should bring!</span>';
+      return;
+    }
 
-    inputEl.value = '';
-    addBtn.disabled = false;
-    renderTasksUI(eventId, containerId);
+    tasks.forEach(t => {
+      const row = document.createElement('div');
+      row.style.cssText = `
+        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px;
+        border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      `;
+      row.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" class="task-chk" ${t.is_completed ? 'checked' : ''} style="cursor: pointer;">
+          <span style="font-size: 0.82rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">
+            ${t.title}
+          </span>
+          <span style="font-size: 0.7rem; color: #00f2fe; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">
+            ${t.assignee?.username ? `👤 ${t.assignee.username}` : 'Unassigned'}
+          </span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          ${!t.assigned_to ? `<button class="btn btn-claim" style="padding: 2px 8px; font-size: 0.7rem;">I'll bring this</button>` : ''}
+          <button class="btn-del-task" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.8rem;">×</button>
+        </div>
+      `;
+
+      row.querySelector('.task-chk').onchange = async (e) => {
+        await supabase.from('event_tasks').update({ is_completed: e.target.checked }).eq('id', t.id);
+      };
+
+      const claimBtn = row.querySelector('.btn-claim');
+      if (claimBtn) {
+        claimBtn.onclick = async () => {
+          await supabase.from('event_tasks').update({ assigned_to: currentUser.id }).eq('id', t.id);
+        };
+      }
+
+      row.querySelector('.btn-del-task').onclick = async () => {
+        await supabase.from('event_tasks').delete().eq('id', t.id);
+      };
+
+      listWrap.appendChild(row);
+    });
+  }
+
+  addBtn.onclick = async () => {
+    const title = input.value.trim();
+    if (!title) return;
+    input.value = '';
+    await supabase.from('event_tasks').insert([{ event_id: eventId, title: title }]);
   };
 
-  addBtn.onclick = handleAdd;
-  inputEl.onkeydown = (e) => {
-    if (e.key === 'Enter') handleAdd();
-  };
+  loadTasks();
+
+  // CANLI REALTIME YAYINI
+  tasksChannel = supabase.channel(`tasks_${eventId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${eventId}` }, () => {
+      loadTasks();
+    })
+    .subscribe();
 }

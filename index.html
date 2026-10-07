@@ -114,7 +114,7 @@
             </div>
             <input type="text" id="uevt-spotify" class="input-field" placeholder="Spotify Playlist URL">
             <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.82rem; color: #00f2fe; cursor: pointer;">
-              <input type="checkbox" id="uevt-expenses"> Enable Shared Expenses (Split Bill)
+              <input type="checkbox" id="uevt-expenses" checked> Enable Shared Expenses (Split Bill)
             </label>
             <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event Space</button>
             <div id="uevt-status" style="margin-top: 6px; font-size: 0.8rem; text-align: center;"></div>
@@ -145,7 +145,7 @@
           </div>
         </div>
 
-        <!-- YÖNETİCİ/HOST İÇİN: KATILMAK İSTEYENLER (PENDING REQUESTS) PANELİ -->
+        <!-- YÖNETİCİ/HOST İÇİN: KATILMAK İSTEYENLER PANELİ -->
         <div id="room-join-requests-panel" style="display: none; background: rgba(255, 0, 127, 0.1); border: 1px solid #ff007f; border-radius: 10px; padding: 12px; margin-bottom: 16px;">
           <h4 style="color: #ff007f; margin: 0 0 8px 0; font-size: 0.88rem;">🔔 Katılmak İsteyenler (Pending Requests):</h4>
           <div id="room-join-requests-list" style="display: grid; gap: 6px;"></div>
@@ -165,41 +165,53 @@
           <div class="room-main-content">
             <div id="room-spotify-wrap" style="display: none; margin-bottom: 16px;"></div>
 
-            <!-- Ortak Masraflar -->
-            <div id="room-expenses-section" style="display: none; margin-bottom: 20px;">
+            <!-- 1. ORTAK HESAP (SPLIT BILL) -->
+            <div id="room-expenses-section" style="margin-bottom: 20px;">
               <h4 style="color: #ff007f; font-size: 0.88rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
-              <div id="room-expenses-container"></div>
+              <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin-bottom: 10px;">
+                <input type="text" id="inline-exp-desc" class="input-field" placeholder="Description (e.g. Pizza, Taxi)..." style="margin-bottom: 0;">
+                <input type="number" id="inline-exp-amount" class="input-field" placeholder="Amount €" step="0.5" style="margin-bottom: 0;">
+                <button id="inline-btn-add-exp" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">+ Add</button>
+              </div>
+              <div id="inline-exp-total-badge" style="background: rgba(34,197,94,0.15); border: 1px solid #22c55e; color: #22c55e; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold;">
+                Total Pool: 0.00 €
+              </div>
+              <div id="inline-expenses-list" style="display: grid; gap: 6px;"></div>
             </div>
 
-            <!-- Görevler -->
+            <!-- 2. GÖREVLER (TASKS & CHECKLIST) -->
             <div id="room-tasks-section" style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
-              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks)</h4>
-              <div id="room-tasks-container"></div>
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks & Checklist)</h4>
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <input type="text" id="inline-task-input" class="input-field" placeholder="Bring item / Task (e.g. Ice, Speaker, Drinks)..." style="margin-bottom: 0;">
+                <button id="inline-btn-add-task" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem; white-space: nowrap;">+ Add</button>
+              </div>
+              <div id="inline-tasks-list" style="display: grid; gap: 6px;"></div>
             </div>
 
-            <!-- Galeri -->
+            <!-- 3. MEDYA GALERİSİ -->
             <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">📸 Media Gallery</h4>
               <div id="room-gallery-container"></div>
             </div>
 
-            <!-- Öneriler & Oylama -->
+            <!-- 4. CANLI ÖNERİLER & OYLAMA -->
             <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
-              <div style="display: flex; gap: 6px; margin-bottom: 10px;">
-                <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea..." style="margin-bottom: 0;">
-                <button id="btn-send-suggestion" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">Post</button>
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <input type="text" id="inline-sug-input" class="input-field" placeholder="Pitch an idea / spot..." style="margin-bottom: 0;">
+                <button id="inline-btn-add-sug" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">Post</button>
               </div>
-              <div id="room-suggestions-list" style="max-height: 160px; overflow-y: auto;"></div>
+              <div id="inline-suggestions-list" style="max-height: 160px; overflow-y: auto; display: grid; gap: 6px;"></div>
             </div>
 
-            <!-- Canlı Chat -->
+            <!-- 5. CANLI CHAT -->
             <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
-              <div id="room-chat-messages" style="height: 180px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;"></div>
+              <div id="inline-chat-messages" style="height: 180px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;"></div>
               <div style="display: flex; gap: 8px;">
-                <input type="text" id="chat-input-text" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
-                <button id="btn-send-chat" class="btn" style="padding: 0 20px;">Send</button>
+                <input type="text" id="inline-chat-input" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
+                <button id="inline-btn-send-chat" class="btn" style="padding: 0 20px;">Send</button>
               </div>
             </div>
           </div>
@@ -234,7 +246,7 @@
 
     let isRegisterMode = false;
     let currentOpenEvent = null;
-    let joinReqChannel = null;
+    let roomLiveChannel = null;
 
     function getSessionUser() {
       try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch(e){ return null; }
@@ -456,7 +468,7 @@
       };
     }
 
-    // TÜM ETKİNLİKLERİ YÜKLE (KİLİTLİ/AÇIK & KATILMA İSTEĞİ BUTONU)
+    // TÜM ETKİNLİKLERİ YÜKLE
     async function loadEvents(user) {
       const container = document.getElementById('events-grid-list');
       const [{ data: events }, { data: access }, { data: joinReqs }] = await Promise.all([
@@ -507,7 +519,7 @@
               reqBtn.disabled = true;
               reqBtn.textContent = 'Sending...';
               await supabase.from('event_join_requests').upsert([{ event_id: evt.id, user_id: user.id, status: 'pending' }]);
-              alert('✓ Katılma isteği etkinlik yöneticisine iletildi!');
+              alert('✓ Katılma isteği iletildi!');
               loadEvents(user);
             };
           }
@@ -517,18 +529,23 @@
       });
     }
 
+    // ========================================================
+    // ETKİNLİK ODASI & TÜM CANLI MODÜLLER (INLINE REALTIME)
+    // ========================================================
     async function openRoom(event, user) {
       currentOpenEvent = event;
+      const targetEventId = Number(event.id);
       const room = document.getElementById('event-detail-room');
+      
       document.getElementById('room-title').textContent = event.title;
       document.getElementById('room-duration-badge').textContent = `⏳ ${event.duration_hours || 2}h Session`;
 
-      loadAttendees(event.id);
+      loadAttendees(targetEventId);
 
-      // YÖNETİCİ/HOST İÇİN KATILMA İSTEKLERİNİ YÜKLE
+      // KATILMAK İSTEYENLER PANELİ
       const isHostOrAdmin = user.is_admin || user.role === 'admin' || event.created_by === user.id;
       if (isHostOrAdmin) {
-        loadJoinRequests(event.id);
+        loadJoinRequests(targetEventId);
       } else {
         document.getElementById('room-join-requests-panel').style.display = 'none';
       }
@@ -540,30 +557,204 @@
         sp.style.display = 'block';
       } else sp.style.display = 'none';
 
-      // Masraflar (Canlı Realtime)
-      const expSec = document.getElementById('room-expenses-section');
-      if (event.enable_expenses) {
-        expSec.style.display = 'block';
-        try { const { initEventExpenses } = await import('./modules/expenses.js'); initEventExpenses(event.id, 'room-expenses-container'); } catch(e){}
-      } else expSec.style.display = 'none';
-
-      // Görevler (Canlı Realtime)
-      try { const { initEventTasks } = await import('./modules/tasks.js'); initEventTasks(event.id, 'room-tasks-container'); } catch(e){}
-
       // Galeri
       try { const { renderEventGallery } = await import('./modules/gallery.js'); renderEventGallery('room-gallery-container', event.drive_folder_url); } catch(e){}
 
-      // Chat & Suggestions (Canlı Realtime)
-      try {
-        const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
-        initEventChat(event.id, 'room-chat-messages');
-        initEventSuggestions(event.id, 'room-suggestions-list');
+      // ----------------------------------------------------
+      // 1. CANLI ORTAK HARCAMALAR (SPLIT BILL)
+      // ----------------------------------------------------
+      async function loadInlineExpenses() {
+        const list = document.getElementById('inline-expenses-list');
+        const badge = document.getElementById('inline-exp-total-badge');
+        const { data: exps } = await supabase.from('event_expenses').select('*, payer:users!paid_by(username)').eq('event_id', targetEventId).order('created_at', { ascending: false });
 
-        document.getElementById('btn-send-chat').onclick = () => sendChatMessage(event.id, 'chat-input-text');
-        document.getElementById('btn-send-suggestion').onclick = () => sendSuggestion(event.id, 'suggestion-input');
-      } catch(e){}
+        let sum = 0;
+        list.innerHTML = '';
+        (exps || []).forEach(e => {
+          sum += Number(e.amount);
+          const row = document.createElement('div');
+          row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
+          row.innerHTML = `
+            <div>
+              <span style="font-size: 0.82rem; color: #f8fafc; font-weight: 500;">${e.description}</span>
+              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">paid by ${e.payer?.username || 'Member'}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <strong style="color: #22c55e; font-size: 0.85rem;">${Number(e.amount).toFixed(2)} €</strong>
+              <button class="btn-del-x" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.85rem;">×</button>
+            </div>
+          `;
+          row.querySelector('.btn-del-x').onclick = async () => {
+            await supabase.from('event_expenses').delete().eq('id', e.id);
+            loadInlineExpenses();
+          };
+          list.appendChild(row);
+        });
+        badge.textContent = `Total Pool: ${sum.toFixed(2)} €`;
+      }
 
-      document.getElementById('btn-close-room').onclick = () => room.style.display = 'none';
+      document.getElementById('inline-btn-add-exp').onclick = async () => {
+        const d = document.getElementById('inline-exp-desc');
+        const a = document.getElementById('inline-exp-amount');
+        const desc = d.value.trim();
+        const amt = parseFloat(a.value);
+        if (!desc || isNaN(amt) || amt <= 0) return alert('Enter description & amount');
+        d.value = ''; a.value = '';
+        await supabase.from('event_expenses').insert([{ event_id: targetEventId, paid_by: user.id, description: desc, amount: amt }]);
+        loadInlineExpenses();
+      };
+      loadInlineExpenses();
+
+      // ----------------------------------------------------
+      // 2. CANLI GÖREVLER (TASKS & CHECKLIST)
+      // ----------------------------------------------------
+      async function loadInlineTasks() {
+        const list = document.getElementById('inline-tasks-list');
+        const { data: tasks } = await supabase.from('event_tasks').select('*, assignee:users!assigned_to(username)').eq('event_id', targetEventId).order('created_at', { ascending: true });
+
+        list.innerHTML = '';
+        if (!tasks || tasks.length === 0) {
+          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No items yet. Add what you or others should bring!</span>';
+          return;
+        }
+
+        tasks.forEach(t => {
+          const row = document.createElement('div');
+          row.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;';
+          row.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" class="task-chk" ${t.is_completed ? 'checked' : ''} style="cursor: pointer;">
+              <span style="font-size: 0.82rem; color: ${t.is_completed ? '#64748b' : '#f8fafc'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'};">${t.title}</span>
+              <span style="font-size: 0.7rem; color: #00f2fe; background: rgba(0,242,254,0.1); padding: 2px 6px; border-radius: 4px;">${t.assignee?.username ? `👤 ${t.assignee.username}` : 'Unassigned'}</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              ${!t.assigned_to ? `<button class="btn btn-claim" style="padding: 2px 8px; font-size: 0.7rem;">I'll bring this</button>` : ''}
+              <button class="btn-del-t" style="background: none; border: none; color: #f43f5e; cursor: pointer; font-size: 0.85rem;">×</button>
+            </div>
+          `;
+
+          row.querySelector('.task-chk').onchange = async (e) => {
+            await supabase.from('event_tasks').update({ is_completed: e.target.checked }).eq('id', t.id);
+            loadInlineTasks();
+          };
+          const cl = row.querySelector('.btn-claim');
+          if (cl) cl.onclick = async () => {
+            await supabase.from('event_tasks').update({ assigned_to: user.id }).eq('id', t.id);
+            loadInlineTasks();
+          };
+          row.querySelector('.btn-del-t').onclick = async () => {
+            await supabase.from('event_tasks').delete().eq('id', t.id);
+            loadInlineTasks();
+          };
+          list.appendChild(row);
+        });
+      }
+
+      document.getElementById('inline-btn-add-task').onclick = async () => {
+        const inp = document.getElementById('inline-task-input');
+        const txt = inp.value.trim();
+        if (!txt) return;
+        inp.value = '';
+        await supabase.from('event_tasks').insert([{ event_id: targetEventId, title: txt }]);
+        loadInlineTasks();
+      };
+      loadInlineTasks();
+
+      // ----------------------------------------------------
+      // 3. CANLI ÖNERİLER (EN ÇOK OY ALAN EN ÜSTTE)
+      // ----------------------------------------------------
+      async function loadInlineSuggestions() {
+        const list = document.getElementById('inline-suggestions-list');
+        const { data: sugs } = await supabase.from('event_suggestions').select('*, users(username)').eq('event_id', targetEventId).order('votes', { ascending: false }).order('created_at', { ascending: false });
+
+        list.innerHTML = '';
+        if (!sugs || sugs.length === 0) {
+          list.innerHTML = '<span style="color: #64748b; font-size: 0.78rem;">No ideas submitted yet. Pitch one above!</span>';
+          return;
+        }
+
+        sugs.forEach(s => {
+          const card = document.createElement('div');
+          card.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px;';
+          card.innerHTML = `
+            <div>
+              <span style="color: #f8fafc; font-size: 0.82rem; font-weight: 500;">${s.text}</span>
+              <span style="display: block; font-size: 0.7rem; color: #94a3b8;">by ${s.users?.username || 'Member'}</span>
+            </div>
+            <button class="btn btn-vote-s" style="padding: 3px 10px; font-size: 0.75rem; border-color: #22c55e; color: #22c55e;">👍 ${s.votes || 0}</button>
+          `;
+          card.querySelector('.btn-vote-s').onclick = async () => {
+            await supabase.from('event_suggestions').update({ votes: (s.votes || 0) + 1 }).eq('id', s.id);
+            loadInlineSuggestions();
+          };
+          list.appendChild(card);
+        });
+      }
+
+      document.getElementById('inline-btn-add-sug').onclick = async () => {
+        const inp = document.getElementById('inline-sug-input');
+        const txt = inp.value.trim();
+        if (!txt) return;
+        inp.value = '';
+        await supabase.from('event_suggestions').insert([{ event_id: targetEventId, user_id: user.id, text: txt, votes: 0 }]);
+        loadInlineSuggestions();
+      };
+      loadInlineSuggestions();
+
+      // ----------------------------------------------------
+      // 4. CANLI CHAT
+      // ----------------------------------------------------
+      async function loadInlineChat() {
+        const box = document.getElementById('inline-chat-messages');
+        const { data: msgs } = await supabase.from('event_chat').select('*, users(username)').eq('event_id', targetEventId).order('created_at', { ascending: true });
+
+        box.innerHTML = '';
+        (msgs || []).forEach(m => {
+          const div = document.createElement('div');
+          div.style.cssText = 'margin-bottom: 6px; font-size: 0.82rem; word-break: break-word;';
+          div.innerHTML = `<strong style="color: #00f2fe;">${m.users?.username || 'Member'}:</strong> <span style="color: #f8fafc; margin-left: 4px;">${m.message}</span>`;
+          box.appendChild(div);
+        });
+        box.scrollTop = box.scrollHeight;
+      }
+
+      document.getElementById('inline-btn-send-chat').onclick = async () => {
+        const inp = document.getElementById('inline-chat-input');
+        const txt = inp.value.trim();
+        if (!txt) return;
+        inp.value = '';
+        await supabase.from('event_chat').insert([{ event_id: targetEventId, user_id: user.id, message: txt }]);
+        loadInlineChat();
+      };
+      loadInlineChat();
+
+      // ----------------------------------------------------
+      // REALTIME WEBSOCKET DİNLEYİCİSİ (ODAYA ÖZEL)
+      // ----------------------------------------------------
+      if (roomLiveChannel) supabase.removeChannel(roomLiveChannel);
+
+      roomLiveChannel = supabase.channel(`nexus_live_room_${targetEventId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_expenses' }, (p) => {
+          if (Number(p.new?.event_id || p.old?.event_id) === targetEventId) loadInlineExpenses();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks' }, (p) => {
+          if (Number(p.new?.event_id || p.old?.event_id) === targetEventId) loadInlineTasks();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_suggestions' }, (p) => {
+          if (Number(p.new?.event_id || p.old?.event_id) === targetEventId) loadInlineSuggestions();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_chat' }, (p) => {
+          if (Number(p.new?.event_id || p.old?.event_id) === targetEventId) loadInlineChat();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests' }, (p) => {
+          if (Number(p.new?.event_id || p.old?.event_id) === targetEventId && isHostOrAdmin) loadJoinRequests(targetEventId);
+        })
+        .subscribe();
+
+      document.getElementById('btn-close-room').onclick = () => {
+        if (roomLiveChannel) supabase.removeChannel(roomLiveChannel);
+        room.style.display = 'none';
+      };
       document.getElementById('btn-mobile-show-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'flex';
       document.getElementById('btn-close-mobile-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'none';
 
@@ -571,7 +762,7 @@
       room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // KATILMAK İSTEYENLER (PENDING JOIN REQUESTS) LİSTELEME & ONAYLAMA
+    // KATILMAK İSTEYENLER (PENDING JOIN REQUESTS)
     async function loadJoinRequests(eventId) {
       const panel = document.getElementById('room-join-requests-panel');
       const list = document.getElementById('room-join-requests-list');
@@ -619,16 +810,6 @@
 
         list.appendChild(row);
       });
-
-      // İstekler için Realtime Dinleyici
-      if (joinReqChannel) supabase.removeChannel(joinReqChannel);
-      joinReqChannel = supabase.channel(`join_reqs_${eventId}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests' }, (payload) => {
-          if (Number(payload.new?.event_id || payload.old?.event_id) === Number(eventId)) {
-            loadJoinRequests(eventId);
-          }
-        })
-        .subscribe();
     }
 
     async function loadAttendees(eventId) {

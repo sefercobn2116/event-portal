@@ -1,647 +1,545 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>NEXUS — Event & Social Hub</title>
-  <link rel="icon" type="image/svg+xml" href="icon.svg">
-  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>NEXUS • Event & Hub</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <!-- ÜST NAVBAR -->
-  <header class="app-header">
-    <div class="header-brand">
-      <h1 class="logo-title">NEXUS</h1>
-      <span class="badge-accent">EVENT PORTAL</span>
+  <!-- 1. GİRİŞ EKRANI -->
+  <div id="view-auth" class="container" style="max-width: 440px; margin-top: 40px; display: none;">
+    <div class="glass-box" style="text-align: center;">
+      <img src="./icon.svg" style="width: 72px; height: 72px; border-radius: 16px; margin-bottom: 14px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);">
+      <h2 id="auth-title" style="color: #00f2fe; margin-bottom: 20px;">Sign In to NEXUS</h2>
+      <input type="text" id="auth-username" class="input-field" placeholder="Username">
+      <div id="auth-register-fields" style="display: none;">
+        <input type="email" id="reg-email" class="input-field" placeholder="Email Address *">
+      </div>
+      <input type="password" id="auth-password" class="input-field" placeholder="Password">
+      <button id="btn-auth-submit" class="btn" style="width: 100%; margin-top: 6px;">Sign In</button>
+      <div style="margin-top: 14px;">
+        <a href="#" id="toggle-auth-mode" style="color: #94a3b8; font-size: 0.85rem; text-decoration: none;">Don't have an account? Sign Up</a>
+      </div>
+      <div id="auth-status" style="margin-top: 10px; font-size: 0.82rem;"></div>
     </div>
-    <div class="header-user" id="header-user-info"></div>
-  </header>
+  </div>
 
-  <!-- GİRİŞ EKRANI (ORİJİNAL TASARIM) -->
-  <div id="auth-container" class="auth-wrapper" style="display: none;">
-    <div class="glass-panel auth-card">
-      <h2 class="neon-glow mb-4">Giriş Yap / Kaydol</h2>
-      <div class="form-group mb-3">
-        <label>Kullanıcı Adı</label>
-        <input type="text" id="auth-username" class="cyber-input w-100" placeholder="Kullanıcı adınızı girin">
+  <!-- 2. ANA PANEL -->
+  <div id="view-dashboard" class="container" style="display: none;">
+    <div class="nav-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="./icon.svg" style="width: 42px; height: 42px; border-radius: 10px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.2rem;">Welcome</h2>
+            <img id="user-nav-avatar" src="" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ff007f; object-fit: cover;">
+          </div>
+          <span id="user-role-text" style="font-size: 0.78rem; color: #94a3b8;">NEXUS Member Space</span>
+        </div>
       </div>
-      <div class="form-group mb-3">
-        <label>E-Posta</label>
-        <input type="email" id="auth-email" class="cyber-input w-100" placeholder="ornek@nexus.com">
+      <div style="display: flex; gap: 8px;">
+        <a id="btn-admin-link" href="admin.html" class="btn btn-pink" style="display: none; padding: 6px 14px; font-size: 0.8rem; text-decoration: none;">⚙️ Admin</a>
+        <button id="btn-logout" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">Log Out</button>
       </div>
-      <div class="form-group mb-4">
-        <label>Şifre</label>
-        <input type="password" id="auth-password" class="cyber-input w-100" placeholder="******">
+    </div>
+
+    <!-- QR DAVET BANNERI -->
+    <div class="glass-box" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-color: rgba(0, 242, 254, 0.3);">
+      <div>
+        <h4 style="color: #00f2fe; margin: 0 0 2px 0;">✨ Bring Your Friends In</h4>
+        <p style="color: #94a3b8; font-size: 0.8rem; margin: 0;">Scan QR code to join private spaces.</p>
       </div>
-      <div class="d-flex gap-2">
-        <button class="btn-cyber w-100" onclick="nexusAuth('login')">Giriş Yap</button>
-        <button class="btn-outline-cyber w-100" onclick="nexusAuth('register')">Kayıt Ol</button>
+      <button id="btn-open-invite-qr" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">📱 Show Invite QR</button>
+    </div>
+
+    <!-- PROFİL KARTI -->
+    <div class="glass-box" style="margin-bottom: 20px; border-color: rgba(0, 242, 254, 0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <img id="prof-card-avatar" src="" style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h4 id="prof-card-username" style="color: #00f2fe; margin: 0;">User</h4>
+              <span id="prof-badge-ig" style="display: none;"></span>
+            </div>
+            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8; display: block; margin-top: 2px;">Loading...</span>
+            <div id="prof-card-contact" style="font-size: 0.76rem; color: #22c55e; margin-top: 4px; display: none;"></div>
+          </div>
+        </div>
+        <button id="btn-toggle-profile-edit" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Edit Profile</button>
+      </div>
+
+      <!-- Düzenleme Alanı -->
+      <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px;">
+        <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
+          <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
+          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.78rem;">Choose Profile Picture</button>
+          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">Square auto-crop enabled</div>
+        </div>
+        <div id="prof-preset-grid" style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px;"></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px;">
+          <input type="text" id="prof-contact-input" class="input-field" placeholder="Phone / Telegram (+381...)" style="margin-bottom: 0;">
+          <input type="text" id="prof-ig-input" class="input-field" placeholder="Instagram (username or URL)" style="margin-bottom: 0;">
+        </div>
+        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password (optional)">
+        <button type="button" id="btn-save-profile" class="btn" style="width: 100%;">Save Profile</button>
+        <div id="prof-save-status" style="margin-top: 6px; font-size: 0.78rem; text-align: center;"></div>
+      </div>
+    </div>
+
+    <!-- DİNAMİK PLUGİNLER (SMART MEETUP) -->
+    <div id="dynamic-plugins-zone"></div>
+
+    <!-- ETKİNLİKLER -->
+    <div id="section-events">
+      <div id="user-create-event-panel" style="display: none; margin-bottom: 20px;">
+        <div class="glass-box">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4 style="color: #00f2fe; margin: 0;">Host Your Own Event</h4>
+            <button id="btn-toggle-create-evt" class="btn btn-pink" style="padding: 6px 14px; font-size: 0.8rem;">➕ Create Event</button>
+          </div>
+
+          <div id="create-evt-form" style="display: none; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+            <input type="text" id="uevt-title" class="input-field" placeholder="Event Title *">
+            <textarea id="uevt-desc" class="input-field" style="height: 50px; resize: none;" placeholder="Description"></textarea>
+            <input type="text" id="uevt-loc" class="input-field" placeholder="Location Name or Maps URL">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 10px;">
+              <input type="date" id="uevt-date" class="input-field" style="margin-bottom: 0;">
+              <select id="uevt-start-hour" class="input-field" style="margin-bottom: 0;"></select>
+              <select id="uevt-end-hour" class="input-field" style="margin-bottom: 0;"></select>
+            </div>
+            <input type="text" id="uevt-spotify" class="input-field" placeholder="Spotify Playlist URL">
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.82rem; color: #00f2fe; cursor: pointer;">
+              <input type="checkbox" id="uevt-expenses"> Enable Shared Expenses (Split Bill)
+            </label>
+            <button id="btn-submit-uevt" class="btn" style="width: 100%;">Create Event Space</button>
+            <div id="uevt-status" style="margin-top: 6px; font-size: 0.8rem; text-align: center;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-box">
+        <h3 style="color: #00f2fe; margin-bottom: 14px;">All Events</h3>
+        <div id="events-grid-list" style="display: grid; gap: 10px;"></div>
+      </div>
+
+      <!-- ETKİNLİK ODASI -->
+      <div id="event-detail-room" class="glass-box" style="display: none; margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+          <div>
+            <h3 id="room-title" style="color: #00f2fe; margin: 0 0 4px 0;">Event Space</h3>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <div id="room-location-wrap" style="display: none;"></div>
+              <div id="room-duration-badge" style="background: rgba(0,242,254,0.15); border: 1px solid #00f2fe; color: #00f2fe; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;"></div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-mobile-show-attendees" class="btn room-attendees-mobile-btn" style="padding: 4px 10px; font-size: 0.75rem;">👥 Gelenler (<span class="room-member-count-span">0</span>)</button>
+            <button id="btn-close-room" class="btn" style="padding: 4px 12px; font-size: 0.75rem;">Close Room</button>
+          </div>
+        </div>
+
+        <div class="room-layout-container">
+          <!-- MASAÜSTÜ SOL PANEL -->
+          <div class="room-sidebar-desktop glass-box" style="padding: 12px; background: rgba(0,0,0,0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 0.78rem; color: #00f2fe; font-weight: bold;">👥 GELENLER</span>
+              <span class="room-member-count-span" style="font-size: 0.75rem; color: #94a3b8;">0</span>
+            </div>
+            <div id="room-desktop-attendees-list" style="display: grid; gap: 6px; max-height: 440px; overflow-y: auto;"></div>
+          </div>
+
+          <!-- SAĞ İÇERİK -->
+          <div class="room-main-content">
+            <div id="room-spotify-wrap" style="display: none; margin-bottom: 16px;"></div>
+
+            <!-- Ortak Masraflar -->
+            <div id="room-expenses-section" style="display: none; margin-bottom: 20px;">
+              <h4 style="color: #ff007f; font-size: 0.88rem; margin-bottom: 8px;">💰 Shared Expenses Pool (Split Bill)</h4>
+              <div id="room-expenses-container"></div>
+            </div>
+
+            <!-- Görevler -->
+            <div id="room-tasks-section" style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">📋 Who Brings What? (Tasks)</h4>
+              <div id="room-tasks-container"></div>
+            </div>
+
+            <!-- Galeri -->
+            <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">📸 Media Gallery</h4>
+              <div id="room-gallery-container"></div>
+            </div>
+
+            <!-- Öneriler & Oylama -->
+            <div style="margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #00f2fe; font-size: 0.88rem; margin-bottom: 8px;">💡 Live Event Ideas & Suggestions</h4>
+              <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                <input type="text" id="suggestion-input" class="input-field" placeholder="Pitch an idea..." style="margin-bottom: 0;">
+                <button id="btn-send-suggestion" class="btn btn-pink" style="padding: 0 16px; font-size: 0.8rem;">Post</button>
+              </div>
+              <div id="room-suggestions-list" style="max-height: 160px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Canlı Chat -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+              <h4 style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 8px;">💬 Live Room Chat</h4>
+              <div id="room-chat-messages" style="height: 180px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px;"></div>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="chat-input-text" class="input-field" placeholder="Type a message..." style="margin-bottom: 0;">
+                <button id="btn-send-chat" class="btn" style="padding: 0 20px;">Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ANA PORTAL ALANI -->
-  <div id="app-container" class="portal-grid" style="display: none;">
-    
-    <!-- SOL SÜTUN: Profil, Gerçek Takvim & Etkinlik Listesi -->
-    <div class="portal-sidebar-left">
-      
-      <!-- Kullanıcı Profil Kartı -->
-      <div class="glass-panel user-card mb-3">
-        <div class="d-flex align-items-center gap-3">
-          <div class="avatar-circle">
-            <span id="user-avatar-initial">👤</span>
-          </div>
-          <div>
-            <h4 id="user-name-display" class="m-0 text-white font-weight-bold">Kullanıcı</h4>
-            <span id="user-role-badge" class="badge-role">Gezgin</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- İNTERAKTİF GERÇEK TAKVİM & SAAT SEÇİMİ -->
-      <div class="glass-panel calendar-box mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <button class="btn-nav" onclick="NexusCalendar.navMonth(-1)">&lt;</button>
-          <strong id="cal-month-title" class="text-accent" style="letter-spacing: 1px;">AY YILI</strong>
-          <button class="btn-nav" onclick="NexusCalendar.navMonth(1)">&gt;</button>
-        </div>
-        <div class="cal-weekdays d-grid" style="grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; opacity: 0.6; margin-bottom: 5px;">
-          <div>Pt</div><div>Sa</div><div>Ça</div><div>Pe</div><div>Cu</div><div>Ct</div><div>Pz</div>
-        </div>
-        <div id="cal-days-grid" class="d-grid" style="grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
-
-        <!-- Gün Tıklanınca Açılan Canlı Saat Seçici -->
-        <div id="cal-drawer" class="mt-3 p-2 rounded" style="display:none; background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 243, 255, 0.3);">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span id="cal-drawer-date" class="text-accent" style="font-size: 12px; font-weight: bold;"></span>
-            <button class="btn-close-sm" onclick="NexusCalendar.closeDrawer()">✕</button>
-          </div>
-          <small class="text-muted d-block mb-2" style="font-size: 10px;">Boş saatlerini seç (Yeşil = Müsait):</small>
-          <div id="cal-drawer-slots" class="d-flex flex-wrap gap-1"></div>
-        </div>
-      </div>
-
-      <!-- Etkinlikler Listesi -->
-      <div class="glass-panel events-box">
-        <h5 class="text-accent mb-2" style="font-size: 14px;">📅 Etkinlikler</h5>
-        <div id="events-list" class="d-flex flex-column gap-2"></div>
-      </div>
-
+  <!-- MOBİL GELENLER MODALI -->
+  <div id="mobile-attendees-modal" class="lightbox-overlay" style="display: none;">
+    <div class="glass-box" style="max-width: 320px; width: 90%; position: relative;">
+      <button id="btn-close-mobile-attendees" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin-bottom: 10px; font-size: 1rem;">👥 Etkinliğe Gelenler</h3>
+      <div id="room-mobile-attendees-list" style="display: grid; gap: 6px; max-height: 280px; overflow-y: auto;"></div>
     </div>
-
-    <!-- SAĞ SÜTUN: Etkinlik Odası Paneli -->
-    <div class="portal-main-content">
-      
-      <!-- Boş Oda Durumu -->
-      <div id="room-empty" class="glass-panel text-center p-5">
-        <h3 class="text-accent">Etkinlik Odası</h3>
-        <p class="text-muted">Detayları ve canlı odayı görmek için soldan bir etkinlik seçin.</p>
-      </div>
-
-      <!-- Açık Oda Görünümü -->
-      <div id="room-active" style="display: none;" class="d-flex flex-column gap-3">
-        
-        <!-- Oda Üst Başlık & Çıkış -->
-        <div class="glass-panel p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <h2 id="room-title" class="m-0 text-accent font-weight-bold">Etkinlik</h2>
-            <div id="room-meta" class="text-muted small mt-1">Konum & Saat</div>
-          </div>
-          <button class="btn-close-room" onclick="NexusRoom.close()">Close Room</button>
-        </div>
-
-        <div class="room-split-layout d-flex gap-3">
-          
-          <!-- Sol Mini Panel: GELENLER & Katılım Onay Paneli (RSVP) -->
-          <div class="room-sidebar-desktop glass-panel p-3" style="width: 250px; min-width: 250px;">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="text-accent font-weight-bold" style="font-size: 12px;">👥 GELENLER</span>
-              <span id="room-attendees-badge" class="badge-role">0</span>
-            </div>
-            <div id="room-attendees-list" class="d-flex flex-column gap-2 mb-3"></div>
-
-            <!-- Bekleyen İstekler Onay/Ret Kutusu -->
-            <div id="room-rsvp-box" class="pt-3 border-top border-secondary">
-              <span class="text-warning font-weight-bold d-block mb-2" style="font-size: 12px;">⏳ Katılım İstekleri</span>
-              <div id="room-rsvp-list" class="d-flex flex-column gap-2"></div>
-            </div>
-          </div>
-
-          <!-- Sağ Taraf: Masraflar, Görevler, Galeri, Öneriler ve Chat -->
-          <div class="room-modules-container flex-grow-1 d-flex flex-column gap-3">
-            
-            <!-- 1. Shared Expenses Pool (Split Bill) -->
-            <div class="glass-panel p-3">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-pink font-weight-bold">💰 Shared Expenses Pool (Split Bill)</span>
-                <span id="expenses-total-val" class="badge bg-success" style="font-size: 13px;">0.00 TL</span>
-              </div>
-              <div class="d-flex gap-2 mb-2">
-                <input type="text" id="expense-in-desc" class="cyber-input flex-grow-1" placeholder="Harcama açıklaması">
-                <input type="number" id="expense-in-amt" class="cyber-input" placeholder="Tutar" style="width: 90px;">
-                <button class="btn-cyber btn-sm" onclick="NexusRoom.addExpense()">Ekle</button>
-              </div>
-              <div id="expenses-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 130px;"></div>
-            </div>
-
-            <!-- 2. Who Brings What? (Tasks) -->
-            <div class="glass-panel p-3">
-              <span class="text-cyan font-weight-bold d-block mb-2">📋 Who Brings What? (Tasks)</span>
-              <div class="d-flex gap-2 mb-2">
-                <input type="text" id="task-in-title" class="cyber-input flex-grow-1" placeholder="Malzeme veya görev adı...">
-                <button class="btn-cyber btn-sm" onclick="NexusRoom.addTask()">Ekle</button>
-              </div>
-              <div id="tasks-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 130px;"></div>
-            </div>
-
-            <!-- 3. Media Gallery -->
-            <div class="glass-panel p-3">
-              <span class="text-muted font-weight-bold d-block mb-2">📷 Media Gallery</span>
-              <div class="d-flex gap-2 mb-2">
-                <button class="btn-outline-cyber btn-sm" onclick="alert('Drive yükleme entegrasyonu tetiklendi.')">📷 Upload Photo</button>
-              </div>
-              <div id="gallery-grid" class="d-flex flex-wrap gap-2"></div>
-            </div>
-
-            <!-- 4. Live Event Ideas & Suggestions -->
-            <div class="glass-panel p-3">
-              <span class="text-warning font-weight-bold d-block mb-2">💡 Live Event Ideas & Suggestions</span>
-              <div class="d-flex gap-2 mb-2">
-                <input type="text" id="sugg-in-text" class="cyber-input flex-grow-1" placeholder="Pitch an idea...">
-                <button class="btn-pink btn-sm" onclick="NexusRoom.addSuggestion()">Post</button>
-              </div>
-              <div id="suggestions-list" class="d-flex flex-column gap-1 overflow-auto" style="max-height: 140px;"></div>
-            </div>
-
-            <!-- 5. Live Room Chat -->
-            <div class="glass-panel p-3 d-flex flex-column" style="min-height: 300px;">
-              <span class="text-white font-weight-bold d-block mb-2">💬 Live Room Chat</span>
-              <div id="chat-messages-box" class="flex-grow-1 overflow-auto d-flex flex-column gap-2 mb-2 p-2 rounded" style="background: rgba(0,0,0,0.3); max-height: 220px;"></div>
-              <div class="d-flex gap-2">
-                <input type="text" id="chat-in-msg" class="cyber-input flex-grow-1" placeholder="Type a message...">
-                <button class="btn-cyber btn-sm" onclick="NexusRoom.sendMessage()">Send</button>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
   </div>
 
-  <!-- AYARLAR -->
-  <script src="config.js"></script>
+  <!-- QR MODAL -->
+  <div id="qr-modal" class="lightbox-overlay" style="display: none;">
+    <div class="glass-box" style="max-width: 320px; text-align: center; position: relative;">
+      <button id="btn-close-qr" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">✕</button>
+      <h3 style="color: #00f2fe; margin-bottom: 12px;">Invite to Portal</h3>
+      <div style="background: #fff; padding: 10px; border-radius: 10px; display: inline-block; margin-bottom: 12px;">
+        <img id="qr-code-img" src="" style="width: 200px; height: 200px; display: block;">
+      </div>
+      <div><button id="btn-copy-portal-link" class="btn" style="padding: 6px 14px; font-size: 0.8rem;">📋 Copy Link</button></div>
+    </div>
+  </div>
 
-  <!-- TÜM SİSTEMİ ÇALIŞTIRAN ENTEGRE SCRİPT -->
-  <script>
-    let activeUser = null;
-    let activeEventId = null;
-    let roomChannel = null;
+  <script type="module">
+    import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initAppSession();
-    });
+    let isRegisterMode = false;
+    let currentOpenEvent = null;
 
-    // 1. KULLANICI GİRİŞ/OTURUM İŞLEMLERİ
-    function initAppSession() {
-      const saved = sessionStorage.getItem('nexus_user') || localStorage.getItem('nexus_user');
-      if (saved) {
-        activeUser = JSON.parse(saved);
-        showApp();
-      } else {
-        document.getElementById('auth-container').style.display = 'flex';
-        document.getElementById('app-container').style.display = 'none';
+    function getSessionUser() {
+      try { const u = localStorage.getItem('portal_user'); return u ? JSON.parse(u) : null; } catch(e){ return null; }
+    }
+
+    async function startApp() {
+      let user = getSessionUser();
+      if (!user) {
+        document.getElementById('view-auth').style.display = 'block';
+        document.getElementById('view-dashboard').style.display = 'none';
+        setupAuth();
+        return;
       }
+      try {
+        const { data: latest } = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+        if (latest) { user = latest; localStorage.setItem('portal_user', JSON.stringify(latest)); }
+      } catch(e){}
+
+      document.getElementById('view-auth').style.display = 'none';
+      document.getElementById('view-dashboard').style.display = 'block';
+      setupDashboard(user);
+    }
+    startApp();
+
+    function setupAuth() {
+      const toggle = document.getElementById('toggle-auth-mode');
+      const submit = document.getElementById('btn-auth-submit');
+      const reg = document.getElementById('auth-register-fields');
+      const status = document.getElementById('auth-status');
+
+      toggle.onclick = (e) => {
+        e.preventDefault();
+        isRegisterMode = !isRegisterMode;
+        reg.style.display = isRegisterMode ? 'block' : 'none';
+        submit.textContent = isRegisterMode ? 'Sign Up' : 'Sign In';
+        document.getElementById('auth-title').textContent = isRegisterMode ? 'Create Account' : 'Sign In to NEXUS';
+      };
+
+      submit.onclick = async () => {
+        const username = document.getElementById('auth-username').value.trim();
+        const pass = document.getElementById('auth-password').value;
+        status.style.color = '#00f2fe';
+        status.textContent = 'Authenticating...';
+
+        try {
+          if (isRegisterMode) {
+            const email = document.getElementById('reg-email').value.trim();
+            const { data: u, error } = await supabase.from('users').insert([{ username, email, password_hash: pass, role: 'user' }]).select().single();
+            if (error) throw error;
+            localStorage.setItem('portal_user', JSON.stringify(u));
+          } else {
+            const { data: u, error } = await supabase.from('users').select('*').eq('username', username).eq('password_hash', pass).maybeSingle();
+            if (error || !u) throw new Error('Invalid credentials');
+            localStorage.setItem('portal_user', JSON.stringify(u));
+          }
+          startApp();
+        } catch(err) {
+          status.style.color = '#f43f5e';
+          status.textContent = err.message;
+        }
+      };
     }
 
-    async function nexusAuth(type) {
-      const u = document.getElementById('auth-username').value.trim();
-      const e = document.getElementById('auth-email').value.trim();
-      const p = document.getElementById('auth-password').value.trim();
-      if (!u) return alert('Kullanıcı adı giriniz.');
+    async function setupDashboard(user) {
+      document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
+      const av = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      document.getElementById('user-nav-avatar').src = av;
 
-      if (type === 'login') {
-        const { data, error } = await supabase.from('users').select('*').eq('username', u).maybeSingle();
-        if (error || !data) return alert('Kullanıcı bulunamadı.');
-        activeUser = data;
-      } else {
-        const { data, error } = await supabase.from('users').insert({ username: u, email: e, password_hash: p, role: 'user' }).select().single();
-        if (error) return alert('Kayıt hatası: ' + error.message);
-        activeUser = data;
+      if (user.is_admin || user.role === 'admin') {
+        document.getElementById('btn-admin-link').style.display = 'inline-flex';
+        document.getElementById('user-role-text').textContent = 'Administrator';
       }
-      sessionStorage.setItem('nexus_user', JSON.stringify(activeUser));
-      showApp();
+
+      document.getElementById('btn-logout').onclick = () => { localStorage.removeItem('portal_user'); window.location.reload(); };
+
+      setupProfile(user);
+      setupQR();
+
+      // Plugin Yükle
+      try {
+        const { loadActivePlugins } = await import('./modules/loader.js');
+        await loadActivePlugins(user.id, 'dynamic-plugins-zone');
+      } catch(e){}
+
+      if (user.can_create_events || user.is_admin || user.role === 'admin') {
+        document.getElementById('user-create-event-panel').style.display = 'block';
+        setupEventCreate(user);
+      }
+
+      loadEvents(user);
+
+      // Realtime Yeni Etkinlik Dinleyicisi
+      supabase.channel('events_live_dashboard')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+          loadEvents(user);
+        }).subscribe();
     }
 
-    function nexusLogout() {
-      sessionStorage.removeItem('nexus_user');
-      localStorage.removeItem('nexus_user');
-      location.reload();
+    function setupProfile(user) {
+      let curAv = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      const avImg = document.getElementById('prof-card-avatar');
+      const uName = document.getElementById('prof-card-username');
+      const det = document.getElementById('prof-card-details');
+      const cont = document.getElementById('prof-card-contact');
+      const igBadge = document.getElementById('prof-badge-ig');
+      const form = document.getElementById('prof-edit-form');
+      const fileInput = document.getElementById('prof-file-input');
+
+      function render() {
+        avImg.src = curAv;
+        uName.textContent = user.username;
+        det.textContent = user.email;
+        if (user.phone) { cont.textContent = `📞 ${user.phone}`; cont.style.display = 'block'; } else cont.style.display = 'none';
+        if (user.instagram) {
+          const h = user.instagram.replace('@','').trim();
+          igBadge.innerHTML = `<a href="https://instagram.com/${h}" target="_blank" style="background: linear-gradient(45deg,#f09433,#dc2743,#bc1888); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.7rem; text-decoration:none; font-weight:bold;">📸 @${h} ↗</a>`;
+          igBadge.style.display = 'inline-block';
+        } else igBadge.style.display = 'none';
+      }
+      render();
+
+      document.getElementById('btn-toggle-profile-edit').onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      document.getElementById('btn-trigger-upload').onclick = () => fileInput.click();
+
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = 256; c.height = 256;
+            const min = Math.min(img.width, img.height);
+            c.getContext('2d').drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, 256, 256);
+            curAv = c.toDataURL('image/webp', 0.85);
+            avImg.src = curAv;
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      };
+
+      document.getElementById('btn-save-profile').onclick = async () => {
+        const payload = {
+          avatar_url: curAv,
+          phone: document.getElementById('prof-contact-input').value.trim(),
+          instagram: document.getElementById('prof-ig-input').value.trim()
+        };
+        const pass = document.getElementById('prof-new-pass').value.trim();
+        if (pass) payload.password_hash = pass;
+
+        await supabase.from('users').update(payload).eq('id', user.id);
+        Object.assign(user, payload);
+        localStorage.setItem('portal_user', JSON.stringify(user));
+        render();
+        form.style.display = 'none';
+      };
     }
 
-    function showApp() {
-      document.getElementById('auth-container').style.display = 'none';
-      document.getElementById('app-container').style.display = 'grid';
-
-      document.getElementById('header-user-info').innerHTML = `
-        <span class="text-accent small mr-2">${activeUser.username}</span>
-        <button class="btn-outline-danger btn-xs" onclick="nexusLogout()">Çıkış</button>
-      `;
-      document.getElementById('user-name-display').innerText = activeUser.username;
-      document.getElementById('user-role-badge').innerText = activeUser.role || 'Üye';
-
-      NexusCalendar.init();
-      loadEvents();
+    function setupQR() {
+      const modal = document.getElementById('qr-modal');
+      const url = window.location.href.split('#')[0].split('?')[0];
+      document.getElementById('btn-open-invite-qr').onclick = () => {
+        document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+        modal.style.display = 'flex';
+      };
+      document.getElementById('btn-close-qr').onclick = () => modal.style.display = 'none';
+      document.getElementById('btn-copy-portal-link').onclick = () => { navigator.clipboard.writeText(url); alert('Copied!'); };
     }
 
-    // 2. ETKİNLİKLER LİSTESİ
-    async function loadEvents() {
-      const { data } = await supabase.from('events').select('*').order('id', { ascending: false });
-      const list = document.getElementById('events-list');
-      list.innerHTML = '';
-      (data || []).forEach(ev => {
-        const item = document.createElement('div');
-        item.className = 'glass-panel p-2 rounded d-flex justify-content-between align-items-center';
-        item.innerHTML = `
+    async function setupEventCreate(user) {
+      const form = document.getElementById('create-evt-form');
+      const sH = document.getElementById('uevt-start-hour');
+      const eH = document.getElementById('uevt-end-hour');
+      for (let h = 8; h <= 23; h++) {
+        const val = `${h < 10 ? '0' + h : h}:00`;
+        sH.innerHTML += `<option value="${h}" ${h === 18 ? 'selected' : ''}>${val}</option>`;
+        eH.innerHTML += `<option value="${h + 1}" ${h === 20 ? 'selected' : ''}>${h + 1 < 10 ? '0' + (h + 1) : (h + 1)}:00</option>`;
+      }
+
+      document.getElementById('btn-toggle-create-evt').onclick = () => form.style.display = form.style.display === 'none' ? 'block' : 'none';
+
+      document.getElementById('btn-submit-uevt').onclick = async () => {
+        const title = document.getElementById('uevt-title').value.trim();
+        const dateVal = document.getElementById('uevt-date').value;
+        if (!title || !dateVal) return alert('Title and date required');
+
+        let fId = '';
+        try {
+          const res = await fetch(EMAIL_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'create_drive_folder', folderName: title })
+          });
+          const d = await res.json();
+          if (d.status === 'success') fId = d.folderId;
+        } catch(e){}
+
+        const start = parseInt(sH.value);
+        const end = parseInt(eH.value);
+        const { data: newEvt } = await supabase.from('events').insert([{
+          title,
+          description: document.getElementById('uevt-desc').value.trim(),
+          location: document.getElementById('uevt-loc').value.trim(),
+          event_date: dateVal,
+          start_hour: start,
+          end_hour: end,
+          duration_hours: end - start,
+          spotify_url: document.getElementById('uevt-spotify').value.trim(),
+          enable_expenses: document.getElementById('uevt-expenses').checked,
+          drive_folder_url: fId,
+          created_by: user.id
+        }]).select().single();
+
+        await supabase.from('event_access').insert([{ event_id: newEvt.id, user_id: user.id }]);
+        form.style.display = 'none';
+      };
+    }
+
+    async function loadEvents(user) {
+      const container = document.getElementById('events-grid-list');
+      const { data: events } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      const { data: access } = await supabase.from('event_access').select('event_id').eq('user_id', user.id);
+      const accessSet = new Set((access || []).map(a => a.event_id));
+
+      container.innerHTML = '';
+      (events || []).forEach(evt => {
+        const hasAccess = user.is_admin || user.role === 'admin' || evt.created_by === user.id || accessSet.has(evt.id);
+        const card = document.createElement('div');
+        card.className = 'glass-box';
+        card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+        card.innerHTML = `
           <div>
-            <strong class="text-white d-block" style="font-size: 13px;">${ev.title}</strong>
-            <small class="text-muted" style="font-size: 11px;">${ev.location || 'Konum yok'} | ${ev.event_date || ''}</small>
+            <h4 style="color: ${hasAccess ? '#00f2fe' : '#94a3b8'}; margin: 0;">${hasAccess ? '🟢' : '🔒'} ${evt.title}</h4>
+            <span style="font-size: 0.75rem; color: #64748b;">📅 ${evt.event_date || 'Date TBD'} • ${evt.location || 'Spot'}</span>
           </div>
-          <button class="btn-cyber btn-xs" onclick="openRoom(${ev.id}, '${ev.title}', '${ev.location || ''}')">Oda</button>
+          <button class="btn btn-enter" style="padding: 4px 12px; font-size: 0.78rem;">${hasAccess ? 'Enter Space →' : 'Request Access'}</button>
         `;
-        list.appendChild(item);
+        card.querySelector('.btn-enter').onclick = () => {
+          if (hasAccess) openRoom(evt, user);
+          else alert('Access request submitted to event host.');
+        };
+        container.appendChild(card);
       });
     }
 
-    // 3. İNTERAKTİF GERÇEK TAKVİM & SAAT SEÇİMİ
-    const NexusCalendar = {
-      currDate: new Date(),
-      selDate: null,
-      mySlots: new Set(),
+    async function openRoom(event, user) {
+      currentOpenEvent = event;
+      const room = document.getElementById('event-detail-room');
+      document.getElementById('room-title').textContent = event.title;
+      document.getElementById('room-duration-badge').textContent = `⏳ ${event.duration_hours || 2}h Session`;
 
-      init() {
-        this.render();
-      },
+      loadAttendees(event.id);
 
-      navMonth(d) {
-        this.currDate.setMonth(this.currDate.getMonth() + d);
-        this.render();
-      },
+      // Spotify
+      const sp = document.getElementById('room-spotify-wrap');
+      if (event.spotify_url && event.spotify_url.includes('spotify.com')) {
+        sp.innerHTML = `<iframe style="border-radius:10px; width:100%; height:80px;" src="${event.spotify_url.replace('open.spotify.com/','open.spotify.com/embed/')}" frameBorder="0"></iframe>`;
+        sp.style.display = 'block';
+      } else sp.style.display = 'none';
 
-      render() {
-        const y = this.currDate.getFullYear();
-        const m = this.currDate.getMonth();
-        document.getElementById('cal-month-title').innerText =
-          new Intl.DateTimeFormat('tr-TR', { month: 'long', year: 'numeric' }).format(this.currDate).toUpperCase();
+      // Masraflar (Canlı Realtime)
+      const expSec = document.getElementById('room-expenses-section');
+      if (event.enable_expenses) {
+        expSec.style.display = 'block';
+        try { const { initEventExpenses } = await import('./modules/expenses.js'); initEventExpenses(event.id, 'room-expenses-container'); } catch(e){}
+      } else expSec.style.display = 'none';
 
-        const grid = document.getElementById('cal-days-grid');
-        grid.innerHTML = '';
+      // Görevler (Canlı Realtime)
+      try { const { initEventTasks } = await import('./modules/tasks.js'); initEventTasks(event.id, 'room-tasks-container'); } catch(e){}
 
-        const firstDay = (new Date(y, m, 1).getDay() + 6) % 7;
-        const totalDays = new Date(y, m + 1, 0).getDate();
-        const todayStr = new Date().toISOString().split('T')[0];
+      // Galeri
+      try { const { renderEventGallery } = await import('./modules/gallery.js'); renderEventGallery('room-gallery-container', event.drive_folder_url); } catch(e){}
 
-        for (let i = 0; i < firstDay; i++) {
-          grid.innerHTML += `<div style="height:32px;"></div>`;
-        }
+      // Chat & Suggestions (Canlı Realtime)
+      try {
+        const { initEventChat, sendChatMessage, initEventSuggestions, sendSuggestion } = await import('./modules/chat.js');
+        initEventChat(event.id, 'room-chat-messages');
+        initEventSuggestions(event.id, 'room-suggestions-list');
 
-        for (let d = 1; d <= totalDays; d++) {
-          const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-          const cell = document.createElement('div');
-          cell.className = 'cal-day-cell';
-          if (dateStr === todayStr) cell.style.borderColor = 'var(--cyber-neon)';
-          cell.style.cssText = 'height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:4px; font-size:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);';
-          cell.innerText = d;
-          cell.onclick = () => this.openDate(dateStr);
-          grid.appendChild(cell);
-        }
-      },
+        document.getElementById('btn-send-chat').onclick = () => sendChatMessage(event.id, 'chat-input-text');
+        document.getElementById('btn-send-suggestion').onclick = () => sendSuggestion(event.id, 'suggestion-input');
+      } catch(e){}
 
-      async openDate(dateStr) {
-        this.selDate = dateStr;
-        document.getElementById('cal-drawer').style.display = 'block';
-        document.getElementById('cal-drawer-date').innerText = `${dateStr} Saatlerin:`;
+      document.getElementById('btn-close-room').onclick = () => room.style.display = 'none';
+      document.getElementById('btn-mobile-show-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'flex';
+      document.getElementById('btn-close-mobile-attendees').onclick = () => document.getElementById('mobile-attendees-modal').style.display = 'none';
 
-        const { data } = await supabase.from('user_availability')
-          .select('slot_hour')
-          .eq('user_id', activeUser.id)
-          .eq('slot_date', dateStr);
-
-        this.mySlots = new Set((data || []).map(s => s.slot_hour));
-        this.renderSlots();
-      },
-
-      renderSlots() {
-        const box = document.getElementById('cal-drawer-slots');
-        box.innerHTML = '';
-        for (let h = 8; h <= 23; h++) {
-          const set = this.mySlots.has(h);
-          const btn = document.createElement('button');
-          btn.style.cssText = `padding: 2px 6px; font-size:10px; border-radius:3px; cursor:pointer; border:none; ${set ? 'background:#28a745; color:#fff;' : 'background:#222; color:#aaa;'}`;
-          btn.innerText = `${String(h).padStart(2, '0')}:00`;
-          btn.onclick = () => this.toggle(h);
-          box.appendChild(btn);
-        }
-      },
-
-      async toggle(h) {
-        if (this.mySlots.has(h)) {
-          this.mySlots.delete(h);
-          await supabase.from('user_availability').delete().eq('user_id', activeUser.id).eq('slot_date', this.selDate).eq('slot_hour', h);
-        } else {
-          this.mySlots.add(h);
-          await supabase.from('user_availability').upsert({ user_id: activeUser.id, slot_date: this.selDate, slot_hour: h, is_booked: false });
-        }
-        this.renderSlots();
-      },
-
-      closeDrawer() {
-        document.getElementById('cal-drawer').style.display = 'none';
-      }
-    };
-
-    // 4. ODA VE CANLI MODÜLLERİN YÖNETİMİ
-    function openRoom(id, title, meta) {
-      activeEventId = id;
-      document.getElementById('room-empty').style.display = 'none';
-      document.getElementById('room-active').style.display = 'flex';
-      document.getElementById('room-title').innerText = title;
-      document.getElementById('room-meta').innerText = meta;
-
-      document.getElementById('chat-in-msg').onkeypress = (e) => {
-        if (e.key === 'Enter') NexusRoom.sendMessage();
-      };
-
-      NexusRoom.init(id);
+      room.style.display = 'block';
+      room.scrollIntoView({ behavior: 'smooth' });
     }
 
-    const NexusRoom = {
-      id: null,
+    async function loadAttendees(eventId) {
+      const dList = document.getElementById('room-desktop-attendees-list');
+      const mList = document.getElementById('room-mobile-attendees-list');
+      const spans = document.querySelectorAll('.room-member-count-span');
 
-      init(id) {
-        this.id = id;
-        this.loadAttendees();
-        this.loadRSVP();
-        this.loadExpenses();
-        this.loadTasks();
-        this.loadSuggestions();
-        this.loadChat();
+      const { data } = await supabase.from('event_access').select('users(username, avatar_url, phone)').eq('event_id', eventId);
+      const members = (data || []).map(d => d.users).filter(Boolean);
 
-        this.listenRealtime();
-      },
+      spans.forEach(s => s.textContent = members.length);
+      dList.innerHTML = '';
+      mList.innerHTML = '';
 
-      close() {
-        if (roomChannel) supabase.removeChannel(roomChannel);
-        roomChannel = null;
-        activeEventId = null;
-        document.getElementById('room-active').style.display = 'none';
-        document.getElementById('room-empty').style.display = 'block';
-      },
-
-      // KATILIMCILAR
-      async loadAttendees() {
-        const { data: access } = await supabase.from('event_access').select('user_id').eq('event_id', this.id);
-        const uIds = (access || []).map(a => a.user_id);
-        document.getElementById('room-attendees-badge').innerText = uIds.length;
-
-        const list = document.getElementById('room-attendees-list');
-        if (uIds.length === 0) {
-          list.innerHTML = `<small class="text-muted">Katılımcı yok.</small>`;
-          return;
-        }
-
-        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
-        list.innerHTML = (users || []).map(u => `
-          <div class="d-flex align-items-center gap-2 p-1 rounded" style="background: rgba(0,0,0,0.3); font-size:12px;">
-            <span>🤖</span>
-            <span class="text-white">${u.username}</span>
-          </div>
-        `).join('');
-      },
-
-      // RSVP İSTEK ONAY/RET PANELİ
-      async loadRSVP() {
-        const box = document.getElementById('room-rsvp-list');
-        const { data: reqs } = await supabase.from('event_join_requests').select('*').eq('event_id', this.id).eq('status', 'pending');
-
-        if (!reqs || reqs.length === 0) {
-          box.innerHTML = `<small class="text-muted" style="font-size:11px;">Bekleyen istek yok.</small>`;
-          return;
-        }
-
-        const uIds = reqs.map(r => r.user_id);
-        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
-
-        box.innerHTML = reqs.map(r => `
-          <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-warning" style="font-size: 11px;">
-            <span class="text-white">${map[r.user_id] || 'Kullanıcı #' + r.user_id}</span>
-            <div class="d-flex gap-1">
-              <button class="btn btn-xs btn-success py-0 px-2" onclick="NexusRoom.resolveRSVP(${r.id}, 'accepted', ${r.user_id})">✓</button>
-              <button class="btn btn-xs btn-danger py-0 px-2" onclick="NexusRoom.resolveRSVP(${r.id}, 'rejected', ${r.user_id})">✕</button>
-            </div>
-          </div>
-        `).join('');
-      },
-
-      async resolveRSVP(reqId, status, targetUid) {
-        await supabase.from('event_join_requests').update({ status }).eq('id', reqId);
-        if (status === 'accepted') {
-          await supabase.from('event_access').upsert({ event_id: this.id, user_id: targetUid });
-        }
-        this.loadRSVP();
-        this.loadAttendees();
-      },
-
-      // EXPENSES (SPLIT BILL)
-      async loadExpenses() {
-        const { data } = await supabase.from('event_expenses').select('*').eq('event_id', this.id).order('id', { ascending: false });
-        const list = document.getElementById('expenses-list');
-        const totalBadge = document.getElementById('expenses-total-val');
-        let total = 0;
-
-        if (!data || data.length === 0) {
-          list.innerHTML = `<small class="text-muted" style="font-size:11px;">Masraf yok.</small>`;
-          totalBadge.innerText = '0.00 TL';
-          return;
-        }
-
-        const uIds = [...new Set(data.map(d => d.paid_by))];
-        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
-
-        list.innerHTML = data.map(e => {
-          total += parseFloat(e.amount || 0);
-          return `
-            <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary" style="font-size: 11px;">
-              <span>${e.description} <small class="text-muted">(${map[e.paid_by] || 'Bilinmiyor'})</small></span>
-              <strong class="text-accent">${parseFloat(e.amount).toFixed(2)} TL</strong>
-            </div>
-          `;
-        }).join('');
-        totalBadge.innerText = `${total.toFixed(2)} TL`;
-      },
-
-      async addExpense() {
-        const d = document.getElementById('expense-in-desc').value.trim();
-        const a = parseFloat(document.getElementById('expense-in-amt').value);
-        if (!d || isNaN(a) || a <= 0) return alert('Açıklama ve tutar girin.');
-
-        await supabase.from('event_expenses').insert({ event_id: this.id, paid_by: activeUser.id, description: d, amount: a });
-        document.getElementById('expense-in-desc').value = '';
-        document.getElementById('expense-in-amt').value = '';
-        this.loadExpenses();
-      },
-
-      // TASKS
-      async loadTasks() {
-        const { data } = await supabase.from('event_tasks').select('*').eq('event_id', this.id).order('id', { ascending: false });
-        const list = document.getElementById('tasks-list');
-
-        if (!data || data.length === 0) {
-          list.innerHTML = `<small class="text-muted" style="font-size:11px;">Görev yok.</small>`;
-          return;
-        }
-
-        const uIds = [...new Set(data.map(d => d.assigned_to).filter(Boolean))];
-        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
-
-        list.innerHTML = data.map(t => {
-          const isMine = t.assigned_to === activeUser.id;
-          return `
-            <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary" style="font-size: 11px;">
-              <div>
-                <input type="checkbox" class="form-check-input me-1" ${t.is_completed ? 'checked' : ''} onchange="NexusRoom.toggleTask(${t.id}, this.checked)">
-                <span style="${t.is_completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${t.title}</span>
-                <small class="text-muted ms-1">(${map[t.assigned_to] || 'Boşta'})</small>
-              </div>
-              <div>
-                ${!t.assigned_to ? `<button class="btn btn-xs btn-outline-info py-0 px-1" onclick="NexusRoom.assignTask(${t.id})">Al</button>` : ''}
-                ${isMine ? `<button class="btn btn-xs btn-outline-danger py-0 px-1" onclick="NexusRoom.unassignTask(${t.id})">Bırak</button>` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
-      },
-
-      async addTask() {
-        const val = document.getElementById('task-in-title').value.trim();
-        if (!val) return;
-        await supabase.from('event_tasks').insert({ event_id: this.id, title: val, is_completed: false });
-        document.getElementById('task-in-title').value = '';
-        this.loadTasks();
-      },
-
-      async assignTask(id) { await supabase.from('event_tasks').update({ assigned_to: activeUser.id }).eq('id', id); this.loadTasks(); },
-      async unassignTask(id) { await supabase.from('event_tasks').update({ assigned_to: null }).eq('id', id); this.loadTasks(); },
-      async toggleTask(id, val) { await supabase.from('event_tasks').update({ is_completed: val }).eq('id', id); this.loadTasks(); },
-
-      // SUGGESTIONS
-      async loadSuggestions() {
-        const { data } = await supabase.from('event_suggestions').select('*').eq('event_id', this.id).order('votes', { ascending: false });
-        const list = document.getElementById('suggestions-list');
-
-        if (!data || data.length === 0) {
-          list.innerHTML = `<small class="text-muted" style="font-size:11px;">Öneri yok.</small>`;
-          return;
-        }
-
-        list.innerHTML = data.map(s => `
-          <div class="d-flex justify-content-between align-items-center bg-dark p-1 px-2 rounded border border-secondary" style="font-size: 11px;">
-            <span class="text-white">${s.text}</span>
-            <button class="btn btn-xs btn-outline-info py-0 px-2" onclick="NexusRoom.upvoteSugg(${s.id}, ${s.votes || 0})">👍 ${s.votes || 0}</button>
-          </div>
-        `).join('');
-      },
-
-      async addSuggestion() {
-        const txt = document.getElementById('sugg-in-text').value.trim();
-        if (!txt) return;
-        await supabase.from('event_suggestions').insert({ event_id: this.id, user_id: activeUser.id, text: txt, votes: 0 });
-        document.getElementById('sugg-in-text').value = '';
-        this.loadSuggestions();
-      },
-
-      async upvoteSugg(id, cur) {
-        await supabase.from('event_suggestions').update({ votes: cur + 1 }).eq('id', id);
-        this.loadSuggestions();
-      },
-
-      // CHAT
-      async loadChat() {
-        const { data } = await supabase.from('event_chat').select('*').eq('event_id', this.id).order('created_at', { ascending: true });
-        const box = document.getElementById('chat-messages-box');
-        box.innerHTML = '';
-
-        if (!data || data.length === 0) {
-          box.innerHTML = `<small class="text-muted text-center my-auto" style="font-size:11px;">Sohbet hazır, mesaj yazın!</small>`;
-          return;
-        }
-
-        const uIds = [...new Set(data.map(d => d.user_id))];
-        const { data: users } = await supabase.from('users').select('id, username').in('id', uIds);
-        const map = Object.fromEntries((users || []).map(u => [u.id, u.username]));
-
-        data.forEach(m => {
-          const isMe = m.user_id === activeUser.id;
-          box.innerHTML += `
-            <div class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
-              <small class="text-muted" style="font-size: 9px;">${map[m.user_id] || 'Bilinmiyor'}</small>
-              <div class="p-1 px-2 rounded" style="background: ${isMe ? 'var(--cyber-neon)' : 'rgba(255,255,255,0.1)'}; color: ${isMe ? '#000' : '#fff'}; font-size: 12px; max-width: 80%; word-break: break-word;">
-                ${m.message}
-              </div>
-            </div>
-          `;
-        });
-        box.scrollTop = box.scrollHeight;
-      },
-
-      async sendMessage() {
-        const input = document.getElementById('chat-in-msg');
-        const txt = input.value.trim();
-        if (!txt) return;
-
-        await supabase.from('event_chat').insert({ event_id: this.id, user_id: activeUser.id, message: txt });
-        input.value = '';
-        this.loadChat();
-      },
-
-      // REALTIME WEBSOCKET (SAYFA YENİLEMESİZ SENKRONİZASYON)
-      listenRealtime() {
-        if (roomChannel) supabase.removeChannel(roomChannel);
-
-        roomChannel = supabase.channel('nexus_room_' + this.id)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_join_requests', filter: `event_id=eq.${this.id}` }, () => {
-            this.loadRSVP();
-            this.loadAttendees();
-          })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_access', filter: `event_id=eq.${this.id}` }, () => {
-            this.loadAttendees();
-          })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_expenses', filter: `event_id=eq.${this.id}` }, () => {
-            this.loadExpenses();
-          })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_tasks', filter: `event_id=eq.${this.id}` }, () => {
-            this.loadTasks();
-          })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_suggestions', filter: `event_id=eq.${this.id}` }, () => {
-            this.loadSuggestions();
-          })
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'event_chat', filter: `event_id=eq.${this.id}` }, () => {
-            this.loadChat();
-          })
-          .subscribe();
-      }
-    };
+      members.forEach(u => {
+        const av = u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`;
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; gap:8px; padding:4px;';
+        row.innerHTML = `<img src="${av}" style="width:28px; height:28px; border-radius:50%;"><strong style="font-size:0.8rem;">${u.username}</strong>`;
+        dList.appendChild(row);
+        mList.appendChild(row.cloneNode(true));
+      });
+    }
   </script>
 </body>
 </html>

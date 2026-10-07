@@ -51,7 +51,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <h2 id="user-greeting" style="color: #00f2fe; margin: 0; font-size: 1.25rem;">Welcome</h2>
-            <img id="user-nav-avatar" src="" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #ff007f; background: #111; object-fit: cover;" title="Your Avatar">
+            <img id="user-nav-avatar" src="" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid #ff007f; background: #111; object-fit: cover;" title="Your Avatar">
           </div>
           <span id="user-role-text" style="font-size: 0.8rem; color: #94a3b8;">NEXUS Member Space</span>
         </div>
@@ -75,8 +75,45 @@
       </button>
     </div>
 
-    <!-- DİNAMİK EKLENTİ YUVASI (DEV.HTML'DEN YÖNETİLEN PROFİL, STATS VB.) -->
-    <div id="dynamic-plugins-zone"></div>
+    <!-- 👤 PROFİL & FOTOĞRAF AYARLARI KARTI (SABİT & GARANTİ ÇALIŞAN ALAN) -->
+    <div class="glass-box" style="margin-bottom: 20px; border: 1px solid rgba(0, 242, 254, 0.25); background: linear-gradient(135deg, rgba(18, 24, 43, 0.8), rgba(7, 9, 19, 0.95));">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img id="prof-card-avatar" src="" style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid #00f2fe; background: #070913; object-fit: cover; box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);" alt="Avatar">
+          <div>
+            <h4 style="color: #00f2fe; margin: 0; font-size: 1rem;">Profile & Avatar Settings</h4>
+            <span id="prof-card-details" style="font-size: 0.78rem; color: #94a3b8;">Loading user info...</span>
+          </div>
+        </div>
+        <button id="btn-toggle-profile-edit" class="btn" style="padding: 5px 14px; font-size: 0.78rem;">Edit Profile</button>
+      </div>
+
+      <!-- Düzenleme Alanı -->
+      <div id="prof-edit-form" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 12px;">
+        <!-- Kendi Fotoğrafını Yükleme -->
+        <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(0, 242, 254, 0.4); padding: 14px; border-radius: 10px; margin-bottom: 14px; text-align: center;">
+          <label style="display: block; font-size: 0.82rem; color: #00f2fe; margin-bottom: 8px; font-weight: 700;">
+            📸 Upload Your Own Picture
+          </label>
+          <input type="file" id="prof-file-input" accept="image/*" style="display: none;">
+          <button type="button" id="btn-trigger-upload" class="btn btn-pink" style="padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">
+            Choose from Gallery / Camera
+          </button>
+          <div id="prof-upload-status" style="font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">Supports JPG, PNG, WEBP (Auto-cropped to square)</div>
+        </div>
+
+        <!-- Veya Hazır Karakter Seç -->
+        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px;">Or pick a preset avatar:</label>
+        <div id="prof-preset-grid" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px;"></div>
+
+        <!-- Şifre Güncelleme -->
+        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 4px;">Update Password (Leave blank to keep unchanged):</label>
+        <input type="password" id="prof-new-pass" class="input-field" placeholder="New Password" style="margin-bottom: 12px;">
+
+        <button type="button" id="btn-save-profile" class="btn" style="width: 100%; min-height: 40px; font-size: 0.85rem; font-weight: 700;">Save Profile & Picture</button>
+        <div id="prof-save-status" style="margin-top: 8px; font-size: 0.8rem; text-align: center;"></div>
+      </div>
+    </div>
 
     <!-- SEKMELER (MY EVENTS / BOOKING) -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
@@ -368,13 +405,14 @@
       };
     }
 
-    async function setupDashboard(user) {
+    function setupDashboard(user) {
       document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
       const badge = document.getElementById('booking-user-badge');
       if (badge) badge.textContent = `Booking as: ${user.username} (${user.email})`;
 
+      const avatarSrc = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
       const avatarImg = document.getElementById('user-nav-avatar');
-      avatarImg.src = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      avatarImg.src = avatarSrc;
 
       if (user.is_admin || user.role === 'admin') {
         document.getElementById('btn-admin-link').style.display = 'inline-flex';
@@ -386,16 +424,13 @@
         window.location.reload();
       };
 
+      // 1. Profil Kartını Çalıştır
+      setupProfileCard(user);
+
+      // 2. QR Davet Butonunu Kur
       setupInviteQR();
 
-      // DİNAMİK EKLENTİLERİ YÜKLE (DEV.HTML ÜZERİNDEN YÖNETİLENLER)
-      try {
-        const { loadActivePlugins } = await import('./modules/loader.js');
-        await loadActivePlugins(user.id, 'dynamic-plugins-zone');
-      } catch (e) {
-        console.warn('Plugins loader fallback:', e);
-      }
-
+      // 3. Sekmeler
       const secBooking = document.getElementById('section-booking');
       const secEvents = document.getElementById('section-events');
 
@@ -426,6 +461,113 @@
       document.getElementById('nav-btn-booking').click();
     }
 
+    // DOĞRUDAN VE GARANTİLİ PROFİL KARTI YÖNETİCİSİ
+    function setupProfileCard(user) {
+      let currentAvatar = user.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`;
+      const cardAvatar = document.getElementById('prof-card-avatar');
+      const cardDetails = document.getElementById('prof-card-details');
+      const toggleBtn = document.getElementById('btn-toggle-profile-edit');
+      const form = document.getElementById('prof-edit-form');
+      const presetGrid = document.getElementById('prof-preset-grid');
+      const triggerBtn = document.getElementById('btn-trigger-upload');
+      const fileInput = document.getElementById('prof-file-input');
+      const uploadStatus = document.getElementById('prof-upload-status');
+      const saveBtn = document.getElementById('btn-save-profile');
+      const saveStatus = document.getElementById('prof-save-status');
+
+      cardAvatar.src = currentAvatar;
+      cardDetails.textContent = `${user.username} • ${user.email}`;
+
+      toggleBtn.onclick = () => {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      };
+
+      // Hazır Bot Avatarları
+      const botNames = ['Nova', 'Cipher', 'Vortex', 'Shadow', 'Neon', 'Specter', 'Zephyr', 'Orion'];
+      presetGrid.innerHTML = '';
+      botNames.forEach(b => {
+        const u = `https://api.dicebear.com/7.x/bottts/svg?seed=${b}`;
+        const im = document.createElement('img');
+        im.src = u;
+        im.style.cssText = `width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2px solid ${currentAvatar === u ? '#ff007f' : 'transparent'}; background: #070913; padding: 2px;`;
+        im.onclick = () => {
+          currentAvatar = u;
+          cardAvatar.src = u;
+          presetGrid.querySelectorAll('img').forEach(i => i.style.borderColor = 'transparent');
+          im.style.borderColor = '#ff007f';
+        };
+        presetGrid.appendChild(im);
+      });
+
+      // Fotoğraf Yükleme
+      triggerBtn.onclick = () => fileInput.click();
+
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        uploadStatus.style.color = '#00f2fe';
+        uploadStatus.textContent = 'Processing image...';
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            const minDim = Math.min(img.width, img.height);
+            const startX = (img.width - minDim) / 2;
+            const startY = (img.height - minDim) / 2;
+            ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, 256, 256);
+            
+            currentAvatar = canvas.toDataURL('image/webp', 0.85);
+            cardAvatar.src = currentAvatar;
+            presetGrid.querySelectorAll('img').forEach(i => i.style.borderColor = 'transparent');
+            uploadStatus.style.color = '#22c55e';
+            uploadStatus.textContent = '✓ Ready! Click "Save Profile & Picture" below.';
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      };
+
+      // Kaydet
+      saveBtn.onclick = async () => {
+        const newPass = document.getElementById('prof-new-pass').value.trim();
+        saveStatus.style.color = '#00f2fe';
+        saveStatus.textContent = 'Saving changes...';
+
+        const payload = { avatar_url: currentAvatar };
+        if (newPass) {
+          if (newPass.length < 4) {
+            saveStatus.style.color = '#f43f5e';
+            saveStatus.textContent = 'Password must be at least 4 characters.';
+            return;
+          }
+          payload.password_hash = newPass;
+        }
+
+        const { error } = await supabase.from('users').update(payload).eq('id', user.id);
+        if (error) {
+          saveStatus.style.color = '#f43f5e';
+          saveStatus.textContent = error.message;
+        } else {
+          saveStatus.style.color = '#22c55e';
+          saveStatus.textContent = '✓ Profile & Picture updated!';
+          user.avatar_url = currentAvatar;
+          if (newPass) user.password_hash = newPass;
+          localStorage.setItem('portal_user', JSON.stringify(user));
+          document.getElementById('user-nav-avatar').src = currentAvatar;
+          setTimeout(() => {
+            form.style.display = 'none';
+            saveStatus.textContent = '';
+          }, 1500);
+        }
+      };
+    }
+
     function setupInviteQR() {
       const modal = document.getElementById('qr-modal');
       const openBtn = document.getElementById('btn-open-invite-qr');
@@ -434,19 +576,23 @@
       const copyBtn = document.getElementById('btn-copy-portal-link');
       const portalUrl = window.location.href.split('#')[0].split('?')[0];
 
-      openBtn.onclick = () => {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(portalUrl)}`;
-        modal.style.display = 'flex';
-      };
+      if (openBtn) {
+        openBtn.onclick = () => {
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(portalUrl)}`;
+          modal.style.display = 'flex';
+        };
+      }
 
-      closeBtn.onclick = () => modal.style.display = 'none';
-      modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+      if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
+      if (modal) modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
-      copyBtn.onclick = () => {
-        navigator.clipboard.writeText(portalUrl);
-        copyBtn.textContent = '✓ Copied!';
-        setTimeout(() => copyBtn.textContent = '📋 Copy Invite Link', 2500);
-      };
+      if (copyBtn) {
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(portalUrl);
+          copyBtn.textContent = '✓ Copied!';
+          setTimeout(() => copyBtn.textContent = '📋 Copy Invite Link', 2500);
+        };
+      }
     }
 
     async function setupUserEventCreation(user) {

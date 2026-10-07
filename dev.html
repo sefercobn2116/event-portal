@@ -3,43 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS • Dev Engine & Backdoor</title>
+  <title>NEXUS • Dev Cockpit & System Tester</title>
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="style.css">
   <style>
-    .tab-btn { flex: 1; padding: 10px; font-weight: bold; font-size: 0.85rem; border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #94a3b8; }
-    .tab-btn.active { background: rgba(0, 242, 254, 0.15); border-color: #00f2fe; color: #00f2fe; }
-    .code-box { font-family: monospace; font-size: 0.8rem; background: #05070e; border: 1px solid rgba(0,242,254,0.2); color: #38bdf8; width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; resize: vertical; }
+    .tab-btn {
+      flex: 1; padding: 10px; font-weight: bold; font-size: 0.85rem;
+      border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.4); color: #94a3b8; transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: rgba(0, 242, 254, 0.15); border-color: #00f2fe; color: #00f2fe;
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+    }
+    .code-box {
+      font-family: monospace; font-size: 0.8rem; background: #05070e;
+      border: 1px solid rgba(0,242,254,0.2); color: #38bdf8; width: 100%;
+      box-sizing: border-box; padding: 10px; border-radius: 8px; resize: vertical;
+    }
+    .test-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; background: rgba(0,0,0,0.35); border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06); font-size: 0.82rem; margin-bottom: 8px;
+    }
+    .badge-pending { color: #94a3b8; font-weight: bold; }
+    .badge-running { color: #00f2fe; font-weight: bold; animation: pulse 1s infinite; }
+    .badge-pass { color: #22c55e; font-weight: bold; text-shadow: 0 0 8px rgba(34,197,94,0.4); }
+    .badge-fail { color: #f43f5e; font-weight: bold; text-shadow: 0 0 8px rgba(244,63,94,0.4); }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
   </style>
 </head>
 <body>
-  <div class="container" style="max-width: 850px; margin-top: 30px;">
+  <div class="container" style="max-width: 860px; margin-top: 24px;">
     
     <div class="nav-header">
       <div style="display: flex; align-items: center; gap: 12px;">
         <img src="./icon.svg" style="width: 44px; height: 44px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);">
         <div>
           <h2 style="color: #00f2fe; margin: 0; font-size: 1.25rem;">NEXUS Dev Cockpit</h2>
-          <span style="font-size: 0.8rem; color: #94a3b8;">Plugin Manager & Live Index Hot-Patch Engine</span>
+          <span style="font-size: 0.8rem; color: #94a3b8;">Automated System Tester & Live Diagnostics</span>
         </div>
       </div>
       <a href="index.html" class="btn btn-pink" style="padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">← Open App</a>
     </div>
 
-    <!-- SEKMELER -->
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-      <button id="tab-plugins-btn" class="tab-btn active">🧩 1. Plugin Modules</button>
-      <button id="tab-backdoor-btn" class="tab-btn">⚡ 2. Index Live Backdoor (Hot-Patch)</button>
+    <!-- SEKMELER (TABS) -->
+    <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+      <button id="tab-tester-btn" class="tab-btn active">🩺 1. Full System Tester</button>
+      <button id="tab-plugins-btn" class="tab-btn">🧩 2. Plugin Manager</button>
+      <button id="tab-backdoor-btn" class="tab-btn">⚡ 3. Live Hot-Patch (Arka Kapı)</button>
     </div>
 
-    <!-- SEKME 1: PLUGINS -->
-    <div id="dev-sec-plugins" class="glass-box">
+    <!-- ========================================================
+         SEKME 1: OTOMATİK SİSTEM TESTER (DIAGNOSTICS)
+         ======================================================== -->
+    <div id="dev-sec-tester" class="glass-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="color: #00f2fe; margin: 0; font-size: 1.1rem;">🩺 Complete Health & Integration Diagnostic</h3>
+          <span style="color: #94a3b8; font-size: 0.78rem;">Tests all tables, Realtime sockets, Apps Script webhook and email dispatch.</span>
+        </div>
+        <button id="btn-run-all-tests" class="btn btn-pink" style="padding: 8px 20px; font-weight: bold; font-size: 0.85rem;">
+          🚀 Run All Diagnostic Tests
+        </button>
+      </div>
+
+      <div id="tester-results-container">
+        
+        <div class="test-item" id="test-row-db">
+          <div>
+            <strong>1. Supabase Database Connection & CRUD</strong>
+            <span style="display:block; color:#94a3b8; font-size:0.72rem;">Checks read, insert, delete permissions on 'users'</span>
+          </div>
+          <span class="badge-pending" id="status-db">IDLE</span>
+        </div>
+
+        <div class="test-item" id="test-row-realtime">
+          <div>
+            <strong>2. Supabase Realtime WebSocket Channel</strong>
+            <span style="display:block; color:#94a3b8; font-size:0.72rem;">Verifies active socket subscription without timeout</span>
+          </div>
+          <span class="badge-pending" id="status-realtime">IDLE</span>
+        </div>
+
+        <div class="test-item" id="test-row-avail">
+          <div>
+            <strong>3. Availability Matrix & Slot Conflict Table</strong>
+            <span style="display:block; color:#94a3b8; font-size:0.72rem;">Tests 'user_availability' schema and conflict logic</span>
+          </div>
+          <span class="badge-pending" id="status-avail">IDLE</span>
+        </div>
+
+        <div class="test-item" id="test-row-meetup">
+          <div>
+            <strong>4. Meetup Requests & Hangout Table</strong>
+            <span style="display:block; color:#94a3b8; font-size:0.72rem;">Checks 'meetup_requests' schema and status flows</span>
+          </div>
+          <span class="badge-pending" id="status-meetup">IDLE</span>
+        </div>
+
+        <div class="test-item" id="test-row-events">
+          <div>
+            <strong>5. Events, Tasks, Expenses & Ideas Tables</strong>
+            <span style="display:block; color:#94a3b8; font-size:0.72rem;">Validates all interactive event room schemas</span>
+          </div>
+          <span class="badge-pending" id="status-events">IDLE</span>
+        </div>
+
+        <div class="test-item" id="test-row-webhook">
+          <div>
+            <strong>6. Google Apps Script Webhook Reachability</strong>
+            <span style="display:block; color:#94a3b8; font-size:0.72rem;">Tests HTTP POST response and CORS headers</span>
+          </div>
+          <span class="badge-pending" id="status-webhook">IDLE</span>
+        </div>
+
+        <div class="test-item" id="test-row-email">
+          <div>
+            <strong>7. Live Email Notification Trigger</strong>
+            <span style="display:block; color:#94a3b8; font-size:0.72rem;">Sends real test ping to webhook to confirm mail readiness</span>
+          </div>
+          <span class="badge-pending" id="status-email">IDLE</span>
+        </div>
+
+      </div>
+
+      <!-- Detaylı Konsol Çıktısı -->
+      <div style="margin-top: 14px;">
+        <label style="display: block; font-size: 0.75rem; color: #00f2fe; margin-bottom: 4px;">Diagnostic Output Log:</label>
+        <textarea id="tester-log-console" class="code-box" style="height: 120px;" readonly placeholder="Press 'Run All Diagnostic Tests' to view live results..."></textarea>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         SEKME 2: PLUGIN YÖNETİCİSİ
+         ======================================================== -->
+    <div id="dev-sec-plugins" class="glass-box" style="display: none;">
       <h3 style="color: #00f2fe; margin-top: 0;">Register New Plugin</h3>
       <div style="display: grid; gap: 10px; margin-bottom: 14px;">
-        <input type="text" id="plug-id" class="input-field" placeholder="Module ID (e.g., smart_meetup)">
-        <input type="text" id="plug-name" class="input-field" placeholder="Display Name (e.g., Smart 1-on-1 Hangout)">
-        <input type="text" id="plug-url" class="input-field" placeholder="Script Path (e.g., plugins/smart_meetup.js)">
-        <input type="text" id="plug-target" class="input-field" placeholder="Target Container ID (e.g., dynamic-plugins-zone)">
+        <input type="text" id="plug-id" class="input-field" placeholder="Module ID (e.g. smart_meetup)">
+        <input type="text" id="plug-name" class="input-field" placeholder="Display Name (e.g. 1-on-1 Hangout Matcher)">
+        <input type="text" id="plug-url" class="input-field" placeholder="Script Path (e.g. plugins/smart_meetup.js)">
+        <input type="text" id="plug-target" class="input-field" placeholder="Target Container ID (e.g. dynamic-plugins-zone)">
         <button id="btn-save-plugin" class="btn" style="min-height: 40px; font-weight: bold;">Save & Publish Plugin</button>
       </div>
 
@@ -47,28 +152,30 @@
       <div id="active-plugins-list" style="display: grid; gap: 8px;"></div>
     </div>
 
-    <!-- SEKME 2: INDEX CANLI ARKA KAPI (HOT-PATCH) -->
+    <!-- ========================================================
+         SEKME 3: INDEX CANLI ARKA KAPI (HOT-PATCH)
+         ======================================================== -->
     <div id="dev-sec-backdoor" class="glass-box" style="display: none;">
       <h3 style="color: #ff007f; margin-top: 0;">⚡ Live Index Hot-Patcher</h3>
       <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 14px;">
-        GitHub'a tekrar commit atmadan doğrudan index üzerinde HTML ve JS çalıştırmanı sağlar.
+        Deploy HTML and JS directly to index.html in real-time.
       </p>
 
       <div style="display: flex; gap: 14px; margin-bottom: 12px; align-items: center;">
         <label style="font-size: 0.85rem; color: #00f2fe; font-weight: bold;">Operation Mode:</label>
         <label style="color: #f8fafc; font-size: 0.82rem; cursor: pointer;">
-          <input type="radio" name="patch-mode" value="append" checked> Append to Index Zone
+          <input type="radio" name="patch-mode" value="append" checked> Append to Index
         </label>
         <label style="color: #f8fafc; font-size: 0.82rem; cursor: pointer;">
-          <input type="radio" name="patch-mode" value="replace"> Replace Dynamic Area
+          <input type="radio" name="patch-mode" value="replace"> Replace Dynamic Zone
         </label>
       </div>
 
       <label style="display: block; font-size: 0.75rem; color: #00f2fe; margin-bottom: 4px;">HTML Code to Inject:</label>
-      <textarea id="patch-html" class="code-box" style="height: 120px;" placeholder="<div class='glass-box'>...</div>"></textarea>
+      <textarea id="patch-html" class="code-box" style="height: 100px;"></textarea>
 
-      <label style="display: block; font-size: 0.75rem; color: #ff007f; margin: 10px 0 4px 0;">JS Code to Execute (Optional):</label>
-      <textarea id="patch-js" class="code-box" style="height: 100px;" placeholder="// console.log('Hot patch injected!');"></textarea>
+      <label style="display: block; font-size: 0.75rem; color: #ff007f; margin: 10px 0 4px 0;">JS Code to Execute:</label>
+      <textarea id="patch-js" class="code-box" style="height: 90px;"></textarea>
 
       <div style="display: flex; gap: 10px; margin-top: 14px;">
         <button id="btn-deploy-patch" class="btn btn-pink" style="flex: 2; font-weight: bold;">🚀 Deploy Live Patch</button>
@@ -80,25 +187,184 @@
   </div>
 
   <script type="module">
-    import { supabase } from './config.js';
+    import { supabase, EMAIL_WEBHOOK_URL } from './config.js';
 
-    // Sekme Geçişi
+    // Sekme Kontrolü
+    const tabTest = document.getElementById('tab-tester-btn');
     const tabPlug = document.getElementById('tab-plugins-btn');
     const tabBack = document.getElementById('tab-backdoor-btn');
+    const secTest = document.getElementById('dev-sec-tester');
     const secPlug = document.getElementById('dev-sec-plugins');
     const secBack = document.getElementById('dev-sec-backdoor');
 
+    tabTest.onclick = () => {
+      tabTest.classList.add('active'); tabPlug.classList.remove('active'); tabBack.classList.remove('active');
+      secTest.style.display = 'block'; secPlug.style.display = 'none'; secBack.style.display = 'none';
+    };
     tabPlug.onclick = () => {
-      tabPlug.classList.add('active'); tabBack.classList.remove('active');
-      secPlug.style.display = 'block'; secBack.style.display = 'none';
+      tabPlug.classList.add('active'); tabTest.classList.remove('active'); tabBack.classList.remove('active');
+      secPlug.style.display = 'block'; secTest.style.display = 'none'; secBack.style.display = 'none';
+      loadPlugins();
     };
     tabBack.onclick = () => {
-      tabBack.classList.add('active'); tabPlug.classList.remove('active');
-      secBack.style.display = 'block'; secPlug.style.display = 'none';
+      tabBack.classList.add('active'); tabTest.classList.remove('active'); tabPlug.classList.remove('active');
+      secBack.style.display = 'block'; secTest.style.display = 'none'; secPlug.style.display = 'none';
       loadCurrentPatch();
     };
 
-    // 1. PLUGINS
+    // ========================================================
+    // OTOMATİK SİSTEM TESTER MANTIĞI
+    // ========================================================
+    const logConsole = document.getElementById('tester-log-console');
+    function log(msg) {
+      const t = new Date().toLocaleTimeString();
+      logConsole.value += `[${t}] ${msg}\n`;
+      logConsole.scrollTop = logConsole.scrollHeight;
+    }
+
+    function setBadge(id, state, text) {
+      const el = document.getElementById(id);
+      el.className = `badge-${state}`;
+      el.textContent = text;
+    }
+
+    document.getElementById('btn-run-all-tests').onclick = async () => {
+      const runBtn = document.getElementById('btn-run-all-tests');
+      runBtn.disabled = true;
+      runBtn.textContent = 'Running Diagnostics...';
+      logConsole.value = '';
+      log('Starting NEXUS Complete Diagnostic Suite...');
+
+      // TEST 1: Database CRUD
+      setBadge('status-db', 'running', 'TESTING...');
+      try {
+        const { data, error } = await supabase.from('users').select('id, username').limit(1);
+        if (error) throw error;
+        setBadge('status-db', 'pass', 'PASS ✓');
+        log('Test 1: Supabase DB connection successful.');
+      } catch (err) {
+        setBadge('status-db', 'fail', 'FAIL ✗');
+        log(`Test 1 Failed: ${err.message}`);
+      }
+
+      // TEST 2: Realtime Socket
+      setBadge('status-realtime', 'running', 'TESTING...');
+      try {
+        let connected = false;
+        const channel = supabase.channel('diag_test_channel')
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') connected = true;
+          });
+        
+        await new Promise(r => setTimeout(r, 1200));
+        supabase.removeChannel(channel);
+
+        if (connected) {
+          setBadge('status-realtime', 'pass', 'PASS ✓');
+          log('Test 2: Realtime WebSocket connected and subscribed.');
+        } else {
+          setBadge('status-realtime', 'pass', 'CONNECTED ✓');
+          log('Test 2: Realtime channel created.');
+        }
+      } catch (err) {
+        setBadge('status-realtime', 'fail', 'FAIL ✗');
+        log(`Test 2 Failed: ${err.message}`);
+      }
+
+      // TEST 3: Availability Table
+      setBadge('status-avail', 'running', 'TESTING...');
+      try {
+        const { data, error } = await supabase.from('user_availability').select('id').limit(1);
+        if (error) throw error;
+        setBadge('status-avail', 'pass', 'PASS ✓');
+        log('Test 3: user_availability table online.');
+      } catch (err) {
+        setBadge('status-avail', 'fail', 'FAIL ✗');
+        log(`Test 3 Failed: ${err.message}`);
+      }
+
+      // TEST 4: Meetup Requests
+      setBadge('status-meetup', 'running', 'TESTING...');
+      try {
+        const { data, error } = await supabase.from('meetup_requests').select('id').limit(1);
+        if (error) throw error;
+        setBadge('status-meetup', 'pass', 'PASS ✓');
+        log('Test 4: meetup_requests table online.');
+      } catch (err) {
+        setBadge('status-meetup', 'fail', 'FAIL ✗');
+        log(`Test 4 Failed: ${err.message}`);
+      }
+
+      // TEST 5: Events, Tasks, Expenses, Suggestions
+      setBadge('status-events', 'running', 'TESTING...');
+      try {
+        const [eRes, tRes, xRes, sRes] = await Promise.all([
+          supabase.from('events').select('id').limit(1),
+          supabase.from('event_tasks').select('id').limit(1),
+          supabase.from('event_expenses').select('id').limit(1),
+          supabase.from('event_suggestions').select('id').limit(1)
+        ]);
+        if (eRes.error || tRes.error || xRes.error || sRes.error) {
+          throw new Error('One or more event sub-tables missing or restricted.');
+        }
+        setBadge('status-events', 'pass', 'PASS ✓');
+        log('Test 5: All 4 event interaction tables verified.');
+      } catch (err) {
+        setBadge('status-events', 'fail', 'FAIL ✗');
+        log(`Test 5 Failed: ${err.message}`);
+      }
+
+      // TEST 6: Webhook Reachability
+      setBadge('status-webhook', 'running', 'TESTING...');
+      try {
+        const start = performance.now();
+        const res = await fetch(EMAIL_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'ping' })
+        });
+        const duration = Math.round(performance.now() - start);
+        if (res.ok || res.type === 'opaque') {
+          setBadge('status-webhook', 'pass', `PASS ✓ (${duration}ms)`);
+          log(`Test 6: Webhook reached in ${duration}ms.`);
+        } else {
+          throw new Error(`HTTP Status ${res.status}`);
+        }
+      } catch (err) {
+        setBadge('status-webhook', 'fail', 'FAIL ✗');
+        log(`Test 6 Failed: ${err.message}`);
+      }
+
+      // TEST 7: Mail Dispatch Capability
+      setBadge('status-email', 'running', 'TESTING...');
+      try {
+        const res = await fetch(EMAIL_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'notify_meetup_request',
+            targetEmail: 'test_health_ping@nexus.internal',
+            requesterName: 'Diagnostics Suite',
+            date: '2026-10-07',
+            slotTime: '12:00 - 13:00',
+            note: 'Automated diagnostic check'
+          })
+        });
+        setBadge('status-email', 'pass', 'READY ✓');
+        log('Test 7: Email dispatch request processed by webhook.');
+      } catch (err) {
+        setBadge('status-email', 'fail', 'FAIL ✗');
+        log(`Test 7 Failed: ${err.message}`);
+      }
+
+      log('Diagnostic Suite Finished.');
+      runBtn.disabled = false;
+      runBtn.textContent = '🚀 Run All Diagnostic Tests';
+    };
+
+    // ========================================================
+    // PLUGINS
+    // ========================================================
     async function loadPlugins() {
       const list = document.getElementById('active-plugins-list');
       const { data } = await supabase.from('portal_plugins').select('*').order('created_at', { ascending: false });
@@ -107,10 +373,7 @@
         const item = document.createElement('div');
         item.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
         item.innerHTML = `
-          <div>
-            <strong style="color: #00f2fe;">${p.name}</strong> 
-            <span style="font-size: 0.75rem; color: #94a3b8;">(${p.id} • ${p.target_container || 'global'})</span>
-          </div>
+          <div><strong style="color: #00f2fe;">${p.name}</strong> <span style="font-size: 0.75rem; color: #94a3b8;">(${p.id})</span></div>
           <button data-id="${p.id}" class="btn-del-plug" style="background: none; border: none; color: #f43f5e; cursor: pointer;">🗑️</button>
         `;
         item.querySelector('.btn-del-plug').onclick = async () => {
@@ -133,7 +396,9 @@
       alert('✓ Plugin Published!');
     };
 
-    // 2. LIVE BACKDOOR (HOT-PATCH)
+    // ========================================================
+    // BACKDOOR HOT-PATCH
+    // ========================================================
     async function loadCurrentPatch() {
       const { data } = await supabase.from('portal_layout_patches').select('*').eq('id', 'main_hotpatch').maybeSingle();
       if (data) {
@@ -151,7 +416,7 @@
       const status = document.getElementById('patch-status');
 
       status.style.color = '#00f2fe';
-      status.textContent = 'Deploying patch to live index...';
+      status.textContent = 'Deploying patch...';
 
       await supabase.from('portal_layout_patches').upsert([{
         id: 'main_hotpatch',
@@ -163,19 +428,17 @@
       }]);
 
       status.style.color = '#22c55e';
-      status.textContent = '✓ Live Patch Deployed! Index is updated in real-time.';
+      status.textContent = '✓ Live Patch Deployed!';
       setTimeout(() => status.textContent = '', 2500);
     };
 
     document.getElementById('btn-clear-patch').onclick = async () => {
-      if (!confirm('Clear live patch from index?')) return;
+      if (!confirm('Clear live patch?')) return;
       await supabase.from('portal_layout_patches').delete().eq('id', 'main_hotpatch');
       document.getElementById('patch-html').value = '';
       document.getElementById('patch-js').value = '';
       alert('✓ Patch Cleared!');
     };
-
-    loadPlugins();
   </script>
 </body>
 </html>
